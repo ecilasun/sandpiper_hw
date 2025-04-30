@@ -5,7 +5,7 @@
     "cell_name": "processing_system7_0",
     "component_reference": "xilinx.com:ip:processing_system7:5.5",
     "ip_revision": "6",
-    "gen_directory": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_0",
+    "gen_directory": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_0",
     "parameters": {
       "component_parameters": {
         "PCW_DDR_RAM_BASEADDR": [ { "value": "0x00100000", "resolve_type": "user", "format": "bitString", "usage": "all" } ],
@@ -962,7 +962,7 @@
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
         "IPREVISION": [ { "value": "6" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_0" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "../../ipshared" } ],
         "SWVERSION": [ { "value": "2024.2.2" } ],

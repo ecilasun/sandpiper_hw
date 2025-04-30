@@ -4,7 +4,7 @@
     "xci_name": "samplemem",
     "component_reference": "xilinx.com:ip:blk_mem_gen:8.4",
     "ip_revision": "10",
-    "gen_directory": "../../../../testzor.gen/sources_1/ip/samplemem",
+    "gen_directory": "../../../../sandpiper.gen/sources_1/ip/samplemem",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "samplemem", "resolve_type": "user", "usage": "all" } ],
@@ -174,7 +174,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "10" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../testzor.gen/sources_1/ip/samplemem" } ],
+        "OUTPUTDIR": [ { "value": "../../../../sandpiper.gen/sources_1/ip/samplemem" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.2.2" } ],

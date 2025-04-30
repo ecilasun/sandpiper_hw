@@ -4,7 +4,7 @@
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.                   -->
 <!-- Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.   -->
 
-<Project Product="Vivado" Version="7" Minor="68" Path="D:/repos/testzor/testzor.xpr">
+<Project Product="Vivado" Version="7" Minor="68" Path="D:/repos/sandpiper_hw/sandpiper.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="bae138b426544abf8a869832abf59a39"/>

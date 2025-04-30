@@ -5,7 +5,7 @@
     "cell_name": "gmii_to_rgmii_0",
     "component_reference": "xilinx.com:ip:gmii_to_rgmii:4.1",
     "ip_revision": "18",
-    "gen_directory": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_gmii_to_rgmii_0_0",
+    "gen_directory": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_gmii_to_rgmii_0_0",
     "parameters": {
       "component_parameters": {
         "C_EXTERNAL_CLOCK": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
@@ -41,7 +41,7 @@
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
         "IPREVISION": [ { "value": "18" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_gmii_to_rgmii_0_0" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_gmii_to_rgmii_0_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "../../ipshared" } ],
         "SWVERSION": [ { "value": "2024.2.2" } ],

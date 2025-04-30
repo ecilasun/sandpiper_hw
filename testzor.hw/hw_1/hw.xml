@@ -17,7 +17,7 @@
       <Properties Property="PROGRAM.FILES" value="$_project_name_.runs/impl_1/blockone_wrapper.bin"/>
       <Properties Property="PROGRAM.UNUSED_PIN_TERMINATION" value="pull-none"/>
       <Properties Property="PROGRAM.VERIFY" value="1"/>
-      <Properties Property="PROGRAM.ZYNQ_FSBL" value="D:/repos/testzor_sw/theplatform/zynq_fsbl/build/fsbl.elf"/>
+      <Properties Property="PROGRAM.ZYNQ_FSBL" value="D:/repos/sandpiper_sw/theplatform/zynq_fsbl/build/fsbl.elf"/>
     </Object>
   </ObjectList>
   <ObjectList object_type="hw_device" gui_info="">

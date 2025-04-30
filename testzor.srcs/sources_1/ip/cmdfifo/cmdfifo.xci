@@ -4,7 +4,7 @@
     "xci_name": "cmdfifo",
     "component_reference": "xilinx.com:ip:fifo_generator:13.2",
     "ip_revision": "12",
-    "gen_directory": "../../../../testzor.gen/sources_1/ip/cmdfifo",
+    "gen_directory": "../../../../sandpiper.gen/sources_1/ip/cmdfifo",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "cmdfifo", "resolve_type": "user", "usage": "all" } ],
@@ -397,7 +397,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "12" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../testzor.gen/sources_1/ip/cmdfifo" } ],
+        "OUTPUTDIR": [ { "value": "../../../../sandpiper.gen/sources_1/ip/cmdfifo" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.2.2" } ],

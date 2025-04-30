@@ -3,7 +3,7 @@
     "design_info": {
       "boundary_crc": "0x37ED1DDFF9DDBC19",
       "device": "xc7z020clg484-1",
-      "gen_directory": "../../../../testzor.gen/sources_1/bd/blockone",
+      "gen_directory": "../../../../sandpiper.gen/sources_1/bd/blockone",
       "name": "blockone",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
       "synth_flow_mode": "Hierarchical",

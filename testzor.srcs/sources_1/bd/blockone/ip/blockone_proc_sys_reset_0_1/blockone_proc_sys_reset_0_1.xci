@@ -5,7 +5,7 @@
     "cell_name": "proc_sys_reset_0",
     "component_reference": "xilinx.com:ip:proc_sys_reset:5.0",
     "ip_revision": "16",
-    "gen_directory": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_proc_sys_reset_0_1",
+    "gen_directory": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_proc_sys_reset_0_1",
     "parameters": {
       "component_parameters": {
         "C_NUM_PERP_ARESETN": [ { "value": "1", "resolve_type": "user", "format": "long", "usage": "all" } ],
@@ -48,7 +48,7 @@
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
         "IPREVISION": [ { "value": "16" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../../../testzor.gen/sources_1/bd/blockone/ip/blockone_proc_sys_reset_0_1" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_proc_sys_reset_0_1" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "../../ipshared" } ],
         "SWVERSION": [ { "value": "2024.2.2" } ],
