@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2024.2.2 (win64) Build 6060944 Thu Mar 06 19:10:01 MST 2025
-//Date        : Tue Apr 29 17:56:23 2025
+//Date        : Fri May  2 16:52:28 2025
 //Host        : fastturtle running 64-bit major release  (build 9200)
 //Command     : generate_target blockone.bd
 //Design      : blockone
@@ -536,7 +536,6 @@ module blockone
         .FCLK_CLK1(processing_system7_0_FCLK_CLK1),
         .FCLK_CLK2(processing_system7_0_FCLK_CLK2),
         .FCLK_RESET0_N(processing_system7_0_FCLK_RESET0_N),
-        .GPIO_I({1'b0,1'b0,1'b0}),
         .MIO(FIXED_IO_mio),
         .M_AXI_GP0_ACLK(processing_system7_0_FCLK_CLK0),
         .M_AXI_GP0_ARADDR(processing_system7_0_M_AXI_GP0_ARADDR),

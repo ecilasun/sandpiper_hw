@@ -71,9 +71,6 @@ ENET0_GMII_TX_CLK,
 ENET0_MDIO_I, 
 ENET0_EXT_INTIN, 
 ENET0_GMII_RXD, 
-GPIO_I, 
-GPIO_O, 
-GPIO_T, 
 UART0_TX, 
 UART0_RX, 
 TTC0_WAVE0_OUT, 
@@ -255,9 +252,6 @@ input ENET0_GMII_TX_CLK;
 input ENET0_MDIO_I;
 input ENET0_EXT_INTIN;
 input [7 : 0] ENET0_GMII_RXD;
-input [2 : 0] GPIO_I;
-output [2 : 0] GPIO_O;
-output [2 : 0] GPIO_T;
 output UART0_TX;
 input UART0_RX;
 output TTC0_WAVE0_OUT;

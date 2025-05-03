@@ -54,6 +54,7 @@ set_property SLEW FAST [get_ports RGMII_0_tx_ctl]
 set_property SLEW FAST [get_ports RGMII_0_txc]
 
 create_clock -period 8.000 -name RGMII_0_rxc -waveform {0.000 4.000} [get_ports RGMII_0_rxc]
+set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {gmii_clk_25m_out gmii_clk_2_5m_out}] -group [get_clocks -include_generated_clocks gmii_clk_125m_out]
 
 # UART PHY: FT2232H
 
@@ -81,14 +82,12 @@ create_clock -period 8.000 -name RGMII_0_rxc -waveform {0.000 4.000} [get_ports 
 # set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33} [get_ports OTG_DATA{7]]	# MIO39
 
 # LEDs
-set_property IOSTANDARD LVCMOS33 [get_ports {LED_tri_o[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {LED_tri_o[1]}]
+set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {LED_tri_o[0]}]
+set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {LED_tri_o[1]}]
 set_property SLEW SLOW [get_ports {LED_tri_o[0]}]
 set_property SLEW SLOW [get_ports {LED_tri_o[1]}]
 set_property DRIVE 4 [get_ports {LED_tri_o[0]}]
 set_property DRIVE 4 [get_ports {LED_tri_o[1]}]
-set_property PACKAGE_PIN P20 [get_ports {LED_tri_o[0]}]
-set_property PACKAGE_PIN P21 [get_ports {LED_tri_o[1]}]
 
 # Buttons
 
@@ -108,17 +107,19 @@ set_property PACKAGE_PIN P21 [get_ports {LED_tri_o[1]}]
 # MIO47
 ## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SD_CD]
 
-# SPI
-# MIO02
-## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SPI_0_0_DQ[0]]
-# MIO03
-## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33_33} [get_ports SPI_0_0_DQ[1]]
-# MIO04
-## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SPI_0_0_DQ[2]]
-# MIO05
-## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SPI_0_0_DQ[3]]
-# MIO06
-## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SPI_0_0_sck_io]
+# LCD SPI + GPIO
+## set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports SPI0_SCLK_O_0]
+## set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports SPI0_MOSI_O_0]
+## set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports SPI0_SS_O_0]
+# LCD_DC
+## set_property PACKAGE_PIN R15 [get_ports {GPIO_O_0[0]}]
+# LCD_RES
+## set_property PACKAGE_PIN L16 [get_ports {GPIO_O_0[1]}]
+# LCD_BLK
+## set_property PACKAGE_PIN T16 [get_ports {GPIO_O_0[2]}]
+## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[0]}]
+## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[1]}]
+## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[2]}]
 
 # FPGA JTAG
 
@@ -146,3 +147,4 @@ set_clock_groups -name grpF -asynchronous -group [get_clocks clk_fpga_0] -group 
 ## ------------------------------------------------------------------------------------------------------
 
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
