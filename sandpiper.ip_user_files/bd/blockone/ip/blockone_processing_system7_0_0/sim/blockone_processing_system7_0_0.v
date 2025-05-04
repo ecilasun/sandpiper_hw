@@ -240,9 +240,9 @@ PS_SRSTB,
 PS_CLK, 
 PS_PORB 
 );
-input [2 : 0] GPIO_I;
-output [2 : 0] GPIO_O;
-output [2 : 0] GPIO_T;
+input [4 : 0] GPIO_I;
+output [4 : 0] GPIO_O;
+output [4 : 0] GPIO_T;
 input SPI0_SCLK_I;
 output SPI0_SCLK_O;
 output SPI0_SCLK_T;

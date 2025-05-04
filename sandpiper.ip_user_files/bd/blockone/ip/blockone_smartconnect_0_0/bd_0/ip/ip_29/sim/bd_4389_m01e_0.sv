@@ -309,7 +309,7 @@ output wire m_axi_rready;
     .C_ADDR_WIDTH(32),
     .C_M_PROTOCOL(1),
     .C_HAS_LOCK(0),
-    .C_NUM_MSC(3),
+    .C_NUM_MSC(2),
     .C_SINGLE_ISSUING(0),
     .C_M_LIMIT_READ_LENGTH(8),
     .C_M_LIMIT_WRITE_LENGTH(8),

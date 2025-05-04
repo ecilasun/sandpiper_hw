@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x88324118F25B61B3",
+      "boundary_crc": "0xB1907D5374B20366",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../sandpiper.gen/sources_1/bd/blockone",
       "name": "blockone",
@@ -14,11 +14,11 @@
       "processing_system7_0": "",
       "proc_sys_reset_0": "",
       "smartconnect_0": "",
-      "axi_gpio_0": "",
       "audiomodule_0": "",
       "videomodule_0": "",
       "clk_wiz_0": "",
-      "zero": ""
+      "zero": "",
+      "xlconstant_0": ""
     },
     "interface_ports": {
       "DDR": {
@@ -189,32 +189,6 @@
           }
         }
       },
-      "LED": {
-        "mode": "Master",
-        "vlnv_bus_definition": "xilinx.com:interface:gpio:1.0",
-        "vlnv": "xilinx.com:interface:gpio_rtl:1.0",
-        "port_maps": {
-          "TRI_O": {
-            "physical_name": "LED_tri_o",
-            "direction": "O",
-            "left": "1",
-            "right": "0"
-          }
-        }
-      },
-      "BUTTON": {
-        "mode": "Master",
-        "vlnv_bus_definition": "xilinx.com:interface:gpio:1.0",
-        "vlnv": "xilinx.com:interface:gpio_rtl:1.0",
-        "port_maps": {
-          "TRI_I": {
-            "physical_name": "BUTTON_tri_i",
-            "direction": "I",
-            "left": "1",
-            "right": "0"
-          }
-        }
-      },
       "UART_0_0": {
         "mode": "Master",
         "vlnv_bus_definition": "xilinx.com:interface:uart:1.0",
@@ -230,69 +204,6 @@
           }
         }
       },
-      "SPI_0_0": {
-        "mode": "Master",
-        "vlnv_bus_definition": "xilinx.com:interface:spi:1.0",
-        "vlnv": "xilinx.com:interface:spi_rtl:1.0",
-        "port_maps": {
-          "SCK_I": {
-            "physical_name": "SPI_0_0_sck_i",
-            "direction": "I"
-          },
-          "SCK_O": {
-            "physical_name": "SPI_0_0_sck_o",
-            "direction": "O"
-          },
-          "SCK_T": {
-            "physical_name": "SPI_0_0_sck_t",
-            "direction": "O"
-          },
-          "IO0_I": {
-            "physical_name": "SPI_0_0_io0_i",
-            "direction": "I"
-          },
-          "IO0_O": {
-            "physical_name": "SPI_0_0_io0_o",
-            "direction": "O"
-          },
-          "IO0_T": {
-            "physical_name": "SPI_0_0_io0_t",
-            "direction": "O"
-          },
-          "IO1_I": {
-            "physical_name": "SPI_0_0_io1_i",
-            "direction": "I"
-          },
-          "IO1_O": {
-            "physical_name": "SPI_0_0_io1_o",
-            "direction": "O"
-          },
-          "IO1_T": {
-            "physical_name": "SPI_0_0_io1_t",
-            "direction": "O"
-          },
-          "SS_I": {
-            "physical_name": "SPI_0_0_ss_i",
-            "direction": "I"
-          },
-          "SS_O": {
-            "physical_name": "SPI_0_0_ss_o",
-            "direction": "O"
-          },
-          "SS1_O": {
-            "physical_name": "SPI_0_0_ss1_o",
-            "direction": "O"
-          },
-          "SS2_O": {
-            "physical_name": "SPI_0_0_ss2_o",
-            "direction": "O"
-          },
-          "SS_T": {
-            "physical_name": "SPI_0_0_ss_t",
-            "direction": "O"
-          }
-        }
-      },
       "GPIO_0_0": {
         "mode": "Master",
         "vlnv_bus_definition": "xilinx.com:interface:gpio:1.0",
@@ -301,19 +212,19 @@
           "TRI_I": {
             "physical_name": "GPIO_0_0_tri_i",
             "direction": "I",
-            "left": "2",
+            "left": "4",
             "right": "0"
           },
           "TRI_O": {
             "physical_name": "GPIO_0_0_tri_o",
             "direction": "O",
-            "left": "2",
+            "left": "4",
             "right": "0"
           },
           "TRI_T": {
             "physical_name": "GPIO_0_0_tri_t",
             "direction": "O",
-            "left": "2",
+            "left": "4",
             "right": "0"
           }
         }
@@ -381,6 +292,15 @@
         "direction": "O",
         "left": "2",
         "right": "0"
+      },
+      "LCD_SCL": {
+        "direction": "O"
+      },
+      "LCD_SDA": {
+        "direction": "O"
+      },
+      "LCD_CS": {
+        "direction": "O"
       }
     },
     "components": {
@@ -821,10 +741,10 @@
             "value": "1"
           },
           "PCW_GPIO_EMIO_GPIO_IO": {
-            "value": "3"
+            "value": "5"
           },
           "PCW_GPIO_EMIO_GPIO_WIDTH": {
-            "value": "3"
+            "value": "5"
           },
           "PCW_GPIO_MIO_GPIO_ENABLE": {
             "value": "1"
@@ -1920,7 +1840,7 @@
             "value": "0"
           },
           "PCW_UIPARAM_GENERATE_SUMMARY": {
-            "value": "NA"
+            "value": "NONE"
           },
           "PCW_USB0_BASEADDR": {
             "value": "0xE0102000"
@@ -2202,7 +2122,7 @@
         "inst_hier_path": "smartconnect_0",
         "parameters": {
           "NUM_MI": {
-            "value": "3"
+            "value": "2"
           },
           "NUM_SI": {
             "value": "1"
@@ -2223,8 +2143,7 @@
             },
             "bridges": [
               "M00_AXI",
-              "M01_AXI",
-              "M02_AXI"
+              "M01_AXI"
             ]
           },
           "M00_AXI": {
@@ -2233,7 +2152,7 @@
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
             "parameters": {
               "MAX_BURST_LENGTH": {
-                "value": "1"
+                "value": "8"
               },
               "NUM_READ_OUTSTANDING": {
                 "value": "8"
@@ -2288,61 +2207,6 @@
                 "value": "0"
               }
             }
-          },
-          "M02_AXI": {
-            "mode": "Master",
-            "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
-            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
-            "parameters": {
-              "MAX_BURST_LENGTH": {
-                "value": "8"
-              },
-              "NUM_READ_OUTSTANDING": {
-                "value": "8"
-              },
-              "NUM_READ_THREADS": {
-                "value": "1"
-              },
-              "NUM_WRITE_OUTSTANDING": {
-                "value": "8"
-              },
-              "NUM_WRITE_THREADS": {
-                "value": "1"
-              },
-              "RUSER_BITS_PER_BYTE": {
-                "value": "0"
-              },
-              "SUPPORTS_NARROW_BURST": {
-                "value": "0"
-              },
-              "WUSER_BITS_PER_BYTE": {
-                "value": "0"
-              }
-            }
-          }
-        }
-      },
-      "axi_gpio_0": {
-        "vlnv": "xilinx.com:ip:axi_gpio:2.0",
-        "ip_revision": "36",
-        "xci_name": "blockone_axi_gpio_0_0",
-        "xci_path": "ip\\blockone_axi_gpio_0_0\\blockone_axi_gpio_0_0.xci",
-        "inst_hier_path": "axi_gpio_0",
-        "parameters": {
-          "C_ALL_INPUTS_2": {
-            "value": "1"
-          },
-          "C_ALL_OUTPUTS": {
-            "value": "1"
-          },
-          "C_GPIO2_WIDTH": {
-            "value": "2"
-          },
-          "C_GPIO_WIDTH": {
-            "value": "2"
-          },
-          "C_IS_DUAL": {
-            "value": "1"
           }
         }
       },
@@ -3941,6 +3805,18 @@
             "value": "0"
           }
         }
+      },
+      "xlconstant_0": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "9",
+        "xci_name": "blockone_xlconstant_0_1",
+        "xci_path": "ip\\blockone_xlconstant_0_1\\blockone_xlconstant_0_1.xci",
+        "inst_hier_path": "xlconstant_0",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -3948,18 +3824,6 @@
         "interface_ports": [
           "audiomodule_0/m_axi",
           "processing_system7_0/S_AXI_HP1"
-        ]
-      },
-      "axi_gpio_0_GPIO": {
-        "interface_ports": [
-          "LED",
-          "axi_gpio_0/GPIO"
-        ]
-      },
-      "axi_gpio_0_GPIO2": {
-        "interface_ports": [
-          "BUTTON",
-          "axi_gpio_0/GPIO2"
         ]
       },
       "processing_system7_0_DDR": {
@@ -3986,12 +3850,6 @@
           "smartconnect_0/S00_AXI"
         ]
       },
-      "processing_system7_0_SPI_0": {
-        "interface_ports": [
-          "SPI_0_0",
-          "processing_system7_0/SPI_0"
-        ]
-      },
       "processing_system7_0_UART_0": {
         "interface_ports": [
           "UART_0_0",
@@ -4000,20 +3858,14 @@
       },
       "smartconnect_0_M00_AXI": {
         "interface_ports": [
-          "axi_gpio_0/S_AXI",
-          "smartconnect_0/M00_AXI"
+          "smartconnect_0/M00_AXI",
+          "videomodule_0/s_axi"
         ]
       },
       "smartconnect_0_M01_AXI": {
         "interface_ports": [
           "audiomodule_0/s_axi",
           "smartconnect_0/M01_AXI"
-        ]
-      },
-      "smartconnect_0_M02_AXI": {
-        "interface_ports": [
-          "videomodule_0/s_axi",
-          "smartconnect_0/M02_AXI"
         ]
       },
       "videomodule_0_m_axi": {
@@ -4063,7 +3915,6 @@
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
-          "axi_gpio_0/s_axi_aresetn",
           "audiomodule_0/aresetn",
           "videomodule_0/aresetn"
         ]
@@ -4082,7 +3933,6 @@
           "processing_system7_0/S_AXI_HP1_ACLK",
           "proc_sys_reset_0/slowest_sync_clk",
           "smartconnect_0/aclk",
-          "axi_gpio_0/s_axi_aclk",
           "audiomodule_0/aclk",
           "videomodule_0/aclk"
         ]
@@ -4097,6 +3947,24 @@
         "ports": [
           "processing_system7_0/FCLK_RESET0_N",
           "proc_sys_reset_0/ext_reset_in"
+        ]
+      },
+      "processing_system7_0_SPI0_MOSI_O": {
+        "ports": [
+          "processing_system7_0/SPI0_MOSI_O",
+          "LCD_SDA"
+        ]
+      },
+      "processing_system7_0_SPI0_SCLK_O": {
+        "ports": [
+          "processing_system7_0/SPI0_SCLK_O",
+          "LCD_SCL"
+        ]
+      },
+      "processing_system7_0_SPI0_SS_O": {
+        "ports": [
+          "processing_system7_0/SPI0_SS_O",
+          "LCD_CS"
         ]
       },
       "videomodule_0_HDMI_CLK_n": {
@@ -4123,6 +3991,12 @@
           "HDMI_TMDS_p_0"
         ]
       },
+      "xlconstant_0_dout": {
+        "ports": [
+          "xlconstant_0/dout",
+          "processing_system7_0/SPI0_SS_I"
+        ]
+      },
       "zero_dout": {
         "ports": [
           "zero/dout",
@@ -4138,11 +4012,6 @@
               "SEG_audiomodule_0_reg0": {
                 "address_block": "/audiomodule_0/s_axi/reg0",
                 "offset": "0x41202000",
-                "range": "4K"
-              },
-              "SEG_axi_gpio_0_Reg": {
-                "address_block": "/axi_gpio_0/S_AXI/Reg",
-                "offset": "0x41200000",
                 "range": "4K"
               },
               "SEG_videomodule_0_reg0": {

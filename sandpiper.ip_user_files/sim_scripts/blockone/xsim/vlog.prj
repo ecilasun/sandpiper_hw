@@ -31,13 +31,6 @@ sv xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_27/sim/bd_4389_m01wn_0.sv" \
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_28/sim/bd_4389_m01bn_0.sv" \
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_29/sim/bd_4389_m01e_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_30/sim/bd_4389_m02s2a_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_31/sim/bd_4389_m02arn_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_32/sim/bd_4389_m02rn_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_33/sim/bd_4389_m02awn_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_34/sim/bd_4389_m02wn_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_35/sim/bd_4389_m02bn_0.sv" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_36/sim/bd_4389_m02e_0.sv" \
 
 verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" \
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/sim/bd_4389.v" \
@@ -47,6 +40,7 @@ verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/includ
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0_clk_wiz.v" \
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0.v" \
 "../../../bd/blockone/ip/blockone_xlconstant_0_0/sim/blockone_xlconstant_0_0.v" \
+"../../../bd/blockone/ip/blockone_xlconstant_0_1/sim/blockone_xlconstant_0_1.v" \
 "../../../bd/blockone/sim/blockone.v" \
 
 verilog xil_defaultlib "glbl.v"

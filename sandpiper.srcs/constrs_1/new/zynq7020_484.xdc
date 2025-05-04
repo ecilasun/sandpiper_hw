@@ -8,8 +8,6 @@ set_property -dict {PACKAGE_PIN J21 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_p_
 set_property -dict {PACKAGE_PIN J22 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_n_0[2]}]
 set_property -dict {PACKAGE_PIN M17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_rxd]
 set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_txd]
-set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports {BUTTON_tri_i[0]}]
-set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {BUTTON_tri_i[1]}]
 # Clock: 50MHz external crystal for PL clock
 # set_property -dict {PACKAGE_PIN M19 IOSTANDARD LVCMOS33} [get_ports clk_50_MHz]
 
@@ -81,14 +79,6 @@ set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {BUTTON_tri_
 # set_property -dict {PACKAGE_PIN F13 IOSTANDARD LVCMOS33} [get_ports OTG_DATA[6]]	# MIO38
 # set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33} [get_ports OTG_DATA{7]]	# MIO39
 
-# LEDs
-set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {LED_tri_o[0]}]
-set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {LED_tri_o[1]}]
-set_property SLEW SLOW [get_ports {LED_tri_o[0]}]
-set_property SLEW SLOW [get_ports {LED_tri_o[1]}]
-set_property DRIVE 4 [get_ports {LED_tri_o[0]}]
-set_property DRIVE 4 [get_ports {LED_tri_o[1]}]
-
 # Buttons
 
 # SD card
@@ -107,22 +97,7 @@ set_property DRIVE 4 [get_ports {LED_tri_o[1]}]
 # MIO47
 ## set_property -dict {PACKAGE_PIN B10 IOSTANDARD LVCMOS33} [get_ports SD_CD]
 
-# LCD SPI + GPIO
-## set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports SPI0_SCLK_O_0]
-## set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports SPI0_MOSI_O_0]
-## set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports SPI0_SS_O_0]
-# LCD_DC
-## set_property PACKAGE_PIN R15 [get_ports {GPIO_O_0[0]}]
-# LCD_RES
-## set_property PACKAGE_PIN L16 [get_ports {GPIO_O_0[1]}]
-# LCD_BLK
-## set_property PACKAGE_PIN T16 [get_ports {GPIO_O_0[2]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[0]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[1]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_O_0[2]}]
-
 # FPGA JTAG
-
 # set_property -dict {PACKAGE_PIN G12 IOSTANDARD LVCMOS33} [get_ports FPGA_TMS]
 # set_property -dict {PACKAGE_PIN G11 IOSTANDARD LVCMOS33} [get_ports FPGA_TCK]
 # set_property -dict {PACKAGE_PIN H13 IOSTANDARD LVCMOS33} [get_ports FPGA_TDI]
@@ -130,21 +105,29 @@ set_property DRIVE 4 [get_ports {LED_tri_o[1]}]
 
 # RAM: MT41K256M16 (256M x 16bits, 512MB)
 
-# LCD SPIO
-set_property PACKAGE_PIN N15 [get_ports SPI_0_0_sck_io]
-set_property PACKAGE_PIN M15 [get_ports SPI_0_0_io0_io]
-set_property PACKAGE_PIN P15 [get_ports SPI_0_0_ss_io]
-set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_io0_io]
-set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_sck_io]
-set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_ss_io]
+# LCD SPI (3-wire)
+## LCD_SCL - SCLK
+set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports LCD_SCL]
+## LCD_SDA - MOSI
+set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports LCD_SDA]
+## LCD_CS  - CS
+set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports LCD_CS]
 
-set_property PACKAGE_PIN R15 [get_ports {GPIO_0_0_tri_io[0]}]
-set_property PACKAGE_PIN L16 [get_ports {GPIO_0_0_tri_io[1]}]
-set_property PACKAGE_PIN T16 [get_ports {GPIO_0_0_tri_io[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[2]}]
-#set_property PACKAGE_PIN G14 [get_ports {GPIO_0_0_tri_io[1]}]
+# LCD Control
+## LCD_DC
+set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
+## LCD_RES
+set_property -dict {PACKAGE_PIN L16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
+## LCD_BLK
+set_property -dict {PACKAGE_PIN T16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
+
+# LEDs
+set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[3]}]
+set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[4]}]
+set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[3]}]
+set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[4]}]
+set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[3]}]
+set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[4]}]
 
 ## ------------------------------------------------------------------------------------------------------
 ## Clock groups - all clocks are detached
