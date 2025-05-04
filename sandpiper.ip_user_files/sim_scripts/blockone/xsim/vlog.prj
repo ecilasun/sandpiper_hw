@@ -46,6 +46,7 @@ verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/includ
 "../../../bd/blockone/ip/blockone_videomodule_0_0/sim/blockone_videomodule_0_0.v" \
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0_clk_wiz.v" \
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0.v" \
+"../../../bd/blockone/ip/blockone_xlconstant_0_0/sim/blockone_xlconstant_0_0.v" \
 "../../../bd/blockone/sim/blockone.v" \
 
 verilog xil_defaultlib "glbl.v"

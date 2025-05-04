@@ -130,6 +130,22 @@ set_property DRIVE 4 [get_ports {LED_tri_o[1]}]
 
 # RAM: MT41K256M16 (256M x 16bits, 512MB)
 
+# LCD SPIO
+set_property PACKAGE_PIN N15 [get_ports SPI_0_0_sck_io]
+set_property PACKAGE_PIN M15 [get_ports SPI_0_0_io0_io]
+set_property PACKAGE_PIN P15 [get_ports SPI_0_0_ss_io]
+set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_io0_io]
+set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_sck_io]
+set_property IOSTANDARD LVCMOS33 [get_ports SPI_0_0_ss_io]
+
+set_property PACKAGE_PIN R15 [get_ports {GPIO_0_0_tri_io[0]}]
+set_property PACKAGE_PIN L16 [get_ports {GPIO_0_0_tri_io[1]}]
+set_property PACKAGE_PIN T16 [get_ports {GPIO_0_0_tri_io[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_0_0_tri_io[2]}]
+#set_property PACKAGE_PIN G14 [get_ports {GPIO_0_0_tri_io[1]}]
+
 ## ------------------------------------------------------------------------------------------------------
 ## Clock groups - all clocks are detached
 ## ------------------------------------------------------------------------------------------------------

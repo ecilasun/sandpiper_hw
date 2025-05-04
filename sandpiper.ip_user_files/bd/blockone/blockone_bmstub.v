@@ -29,18 +29,25 @@ module blockone (
   FIXED_IO_ps_porb,
   LED_tri_o,
   BUTTON_tri_i,
-  MDIO_PHY_0_mdc,
-  MDIO_PHY_0_mdio_i,
-  MDIO_PHY_0_mdio_o,
-  MDIO_PHY_0_mdio_t,
-  RGMII_0_rd,
-  RGMII_0_rx_ctl,
-  RGMII_0_rxc,
-  RGMII_0_td,
-  RGMII_0_tx_ctl,
-  RGMII_0_txc,
   UART_0_0_txd,
   UART_0_0_rxd,
+  SPI_0_0_sck_i,
+  SPI_0_0_sck_o,
+  SPI_0_0_sck_t,
+  SPI_0_0_io0_i,
+  SPI_0_0_io0_o,
+  SPI_0_0_io0_t,
+  SPI_0_0_io1_i,
+  SPI_0_0_io1_o,
+  SPI_0_0_io1_t,
+  SPI_0_0_ss_i,
+  SPI_0_0_ss_o,
+  SPI_0_0_ss1_o,
+  SPI_0_0_ss2_o,
+  SPI_0_0_ss_t,
+  GPIO_0_0_tri_i,
+  GPIO_0_0_tri_o,
+  GPIO_0_0_tri_t,
   HDMI_CLK_p_0,
   HDMI_CLK_n_0,
   HDMI_TMDS_p_0,
@@ -99,34 +106,47 @@ module blockone (
   (* X_INTERFACE_INFO = "xilinx.com:interface:gpio:1.0 BUTTON TRI_I" *)
   (* X_INTERFACE_MODE = "master BUTTON" *)
   input [1:0]BUTTON_tri_i;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:mdio:1.0 MDIO_PHY_0 MDC" *)
-  (* X_INTERFACE_MODE = "master MDIO_PHY_0" *)
-  (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME MDIO_PHY_0, CAN_DEBUG false" *)
-  output MDIO_PHY_0_mdc;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:mdio:1.0 MDIO_PHY_0 MDIO_I" *)
-  input MDIO_PHY_0_mdio_i;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:mdio:1.0 MDIO_PHY_0 MDIO_O" *)
-  output MDIO_PHY_0_mdio_o;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:mdio:1.0 MDIO_PHY_0 MDIO_T" *)
-  output MDIO_PHY_0_mdio_t;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 RD" *)
-  (* X_INTERFACE_MODE = "master RGMII_0" *)
-  input [3:0]RGMII_0_rd;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 RX_CTL" *)
-  input RGMII_0_rx_ctl;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 RXC" *)
-  input RGMII_0_rxc;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 TD" *)
-  output [3:0]RGMII_0_td;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 TX_CTL" *)
-  output RGMII_0_tx_ctl;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 TXC" *)
-  output RGMII_0_txc;
   (* X_INTERFACE_INFO = "xilinx.com:interface:uart:1.0 UART_0_0 TxD" *)
   (* X_INTERFACE_MODE = "master UART_0_0" *)
   output UART_0_0_txd;
   (* X_INTERFACE_INFO = "xilinx.com:interface:uart:1.0 UART_0_0 RxD" *)
   input UART_0_0_rxd;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SCK_I" *)
+  (* X_INTERFACE_MODE = "master SPI_0_0" *)
+  input SPI_0_0_sck_i;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SCK_O" *)
+  output SPI_0_0_sck_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SCK_T" *)
+  output SPI_0_0_sck_t;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO0_I" *)
+  input SPI_0_0_io0_i;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO0_O" *)
+  output SPI_0_0_io0_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO0_T" *)
+  output SPI_0_0_io0_t;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO1_I" *)
+  input SPI_0_0_io1_i;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO1_O" *)
+  output SPI_0_0_io1_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 IO1_T" *)
+  output SPI_0_0_io1_t;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SS_I" *)
+  input SPI_0_0_ss_i;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SS_O" *)
+  output SPI_0_0_ss_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SS1_O" *)
+  output SPI_0_0_ss1_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SS2_O" *)
+  output SPI_0_0_ss2_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:spi:1.0 SPI_0_0 SS_T" *)
+  output SPI_0_0_ss_t;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:gpio:1.0 GPIO_0_0 TRI_I" *)
+  (* X_INTERFACE_MODE = "master GPIO_0_0" *)
+  input [2:0]GPIO_0_0_tri_i;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:gpio:1.0 GPIO_0_0 TRI_O" *)
+  output [2:0]GPIO_0_0_tri_o;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:gpio:1.0 GPIO_0_0 TRI_T" *)
+  output [2:0]GPIO_0_0_tri_t;
   (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.HDMI_CLK_P_0 CLK" *)
   (* X_INTERFACE_MODE = "master CLK.HDMI_CLK_P_0" *)
   (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.HDMI_CLK_P_0, FREQ_HZ 125000000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN blockone_videomodule_0_0_HDMI_CLK_p, INSERT_VIP 0" *)

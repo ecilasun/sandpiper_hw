@@ -15,7 +15,6 @@ vlib modelsim_lib/msim/axi_register_slice_v2_1_34
 vlib modelsim_lib/msim/axi_lite_ipif_v3_0_4
 vlib modelsim_lib/msim/interrupt_control_v3_1_5
 vlib modelsim_lib/msim/axi_gpio_v2_0_36
-vlib modelsim_lib/msim/gmii_to_rgmii_v4_1_18
 
 vmap xilinx_vip modelsim_lib/msim/xilinx_vip
 vmap xpm modelsim_lib/msim/xpm
@@ -31,7 +30,6 @@ vmap axi_register_slice_v2_1_34 modelsim_lib/msim/axi_register_slice_v2_1_34
 vmap axi_lite_ipif_v3_0_4 modelsim_lib/msim/axi_lite_ipif_v3_0_4
 vmap interrupt_control_v3_1_5 modelsim_lib/msim/interrupt_control_v3_1_5
 vmap axi_gpio_v2_0_36 modelsim_lib/msim/axi_gpio_v2_0_36
-vmap gmii_to_rgmii_v4_1_18 modelsim_lib/msim/gmii_to_rgmii_v4_1_18
 
 vlog -work xilinx_vip  -incr -mfcu  -sv -L axi_vip_v1_1_20 -L processing_system7_vip_v1_0_22 -L smartconnect_v1_0 -L xilinx_vip "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
 "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/hdl/axi4stream_vip_axi4streampc.sv" \
@@ -178,24 +176,13 @@ vcom -work axi_gpio_v2_0_36  -93  \
 
 vcom -work xil_defaultlib  -93  \
 "../../../bd/blockone/ip/blockone_axi_gpio_0_0/sim/blockone_axi_gpio_0_0.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0_clocking.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0_resets.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0_support.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0_reset_sync.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0_block.vhd" \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/blockone_gmii_to_rgmii_0_0/simulation/demo_tb.vhd" \
-
-vcom -work gmii_to_rgmii_v4_1_18  -93  \
-"../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/990c/hdl/gmii_to_rgmii_v4_1_vh_rfs.vhd" \
-
-vcom -work xil_defaultlib  -93  \
-"../../../bd/blockone/ip/blockone_gmii_to_rgmii_0_0/synth/blockone_gmii_to_rgmii_0_0.vhd" \
 
 vlog -work xil_defaultlib  -incr -mfcu  "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
 "../../../bd/blockone/ip/blockone_audiomodule_0_0/sim/blockone_audiomodule_0_0.v" \
 "../../../bd/blockone/ip/blockone_videomodule_0_0/sim/blockone_videomodule_0_0.v" \
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0_clk_wiz.v" \
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0.v" \
+"../../../bd/blockone/ip/blockone_xlconstant_0_0/sim/blockone_xlconstant_0_0.v" \
 "../../../bd/blockone/sim/blockone.v" \
 
 vlog -work xil_defaultlib \

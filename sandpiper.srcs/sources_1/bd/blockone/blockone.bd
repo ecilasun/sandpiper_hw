@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xB67CF64B70A85BF6",
+      "boundary_crc": "0x88324118F25B61B3",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../sandpiper.gen/sources_1/bd/blockone",
       "name": "blockone",
@@ -229,6 +229,94 @@
             "direction": "I"
           }
         }
+      },
+      "SPI_0_0": {
+        "mode": "Master",
+        "vlnv_bus_definition": "xilinx.com:interface:spi:1.0",
+        "vlnv": "xilinx.com:interface:spi_rtl:1.0",
+        "port_maps": {
+          "SCK_I": {
+            "physical_name": "SPI_0_0_sck_i",
+            "direction": "I"
+          },
+          "SCK_O": {
+            "physical_name": "SPI_0_0_sck_o",
+            "direction": "O"
+          },
+          "SCK_T": {
+            "physical_name": "SPI_0_0_sck_t",
+            "direction": "O"
+          },
+          "IO0_I": {
+            "physical_name": "SPI_0_0_io0_i",
+            "direction": "I"
+          },
+          "IO0_O": {
+            "physical_name": "SPI_0_0_io0_o",
+            "direction": "O"
+          },
+          "IO0_T": {
+            "physical_name": "SPI_0_0_io0_t",
+            "direction": "O"
+          },
+          "IO1_I": {
+            "physical_name": "SPI_0_0_io1_i",
+            "direction": "I"
+          },
+          "IO1_O": {
+            "physical_name": "SPI_0_0_io1_o",
+            "direction": "O"
+          },
+          "IO1_T": {
+            "physical_name": "SPI_0_0_io1_t",
+            "direction": "O"
+          },
+          "SS_I": {
+            "physical_name": "SPI_0_0_ss_i",
+            "direction": "I"
+          },
+          "SS_O": {
+            "physical_name": "SPI_0_0_ss_o",
+            "direction": "O"
+          },
+          "SS1_O": {
+            "physical_name": "SPI_0_0_ss1_o",
+            "direction": "O"
+          },
+          "SS2_O": {
+            "physical_name": "SPI_0_0_ss2_o",
+            "direction": "O"
+          },
+          "SS_T": {
+            "physical_name": "SPI_0_0_ss_t",
+            "direction": "O"
+          }
+        }
+      },
+      "GPIO_0_0": {
+        "mode": "Master",
+        "vlnv_bus_definition": "xilinx.com:interface:gpio:1.0",
+        "vlnv": "xilinx.com:interface:gpio_rtl:1.0",
+        "port_maps": {
+          "TRI_I": {
+            "physical_name": "GPIO_0_0_tri_i",
+            "direction": "I",
+            "left": "2",
+            "right": "0"
+          },
+          "TRI_O": {
+            "physical_name": "GPIO_0_0_tri_o",
+            "direction": "O",
+            "left": "2",
+            "right": "0"
+          },
+          "TRI_T": {
+            "physical_name": "GPIO_0_0_tri_t",
+            "direction": "O",
+            "left": "2",
+            "right": "0"
+          }
+        }
       }
     },
     "ports": {
@@ -352,7 +440,7 @@
             "value": "10.000000"
           },
           "PCW_ACT_SPI_PERIPHERAL_FREQMHZ": {
-            "value": "10.000000"
+            "value": "166.666672"
           },
           "PCW_ACT_TPIU_PERIPHERAL_FREQMHZ": {
             "value": "200.000000"
@@ -465,17 +553,11 @@
           "PCW_ENET0_PERIPHERAL_ENABLE": {
             "value": "0"
           },
-          "PCW_ENET0_RESET_ENABLE": {
-            "value": "0"
-          },
           "PCW_ENET1_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
           },
           "PCW_ENET1_PERIPHERAL_ENABLE": {
             "value": "0"
-          },
-          "PCW_ENET_RESET_ENABLE": {
-            "value": "1"
           },
           "PCW_ENET_RESET_POLARITY": {
             "value": "Active Low"
@@ -535,7 +617,7 @@
             "value": "0"
           },
           "PCW_EN_EMIO_GPIO": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_EMIO_I2C0": {
             "value": "0"
@@ -559,7 +641,7 @@
             "value": "0"
           },
           "PCW_EN_EMIO_SPI0": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_EMIO_SPI1": {
             "value": "0"
@@ -646,7 +728,7 @@
             "value": "0"
           },
           "PCW_EN_SPI0": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_SPI1": {
             "value": "0"
@@ -736,7 +818,13 @@
             "value": "4"
           },
           "PCW_GPIO_EMIO_GPIO_ENABLE": {
-            "value": "0"
+            "value": "1"
+          },
+          "PCW_GPIO_EMIO_GPIO_IO": {
+            "value": "3"
+          },
+          "PCW_GPIO_EMIO_GPIO_WIDTH": {
+            "value": "3"
           },
           "PCW_GPIO_MIO_GPIO_ENABLE": {
             "value": "1"
@@ -1363,6 +1451,12 @@
           "PCW_OVERRIDE_BASIC_CLOCK": {
             "value": "0"
           },
+          "PCW_P2F_SPI0_INTR": {
+            "value": "1"
+          },
+          "PCW_P2F_USB0_INTR": {
+            "value": "0"
+          },
           "PCW_PACKAGE_DDR_BOARD_DELAY0": {
             "value": "0.063"
           },
@@ -1514,7 +1608,10 @@
             "value": "0"
           },
           "PCW_SPI0_PERIPHERAL_ENABLE": {
-            "value": "0"
+            "value": "1"
+          },
+          "PCW_SPI0_SPI0_IO": {
+            "value": "EMIO"
           },
           "PCW_SPI1_PERIPHERAL_ENABLE": {
             "value": "0"
@@ -1522,8 +1619,11 @@
           "PCW_SPI_PERIPHERAL_CLKSRC": {
             "value": "IO PLL"
           },
+          "PCW_SPI_PERIPHERAL_FREQMHZ": {
+            "value": "166.666666"
+          },
           "PCW_SPI_PERIPHERAL_VALID": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_S_AXI_HP0_DATA_WIDTH": {
             "value": "64"
@@ -1889,7 +1989,7 @@
             "value": "0"
           },
           "PCW_USE_FABRIC_INTERRUPT": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_USE_HIGH_OCM": {
             "value": "0"
@@ -3874,10 +3974,22 @@
           "processing_system7_0/FIXED_IO"
         ]
       },
+      "processing_system7_0_GPIO_0": {
+        "interface_ports": [
+          "GPIO_0_0",
+          "processing_system7_0/GPIO_0"
+        ]
+      },
       "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
           "processing_system7_0/M_AXI_GP0",
           "smartconnect_0/S00_AXI"
+        ]
+      },
+      "processing_system7_0_SPI_0": {
+        "interface_ports": [
+          "SPI_0_0",
+          "processing_system7_0/SPI_0"
         ]
       },
       "processing_system7_0_UART_0": {
