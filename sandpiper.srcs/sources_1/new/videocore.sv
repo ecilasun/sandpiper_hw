@@ -552,7 +552,7 @@ always_ff @(posedge aclk) begin
 				// Only read on odd lines in 320-wide, or every other line in 640-wide mode
 				// The trick here: we'll initially hit odd-even-even-odd sequence which means
 				// the cache line we loaded on line 523 will only reload on line 1 after it's been displayed twice in 320 mode
-				if ((scanpixel == 640) && (scanline[0] || scanwidth)) begin
+				if ((scanpixel == 512) && (scanline[0] || scanwidth)) begin
 					rdata_cnt <= 8'd0;
 					burststate <= burstmask;
 					scanstate <= scanline == 10'd479 ? DETECTFRAMESTART : STARTSCANOUT;
