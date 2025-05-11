@@ -82,7 +82,7 @@
             "value_src": "const_prop"
           },
           "CLK_DOMAIN": {
-            "value": "blockone_processing_system7_0_0_FCLK_CLK0",
+            "value": "blockone_processing_system7_0_1_FCLK_CLK0",
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
@@ -139,7 +139,7 @@
           },
           "MAX_BURST_LENGTH": {
             "value": "16",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "NUM_READ_OUTSTANDING": {
             "value": "8"
@@ -217,7 +217,7 @@
             "value_src": "default"
           },
           "CLK_DOMAIN": {
-            "value": "blockone_processing_system7_0_0_FCLK_CLK0",
+            "value": "blockone_processing_system7_0_1_FCLK_CLK0",
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
@@ -341,7 +341,7 @@
             "value_src": "default"
           },
           "CLK_DOMAIN": {
-            "value": "blockone_processing_system7_0_0_FCLK_CLK0",
+            "value": "blockone_processing_system7_0_1_FCLK_CLK0",
             "value_src": "default_prop"
           },
           "DATA_WIDTH": {
@@ -457,7 +457,7 @@
             "value_src": "constant"
           },
           "CLK_DOMAIN": {
-            "value": "blockone_processing_system7_0_0_FCLK_CLK0",
+            "value": "blockone_processing_system7_0_1_FCLK_CLK0",
             "value_src": "default_prop"
           },
           "FREQ_HZ": {
@@ -1096,7 +1096,7 @@
                 "value": "READ_WRITE"
               },
               "SEG000_BASE_ADDR": {
-                "value": "0x0000000041201000"
+                "value": "0x0000000040000000"
               },
               "SEG000_SECURE_READ": {
                 "value": "0"
@@ -1105,7 +1105,7 @@
                 "value": "0"
               },
               "SEG000_SEP_ROUTE": {
-                "value": "0b0000000000000000000000000000000000000000000000000000000000000000"
+                "value": "0b0000000000000000000000000000000000000000000000000000000000000001"
               },
               "SEG000_SIZE": {
                 "value": "12"
@@ -1117,7 +1117,7 @@
                 "value": "1"
               },
               "SEG001_BASE_ADDR": {
-                "value": "0x0000000041202000"
+                "value": "0x0000000040001000"
               },
               "SEG001_SECURE_READ": {
                 "value": "0"
@@ -1126,7 +1126,7 @@
                 "value": "0"
               },
               "SEG001_SEP_ROUTE": {
-                "value": "0b0000000000000000000000000000000000000000000000000000000000000001"
+                "value": "0b0000000000000000000000000000000000000000000000000000000000000000"
               },
               "SEG001_SIZE": {
                 "value": "12"

@@ -14,45 +14,45 @@ set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_txd
 # HDMI
 
 # Realtek ETH PHY: RTL8211E
-## set_property PACKAGE_PIN G21 [get_ports MDIO_PHY_0_mdc]
-## set_property PACKAGE_PIN H22 [get_ports MDIO_PHY_0_mdio_io]
-## set_property PACKAGE_PIN A22 [get_ports {RGMII_0_rd[0]}]
-## set_property PACKAGE_PIN A18 [get_ports {RGMII_0_rd[1]}]
-## set_property PACKAGE_PIN A19 [get_ports {RGMII_0_rd[2]}]
-## set_property PACKAGE_PIN B20 [get_ports {RGMII_0_rd[3]}]
-## set_property PACKAGE_PIN A21 [get_ports RGMII_0_rx_ctl]
-## set_property PACKAGE_PIN B19 [get_ports RGMII_0_rxc]
-## set_property PACKAGE_PIN E21 [get_ports {RGMII_0_td[0]}]
-## set_property PACKAGE_PIN F21 [get_ports {RGMII_0_td[1]}]
-## set_property PACKAGE_PIN F22 [get_ports {RGMII_0_td[2]}]
-## set_property PACKAGE_PIN G20 [get_ports {RGMII_0_td[3]}]
-## set_property PACKAGE_PIN G22 [get_ports RGMII_0_tx_ctl]
-## set_property PACKAGE_PIN D21 [get_ports RGMII_0_txc]
+set_property PACKAGE_PIN G21 [get_ports MDIO_PHY_0_mdc]
+set_property PACKAGE_PIN H22 [get_ports MDIO_PHY_0_mdio_io]
+set_property PACKAGE_PIN A22 [get_ports {RGMII_0_rd[0]}]
+set_property PACKAGE_PIN A18 [get_ports {RGMII_0_rd[1]}]
+set_property PACKAGE_PIN A19 [get_ports {RGMII_0_rd[2]}]
+set_property PACKAGE_PIN B20 [get_ports {RGMII_0_rd[3]}]
+set_property PACKAGE_PIN A21 [get_ports RGMII_0_rx_ctl]
+set_property PACKAGE_PIN B19 [get_ports RGMII_0_rxc]
+set_property PACKAGE_PIN E21 [get_ports {RGMII_0_td[0]}]
+set_property PACKAGE_PIN F21 [get_ports {RGMII_0_td[1]}]
+set_property PACKAGE_PIN F22 [get_ports {RGMII_0_td[2]}]
+set_property PACKAGE_PIN G20 [get_ports {RGMII_0_td[3]}]
+set_property PACKAGE_PIN G22 [get_ports RGMII_0_tx_ctl]
+set_property PACKAGE_PIN D21 [get_ports RGMII_0_txc]
 
-## set_property IOSTANDARD LVCMOS33 [get_ports MDIO_PHY_0_mdc]
-## set_property IOSTANDARD LVCMOS33 [get_ports MDIO_PHY_0_mdio_io]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[0]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[1]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[2]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[3]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_rx_ctl]
-## set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_rxc]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[0]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[1]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[2]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[3]}]
-## set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_tx_ctl]
-## set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_txc]
+set_property IOSTANDARD LVCMOS33 [get_ports MDIO_PHY_0_mdc]
+set_property IOSTANDARD LVCMOS33 [get_ports MDIO_PHY_0_mdio_io]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_rd[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_rx_ctl]
+set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_rxc]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {RGMII_0_td[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_tx_ctl]
+set_property IOSTANDARD LVCMOS33 [get_ports RGMII_0_txc]
 
-## set_property SLEW FAST [get_ports {RGMII_0_td[0]}]
-## set_property SLEW FAST [get_ports {RGMII_0_td[1]}]
-## set_property SLEW FAST [get_ports {RGMII_0_td[2]}]
-## set_property SLEW FAST [get_ports {RGMII_0_td[3]}]
-## set_property SLEW FAST [get_ports RGMII_0_tx_ctl]
-## set_property SLEW FAST [get_ports RGMII_0_txc]
+set_property SLEW FAST [get_ports {RGMII_0_td[0]}]
+set_property SLEW FAST [get_ports {RGMII_0_td[1]}]
+set_property SLEW FAST [get_ports {RGMII_0_td[2]}]
+set_property SLEW FAST [get_ports {RGMII_0_td[3]}]
+set_property SLEW FAST [get_ports RGMII_0_tx_ctl]
+set_property SLEW FAST [get_ports RGMII_0_txc]
 
-## create_clock -period 8.000 -name RGMII_0_rxc -waveform {0.000 4.000} [get_ports RGMII_0_rxc]
-## set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {gmii_clk_25m_out gmii_clk_2_5m_out}] -group [get_clocks -include_generated_clocks gmii_clk_125m_out]
+create_clock -period 8.000 -name RGMII_0_rxc -waveform {0.000 4.000} [get_ports RGMII_0_rxc]
+set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {gmii_clk_25m_out gmii_clk_2_5m_out}] -group [get_clocks -include_generated_clocks gmii_clk_125m_out]
 
 # UART PHY: FT2232H
 
@@ -78,8 +78,6 @@ set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_txd
 # set_property -dict {PACKAGE_PIN B14 IOSTANDARD LVCMOS33} [get_ports OTG_DATA[5]]	# MIO37
 # set_property -dict {PACKAGE_PIN F13 IOSTANDARD LVCMOS33} [get_ports OTG_DATA[6]]	# MIO38
 # set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33} [get_ports OTG_DATA{7]]	# MIO39
-
-# Buttons
 
 # SD card
 # MIO40
@@ -107,27 +105,35 @@ set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_txd
 
 # LCD SPI (3-wire)
 ## LCD_SCL - SCLK
-set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports LCD_SCL]
+## set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports LCD_SCL]
 ## LCD_SDA - MOSI
-set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports LCD_SDA]
+## set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports LCD_SDA]
 ## LCD_CS  - CS
-set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports LCD_CS]
+## set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports LCD_CS]
 
 # LCD Control
 ## LCD_DC
-set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
+## set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
 ## LCD_RES
-set_property -dict {PACKAGE_PIN L16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
+## set_property -dict {PACKAGE_PIN L16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
 ## LCD_BLK
-set_property -dict {PACKAGE_PIN T16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
+## set_property -dict {PACKAGE_PIN T16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
 
 # LEDs
-set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[3]}]
-set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[4]}]
+set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
+set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
+set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[0]}]
+set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[1]}]
+set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[0]}]
+set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[1]}]
+
+# Buttons
+set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
+set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[3]}]
+set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[2]}]
 set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[3]}]
-set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[4]}]
+set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[2]}]
 set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[3]}]
-set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[4]}]
 
 ## ------------------------------------------------------------------------------------------------------
 ## Clock groups - all clocks are detached
