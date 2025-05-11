@@ -50,6 +50,8 @@ set_property SLEW FAST [get_ports {RGMII_0_td[2]}]
 set_property SLEW FAST [get_ports {RGMII_0_td[3]}]
 set_property SLEW FAST [get_ports RGMII_0_tx_ctl]
 set_property SLEW FAST [get_ports RGMII_0_txc]
+set_property SLEW FAST [get_ports MDIO_PHY_0_mdc]
+set_property SLEW FAST [get_ports MDIO_PHY_0_mdio_io]
 
 create_clock -period 8.000 -name RGMII_0_rxc -waveform {0.000 4.000} [get_ports RGMII_0_rxc]
 set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {gmii_clk_25m_out gmii_clk_2_5m_out}] -group [get_clocks -include_generated_clocks gmii_clk_125m_out]

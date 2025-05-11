@@ -13,6 +13,7 @@ vlib modelsim_lib/msim/axi_register_slice_v2_1_34
 vlib modelsim_lib/msim/axi_vip_v1_1_20
 vlib modelsim_lib/msim/gmii_to_rgmii_v4_1_18
 vlib modelsim_lib/msim/processing_system7_vip_v1_0_22
+vlib modelsim_lib/msim/util_vector_logic_v2_0_4
 
 vmap xilinx_vip modelsim_lib/msim/xilinx_vip
 vmap xpm modelsim_lib/msim/xpm
@@ -26,6 +27,7 @@ vmap axi_register_slice_v2_1_34 modelsim_lib/msim/axi_register_slice_v2_1_34
 vmap axi_vip_v1_1_20 modelsim_lib/msim/axi_vip_v1_1_20
 vmap gmii_to_rgmii_v4_1_18 modelsim_lib/msim/gmii_to_rgmii_v4_1_18
 vmap processing_system7_vip_v1_0_22 modelsim_lib/msim/processing_system7_vip_v1_0_22
+vmap util_vector_logic_v2_0_4 modelsim_lib/msim/util_vector_logic_v2_0_4
 
 vlog -work xilinx_vip  -incr -mfcu  -sv -L axi_vip_v1_1_20 -L processing_system7_vip_v1_0_22 -L smartconnect_v1_0 -L xilinx_vip "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
 "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/hdl/axi4stream_vip_axi4streampc.sv" \
@@ -171,6 +173,12 @@ vlog -work processing_system7_vip_v1_0_22  -incr -mfcu  -sv -L axi_vip_v1_1_20 -
 
 vlog -work xil_defaultlib  -incr -mfcu  "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
 "../../../bd/blockone/ip/blockone_processing_system7_0_1/sim/blockone_processing_system7_0_1.v" \
+
+vlog -work util_vector_logic_v2_0_4  -incr -mfcu  "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
+"../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/fd7b/hdl/util_vector_logic_v2_0_vl_rfs.v" \
+
+vlog -work xil_defaultlib  -incr -mfcu  "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" "+incdir+../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" "+incdir+G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" \
+"../../../bd/blockone/ip/blockone_util_vector_logic_0_0/sim/blockone_util_vector_logic_0_0.v" \
 "../../../bd/blockone/sim/blockone.v" \
 
 vlog -work xil_defaultlib \

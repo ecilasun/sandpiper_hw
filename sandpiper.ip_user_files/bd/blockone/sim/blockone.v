@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2024.2.2 (win64) Build 6060944 Thu Mar 06 19:10:01 MST 2025
-//Date        : Sat May 10 16:45:53 2025
+//Date        : Sun May 11 03:02:54 2025
 //Host        : fastturtle running 64-bit major release  (build 9200)
 //Command     : generate_target blockone.bd
 //Design      : blockone
@@ -10,7 +10,7 @@
 //--------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-(* CORE_GENERATION_INFO = "blockone,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=blockone,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=7,numReposBlks=7,numNonXlnxBlks=0,numHierBlks=0,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=2,numPkgbdBlks=0,bdsource=USER,da_ps7_cnt=3,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "blockone.hwdef" *) 
+(* CORE_GENERATION_INFO = "blockone,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=blockone,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=8,numReposBlks=8,numNonXlnxBlks=0,numHierBlks=0,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=2,numPkgbdBlks=0,bdsource=USER,da_ps7_cnt=3,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "blockone.hwdef" *) 
 module blockone
    (DDR_addr,
     DDR_ba,
@@ -301,6 +301,7 @@ module blockone
   wire smartconnect_0_M01_AXI_WREADY;
   wire [7:0]smartconnect_0_M01_AXI_WSTRB;
   wire smartconnect_0_M01_AXI_WVALID;
+  wire [0:0]util_vector_logic_0_Res;
   wire [31:0]videomodule_0_m_axi_ARADDR;
   wire [1:0]videomodule_0_m_axi_ARBURST;
   wire [3:0]videomodule_0_m_axi_ARCACHE;
@@ -452,8 +453,8 @@ module blockone
         .rgmii_tx_ctl(RGMII_0_tx_ctl),
         .rgmii_txc(RGMII_0_txc),
         .rgmii_txd(RGMII_0_td),
-        .rx_reset(proc_sys_reset_0_peripheral_reset),
-        .tx_reset(proc_sys_reset_0_peripheral_reset));
+        .rx_reset(util_vector_logic_0_Res),
+        .tx_reset(util_vector_logic_0_Res));
   blockone_proc_sys_reset_0_1 proc_sys_reset_0
        (.aux_reset_in(1'b1),
         .dcm_locked(1'b1),
@@ -738,6 +739,9 @@ module blockone
         .S00_AXI_wvalid(processing_system7_0_M_AXI_GP0_WVALID),
         .aclk(Net),
         .aresetn(proc_sys_reset_0_interconnect_aresetn));
+  blockone_util_vector_logic_0_0 util_vector_logic_0
+       (.Op1(processing_system7_0_FCLK_RESET0_N),
+        .Res(util_vector_logic_0_Res));
   blockone_videomodule_0_0 videomodule_0
        (.HDMI_CLK_n(HDMI_CLK_n_0),
         .HDMI_CLK_p(HDMI_CLK_p_0),

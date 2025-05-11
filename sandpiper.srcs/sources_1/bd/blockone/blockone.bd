@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x2A9DA84CE5A9B7DA",
+      "boundary_crc": "0x2A9DA84C60384D97",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../sandpiper.gen/sources_1/bd/blockone",
       "name": "blockone",
@@ -17,7 +17,8 @@
       "videomodule_0": "",
       "clk_wiz_0": "",
       "gmii_to_rgmii_0": "",
-      "processing_system7_0": ""
+      "processing_system7_0": "",
+      "util_vector_logic_0": ""
     },
     "interface_ports": {
       "MDIO_PHY_0": {
@@ -2187,6 +2188,12 @@
           "PCW_EN_EMIO_GPIO": {
             "value": "1"
           },
+          "PCW_EN_EMIO_TTC0": {
+            "value": "1"
+          },
+          "PCW_EN_EMIO_TTC1": {
+            "value": "1"
+          },
           "PCW_EN_EMIO_UART0": {
             "value": "1"
           },
@@ -2200,6 +2207,12 @@
             "value": "1"
           },
           "PCW_EN_SDIO0": {
+            "value": "1"
+          },
+          "PCW_EN_TTC0": {
+            "value": "1"
+          },
+          "PCW_EN_TTC1": {
             "value": "1"
           },
           "PCW_EN_UART0": {
@@ -2248,7 +2261,7 @@
             "value": "MIO"
           },
           "PCW_I2C_RESET_ENABLE": {
-            "value": "1"
+            "value": "0"
           },
           "PCW_MIO_0_IOTYPE": {
             "value": "LVCMOS 3.3V"
@@ -2776,6 +2789,21 @@
           "PCW_SINGLE_QSPI_DATA_MODE": {
             "value": "x4"
           },
+          "PCW_TTC0_PERIPHERAL_ENABLE": {
+            "value": "1"
+          },
+          "PCW_TTC0_TTC0_IO": {
+            "value": "EMIO"
+          },
+          "PCW_TTC1_PERIPHERAL_ENABLE": {
+            "value": "1"
+          },
+          "PCW_TTC1_TTC1_IO": {
+            "value": "EMIO"
+          },
+          "PCW_TTC_PERIPHERAL_FREQMHZ": {
+            "value": "50"
+          },
           "PCW_UART0_GRP_FULL_ENABLE": {
             "value": "0"
           },
@@ -2968,6 +2996,21 @@
             }
           }
         }
+      },
+      "util_vector_logic_0": {
+        "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
+        "ip_revision": "4",
+        "xci_name": "blockone_util_vector_logic_0_0",
+        "xci_path": "ip\\blockone_util_vector_logic_0_0\\blockone_util_vector_logic_0_0.xci",
+        "inst_hier_path": "util_vector_logic_0",
+        "parameters": {
+          "C_OPERATION": {
+            "value": "not"
+          },
+          "C_SIZE": {
+            "value": "1"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -3109,9 +3152,7 @@
       "proc_sys_reset_0_peripheral_reset": {
         "ports": [
           "proc_sys_reset_0/peripheral_reset",
-          "clk_wiz_0/reset",
-          "gmii_to_rgmii_0/rx_reset",
-          "gmii_to_rgmii_0/tx_reset"
+          "clk_wiz_0/reset"
         ]
       },
       "processing_system7_0_FCLK_CLK1": {
@@ -3129,7 +3170,15 @@
       "processing_system7_0_FCLK_RESET0_N": {
         "ports": [
           "processing_system7_0/FCLK_RESET0_N",
-          "proc_sys_reset_0/ext_reset_in"
+          "proc_sys_reset_0/ext_reset_in",
+          "util_vector_logic_0/Op1"
+        ]
+      },
+      "util_vector_logic_0_Res": {
+        "ports": [
+          "util_vector_logic_0/Res",
+          "gmii_to_rgmii_0/rx_reset",
+          "gmii_to_rgmii_0/tx_reset"
         ]
       },
       "videomodule_0_HDMI_CLK_n": {
