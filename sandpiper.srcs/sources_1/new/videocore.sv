@@ -325,7 +325,9 @@ always @(posedge clk25) begin
 		case ({notblank, scanenable, colormode})
 			3'b110: paletteout <= paletteentries[paletteindex];
 			3'b111: paletteout <= rgbcolor;
-			default: paletteout <= 12'd0;
+			3'b100: paletteout <= 12'hF00;
+			3'b101: paletteout <= 12'h00F;
+			default: paletteout <= 12'h000;
 		endcase
 	end
 end
@@ -359,11 +361,11 @@ logic [31:0] vpucmd;
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		vpucmd <= 32'd0;
-		scanaddr <= 32'h1F000000; // Default scan-out address if the OS has not set up anything else
+		scanaddr <= 32'h18000000; // Default scan-out address if the OS has not set up anything else
 		burstmask <= 10'b0000000111;
 		lastscanline <= 10'd523;
 		palettedin <= 12'd0;
-		scanenable <= 1'b1;
+		scanenable <= 1'b0;
 		cmdre <= 1'b0;
 		scanwidth <= 1'b0;
 		colormode <= 1'b0;

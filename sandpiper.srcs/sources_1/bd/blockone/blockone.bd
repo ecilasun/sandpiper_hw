@@ -3213,8 +3213,8 @@
             "segments": {
               "SEG_processing_system7_0_HP1_DDR_LOWOCM": {
                 "address_block": "/processing_system7_0/S_AXI_HP1/HP1_DDR_LOWOCM",
-                "offset": "0x00000000",
-                "range": "512M"
+                "offset": "0x18000000",
+                "range": "128M"
               }
             }
           }
@@ -3226,8 +3226,8 @@
             "segments": {
               "SEG_processing_system7_0_HP0_DDR_LOWOCM": {
                 "address_block": "/processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM",
-                "offset": "0x00000000",
-                "range": "512M"
+                "offset": "0x18000000",
+                "range": "128M"
               }
             }
           }

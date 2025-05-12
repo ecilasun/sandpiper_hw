@@ -66,13 +66,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="38"/>
-    <Option Name="WTModelSimExportSim" Val="38"/>
-    <Option Name="WTQuestaExportSim" Val="38"/>
+    <Option Name="WTXSimExportSim" Val="40"/>
+    <Option Name="WTModelSimExportSim" Val="40"/>
+    <Option Name="WTQuestaExportSim" Val="40"/>
     <Option Name="WTIesExportSim" Val="0"/>
     <Option Name="WTVcsExportSim" Val="0"/>
-    <Option Name="WTRivieraExportSim" Val="38"/>
-    <Option Name="WTActivehdlExportSim" Val="38"/>
+    <Option Name="WTRivieraExportSim" Val="40"/>
+    <Option Name="WTActivehdlExportSim" Val="40"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -207,9 +207,6 @@
         <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip/blockone_processing_system7_0_1/blockone_processing_system7_0_1.xci">
           <Proxy FileSetName="blockone_processing_system7_0_1"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip/blockone_util_vector_logic_0_0/blockone_util_vector_logic_0_0.xci">
-          <Proxy FileSetName="blockone_util_vector_logic_0_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip/blockone_videomodule_0_0/blockone_videomodule_0_0.xci">
           <Proxy FileSetName="blockone_videomodule_0_0"/>
         </CompFileExtendedInfo>
@@ -326,12 +323,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="blockone_util_vector_logic_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_util_vector_logic_0_0" RelGenDir="$PGENDIR/blockone_util_vector_logic_0_0">
-      <Config>
-        <Option Name="TopModule" Val="blockone_util_vector_logic_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
   </FileSets>
   <Simulators>
     <Simulator Name="XSim">
@@ -407,18 +398,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="blockone_processing_system7_0_1_synth_1" Type="Ft3:Synth" SrcSet="blockone_processing_system7_0_1" Part="xc7z020clg484-1" ConstrsSet="blockone_processing_system7_0_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_processing_system7_0_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2024">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2024"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_util_vector_logic_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_util_vector_logic_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_util_vector_logic_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_util_vector_logic_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_util_vector_logic_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_util_vector_logic_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2024">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -521,25 +500,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="blockone_processing_system7_0_1_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_processing_system7_0_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_processing_system7_0_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2024">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2024"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_util_vector_logic_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_util_vector_logic_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_util_vector_logic_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_util_vector_logic_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_util_vector_logic_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2024">
           <Desc>Default settings for Implementation.</Desc>
