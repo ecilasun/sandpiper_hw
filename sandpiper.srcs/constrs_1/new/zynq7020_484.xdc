@@ -1,3 +1,6 @@
+## Audio clock @44.100KHz (/512 of clkaudio at 22591KHz)
+## create_generated_clock -name audiosampleclock -source [get_pins blockone_i/audiomodule_0/inst/audiocoreInst/audiosampleclk] -divide_by 512 -add -master_clock [get_clocks -of_objects [get_pins blockone_i/clk_wiz_0/inst/mmcm_adv_inst/CLKOUT0]]
+
 set_property -dict {PACKAGE_PIN N22 IOSTANDARD TMDS_33} [get_ports HDMI_CLK_p_0]
 set_property -dict {PACKAGE_PIN P22 IOSTANDARD TMDS_33} [get_ports HDMI_CLK_n_0]
 set_property -dict {PACKAGE_PIN M21 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_p_0[0]}]

@@ -28,7 +28,7 @@ pagesize -pg 1 -db -bbox -sgen 0 0 1060 250
    "Addressing View_TopLeft":"-400,-303",
    "Default View_Layers":"/processing_system7_0_FCLK_CLK0:true|/proc_sys_reset_0_interconnect_aresetn:true|/proc_sys_reset_0_peripheral_aresetn:true|/processing_system7_0_FCLK_RESET0_N:true|",
    "Default View_ScaleFactor":"0.881324",
-   "Default View_TopLeft":"8,-69",
+   "Default View_TopLeft":"8,-70",
    "Display-PortTypeClock":"true",
    "Display-PortTypeReset":"true",
    "ExpandedHierarchyInLayout":"",
@@ -52,19 +52,19 @@ preplace inst clk_wiz_0 -pg 1 -lvl 2 -x 540 -y 710 -defaultsOSRD
 preplace inst gmii_to_rgmii_0 -pg 1 -lvl 5 -x 1770 -y 300 -defaultsOSRD
 preplace inst processing_system7_0 -pg 1 -lvl 4 -x 1330 -y 230 -defaultsOSRD
 preplace inst util_vector_logic_0 -pg 1 -lvl 4 -x 1330 -y 500 -defaultsOSRD
-preplace netloc Net 1 0 5 20 530 380 530 700 580 1100 570 1570
+preplace netloc Net 1 0 5 20 530 370 530 700 580 1080 570 1590
 preplace netloc audiomodule_0_audioSampleOutputLR 1 3 1 1050 510n
 preplace netloc audiomodule_0_audiosampleclk 1 3 1 1060 490n
-preplace netloc clk_wiz_0_audioclk 1 2 1 680 500n
+preplace netloc clk_wiz_0_audioclk 1 2 1 690 500n
 preplace netloc clk_wiz_0_pixelclk 1 2 2 N 700 NJ
 preplace netloc clk_wiz_0_serdesclk 1 2 2 N 720 NJ
-preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 390 470n
+preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 380 470n
 preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 3 370 800 710 760 NJ
 preplace netloc proc_sys_reset_0_peripheral_reset 1 1 1 N 700
-preplace netloc processing_system7_0_FCLK_CLK1 1 4 1 1640 340n
-preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 410 600 NJ 600 NJ 600 1560
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 30 600 400J 610 NJ 610 1090 560 1550
-preplace netloc util_vector_logic_0_Res 1 4 1 1630 300n
+preplace netloc processing_system7_0_FCLK_CLK1 1 4 1 1630 340n
+preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 400 600 NJ 600 NJ 600 1580
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 30 600 390J 610 NJ 610 1070 560 1570
+preplace netloc util_vector_logic_0_Res 1 4 1 1620 300n
 preplace netloc videomodule_0_HDMI_CLK_n 1 4 2 NJ 720 NJ
 preplace netloc videomodule_0_HDMI_CLK_p 1 4 2 NJ 700 NJ
 preplace netloc videomodule_0_HDMI_TMDS_n 1 4 2 NJ 760 NJ
@@ -73,15 +73,15 @@ preplace netloc audiomodule_0_m_axi 1 3 1 1050 220n
 preplace netloc gmii_to_rgmii_0_MDIO_PHY 1 5 1 NJ 200
 preplace netloc gmii_to_rgmii_0_RGMII 1 5 1 NJ 220
 preplace netloc processing_system7_0_DDR 1 4 2 NJ 120 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 4 2 1570J 130 1910J
-preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1600 60n
+preplace netloc processing_system7_0_FIXED_IO 1 4 2 1590J 130 1920J
+preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1620 60n
 preplace netloc processing_system7_0_GPIO_0 1 4 2 NJ 100 NJ
-preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1590 80n
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 410 590 NJ 590 NJ 590 1580
-preplace netloc processing_system7_0_UART_0 1 4 2 1580J 140 1900J
-preplace netloc smartconnect_0_M00_AXI 1 2 2 670 660 NJ
+preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1610 80n
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 400 590 NJ 590 NJ 590 1600
+preplace netloc processing_system7_0_UART_0 1 4 2 1600J 140 1910J
+preplace netloc smartconnect_0_M00_AXI 1 2 2 680 660 NJ
 preplace netloc smartconnect_0_M01_AXI 1 2 1 N 460
-preplace netloc videomodule_0_m_axi 1 3 2 1110 580 1550
+preplace netloc videomodule_0_m_axi 1 3 2 1090 580 1570
 levelinfo -pg 1 0 200 540 880 1330 1770 1940
 pagesize -pg 1 -db -bbox -sgen 0 0 2140 840
 "

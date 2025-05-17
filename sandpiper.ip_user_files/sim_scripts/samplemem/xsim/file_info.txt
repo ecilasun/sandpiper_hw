@@ -1,0 +1,2 @@
+samplemem.v,verilog,xil_defaultlib,../../../../sandpiper.gen/sources_1/ip/samplemem/sim/samplemem.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v

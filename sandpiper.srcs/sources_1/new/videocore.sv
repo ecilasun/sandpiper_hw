@@ -431,10 +431,10 @@ always_ff @(posedge aclk) begin
 					// Upper 4 bits contain whole burst count (i.e. N * 4'hF)
 					// Lower 4 bits contain partial burst length
 					unique case (vpufifodout[2:1])
-						2'b00: burstmask <= 10'b0000000111; // 320*240 8bpp, 40x burst 3*128
-						2'b01: burstmask <= 10'b0000011111; // 640*480 8bpp, 80x burst 5*128
-						2'b10: burstmask <= 10'b0000011111; // 320*240 16bpp, 80x burst 5*128
-						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 160x burst 10*128
+						2'b00: burstmask <= 10'b0000000111; // 320*240 8bpp, 3*128
+						2'b01: burstmask <= 10'b0000011111; // 640*480 8bpp, 5*128
+						2'b10: burstmask <= 10'b0000011111; // 320*240 16bpp, 5*128
+						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 10*128
 					endcase
 
 					// Advance FIFO

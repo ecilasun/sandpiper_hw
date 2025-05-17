@@ -53,9 +53,9 @@
 //  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 //   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 //----------------------------------------------------------------------------
-// audioclk__22.59887______0.000______50.0______178.913_____98.575
-// pixelclk__25.00000______0.000______50.0______175.402_____98.575
-// serdesclk__125.00000______0.000______50.0______125.247_____98.575
+// audioclk__22.58065______0.000______50.0______185.348____106.803
+// pixelclk__25.00000______0.000______50.0______181.660____106.803
+// serdesclk__125.00000______0.000______50.0______130.483____106.803
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -127,18 +127,18 @@ wire clk_in2_blockone_clk_wiz_0_0;
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT_F      (10.000),
+    .CLKFBOUT_MULT_F      (8.750),
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (44.250),
+    .CLKOUT0_DIVIDE_F     (38.750),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKOUT1_DIVIDE       (40),
+    .CLKOUT1_DIVIDE       (35),
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
-    .CLKOUT2_DIVIDE       (8),
+    .CLKOUT2_DIVIDE       (7),
     .CLKOUT2_PHASE        (0.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
     .CLKOUT2_USE_FINE_PS  ("FALSE"),

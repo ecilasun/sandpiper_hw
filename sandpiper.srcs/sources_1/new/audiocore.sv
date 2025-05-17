@@ -3,7 +3,7 @@
 module audiocore(
 	input wire aclk,
 	input wire aresetn,
-    input wire audioclock,				// 22.591MHz master clock
+    input wire audioclock,				// 22.579200MHz master clock (/512 is ~44.1 KHz)
 
 	// Command fifo
 	output wire m_axi_arready,
@@ -164,7 +164,7 @@ always @(posedge audioclock) begin
 		asampleclk <= 1'b0;
 	end else begin
 		count <= count + 9'd1;
-		asampleclk <= count[8];
+		asampleclk <= count[8]; // /512
 	end
 end
 
@@ -186,9 +186,7 @@ typedef enum bit [3:0] {
 apucmdmodetype cmdmode = INIT;
 
 bit [3:0] apucmd;			// Command code
-bit [3:0] apuburstcount;	// Number of 128 byte DMA bursts
-bit [3:0] burstsleft;		// Counter
-bit [9:0] apuwordcount;		// Number of words to playback, minus one
+bit [8:0] apuwordcount;		// Number of words to play back
 bit [31:0] apusourceaddr;	// Memory address to DMA the audio samples from
 
 // Buffer address high bit to control DMA write page
@@ -202,12 +200,12 @@ bit samplewe;
 bit samplere;
 bit [1:0] readLowbits;
 bit [7:0] writeCursor;
-bit [9:0] readCursor;
+bit [8:0] readCursor;
 bit [63:0] sampleIn;
-wire [31:0] sampleOut;
+wire [31:0] sampleOut; // Each sample is a stereo pair
 
 wire [8:0] inaddr = {writeBufferSelect, writeCursor};
-wire [10:0] outaddr = {~writeBufferSelect, readCursor};
+wire [9:0] outaddr = {~writeBufferSelect, readCursor};
 
 // Internal L/R copies to stream out
 bit [31:0] tx_data_lr;
@@ -269,16 +267,19 @@ assign s_axi_wstrb = 16'h0000;
 assign s_axi_wlast = 0;
 assign s_axi_bready = 0;
 
+logic [15:0] burstmask;
+logic [15:0] burststate;
+
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		re <= 1'b0;
 		samplewe <= 1'b0;
 		writeCursor <= 8'd0;
 		sampleoutputrateselector <= 4'b0000;
-		apuwordcount <= 10'd1023;
-		apuburstcount <= 4'd0;
-		burstsleft <= 4'd0;
+		apuwordcount <= 9'd0;
 		apucmd <= 4'd0;
+		burstmask <= 16'h0000;
+		burststate <= 16'h0000;
 		cmdmode <= INIT;
 	end else begin
 		re <= 1'b0;
@@ -314,19 +315,26 @@ always_ff @(posedge aclk) begin
 
 			APUSTART: begin
 				if (apufifovalid && ~apufifoempty) begin
-					burstsleft <= apuburstcount;
 					apusourceaddr <= apufifodout;
 					// Advance FIFO
 					re <= 1'b1;
 					writeCursor <= 8'h00;
+					burststate <= burstmask;
 					cmdmode <= STARTDMA;
 				end
 			end
 
 			APUBUFFERSIZE: begin
 				if (apufifovalid && ~apufifoempty) begin
-					apuwordcount <= apufifodout[9:0];	// Number of buffered words minus one, bytecount/4-1 (0..1023)
-					apuburstcount <= apufifodout[10:2];	// Number of 128 byte bursts, burstcount = bytecount/128
+
+					// Set number of 16byte bursts for each word count (each word is a single stereo pair)
+					unique case (apufifodout[1:0])
+						2'b00: begin burstmask <= 16'b0000000000000011; apuwordcount <= 64; end  //  x2,  64 stereo samples (256 bytes)
+						2'b01: begin burstmask <= 16'b0000000000001111; apuwordcount <= 128; end //  x4, 128 stereo samples (512 bytes)
+						2'b10: begin burstmask <= 16'b0000000011111111; apuwordcount <= 256; end //  x8, 256 stereo samples (1 Kbyte)
+						2'b11: begin burstmask <= 16'b1111111111111111; apuwordcount <= 512; end // x16, 512 stereo samples (2 Kbytes)
+					endcase
+
 					// Advance FIFO
 					re <= 1'b1;
 					cmdmode <= FINALIZE;
@@ -335,7 +343,7 @@ always_ff @(posedge aclk) begin
 
 			APUSETRATE: begin
 				if (apufifovalid && ~apufifoempty) begin
-					// 2'b00:x1, 2'b01:x2, 2'b10:x4, 2'b11:quiet
+					// Speed: 2'b00:/1, 2'b01:/2, 2'b10:/4, 2'b11:0 (quiet)
 					unique case(apufifodout[1:0])
 						2'b00: sampleoutputrateselector <= 4'b0100;
 						2'b01: sampleoutputrateselector <= 4'b0010;
@@ -349,10 +357,11 @@ always_ff @(posedge aclk) begin
 			end
 
 			STARTDMA: begin
-				burstsleft <= burstsleft - 4'd1;
-				s_axi_arlen <= 4'hF;
 				s_axi_arvalid <= 1;
 				s_axi_araddr <= apusourceaddr;
+				s_axi_arlen <= 4'hF;
+				// Shift to next burst count
+				burststate <= {1'b0, burststate[15:1]};
 				cmdmode <= WAITREADADDR;
 			end
 
@@ -369,14 +378,21 @@ always_ff @(posedge aclk) begin
 					s_axi_rready <= ~s_axi_rlast;
 					sampleIn <= s_axi_rdata;
 					samplewe <= 1'b1;
-					writeCursor <= writeCursor + 8'd1;
-					cmdmode <= ~s_axi_rlast ? READLOOP : FINALIZE;
+					writeCursor <= writeCursor + 4'd1;
+					cmdmode <= s_axi_rlast ? FINALIZE : READLOOP;
 				end
 			end
 
 			FINALIZE: begin
+				// Are we done?
+				if (burststate[0] == 1'b0) begin
+					cmdmode <= WCMD;
+				end else begin
+					// Next burst
+					cmdmode <= STARTDMA;
+				end
+				// Next 128 bytes
 				apusourceaddr <= apusourceaddr + 32'd128;
-				cmdmode <= burstsleft == 4'd0 ? WCMD : STARTDMA;
 			end
 		endcase
 	end
@@ -389,34 +405,30 @@ end
 always@(posedge audioclock) begin
 	if (~rstaudion) begin
 		tx_data_lr <= 0;
-		readCursor <= 10'd0;
+		readCursor <= 9'd0;
 		readLowbits <= 2'd0;
 		bufferSwap <= 1'd0;
 		writeBufferSelect <= 1'b0;
 		samplere <= 1'b0;
 	end else begin
-
-		samplere <= 1'b0;
-
+		// Next clock is end of 44.1KHz cycle, advance read cursor and prepare to read next sample
 		if (count==9'h0ff) begin
-			// Step cursor based on playback rate
-			{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
-
-			// New sample and read enable control
-			tx_data_lr <= sampleoutputrateselector == 4'd0 ? 32'd0 : sampleOut;
-			samplere <= sampleoutputrateselector == 4'd0 ? 1'b0 : 1'b1;
+			// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
+			{readCursor, readLowbits} <= {readCursor, readLowbits} + {7'd0, sampleoutputrateselector};
 		end
 
 		// Read next pair of stereo samples
 		tx_data_lr <= sampleoutputrateselector == 4'd0 ? 32'd0 : sampleOut;
 		samplere <= sampleoutputrateselector == 4'd0 ? 1'b0 : 1'b1;
 
-		// Increment swap count at end of buffer
+		// Did we reach the last stereo sample?
 		if (readCursor == apuwordcount) begin
-			// Switch playback buffer and also swap CPU side r/w page ID
+			// Switch playback buffers
 			bufferSwap <= ~bufferSwap;
+			// Swap CPU side r/w page ID
 			writeBufferSelect <= ~writeBufferSelect;
-			readCursor <= 10'd0;
+			// Rewind read cursor (final read address is pageindex:readcursor)
+			readCursor <= 9'd0;
 			readLowbits <= 2'd0;
 		end
 	end

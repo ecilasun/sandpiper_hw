@@ -145,7 +145,6 @@ always @(posedge aclk) begin
 
 		unique case (raddrstate)
 			2'b00: begin
-				m_axi_rlast <= 1'b1;
 				m_axi_arready <= 1'b0;
 				m_axi_rvalid <= 1'b0;
 				raddrstate <= 2'b01;
@@ -160,6 +159,7 @@ always @(posedge aclk) begin
 				if (m_axi_rready) begin
 					m_axi_rdata <= {devicestate, devicestate};
 					m_axi_rvalid <= 1'b1;
+					m_axi_rlast <= 1'b1;
 					raddrstate <= 2'b01;
 				end
 			end

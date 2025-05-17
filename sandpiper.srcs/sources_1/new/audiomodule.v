@@ -5,7 +5,7 @@ module audiomodule(
 	input wire audioclock,
 	input wire aresetn,
 
-	output wire audiosampleclk,				// Audio clock
+	output wire audiosampleclk,				// Audio clock (44.1KHz)
     output wire [31:0] audioSampleOutputLR,	// Stream out
 
 	output wire s_axi_arready,

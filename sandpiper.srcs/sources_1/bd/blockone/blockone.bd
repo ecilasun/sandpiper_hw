@@ -1151,7 +1151,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "22598870",
+                "value": "22580645",
                 "value_src": "ip_prop"
               },
               "PHASE": {
@@ -1976,19 +1976,19 @@
             "value": "100.0"
           },
           "CLKOUT1_JITTER": {
-            "value": "178.913"
+            "value": "185.348"
           },
           "CLKOUT1_PHASE_ERROR": {
-            "value": "98.575"
+            "value": "106.803"
           },
           "CLKOUT1_REQUESTED_OUT_FREQ": {
-            "value": "22.591"
+            "value": "22.579200"
           },
           "CLKOUT2_JITTER": {
-            "value": "175.402"
+            "value": "181.660"
           },
           "CLKOUT2_PHASE_ERROR": {
-            "value": "98.575"
+            "value": "106.803"
           },
           "CLKOUT2_REQUESTED_OUT_FREQ": {
             "value": "25"
@@ -1997,10 +1997,10 @@
             "value": "true"
           },
           "CLKOUT3_JITTER": {
-            "value": "125.247"
+            "value": "130.483"
           },
           "CLKOUT3_PHASE_ERROR": {
-            "value": "98.575"
+            "value": "106.803"
           },
           "CLKOUT3_REQUESTED_OUT_FREQ": {
             "value": "125"
@@ -2018,7 +2018,7 @@
             "value": "serdesclk"
           },
           "MMCM_CLKFBOUT_MULT_F": {
-            "value": "10.000"
+            "value": "8.750"
           },
           "MMCM_CLKIN1_PERIOD": {
             "value": "10.000"
@@ -2027,13 +2027,13 @@
             "value": "10.000"
           },
           "MMCM_CLKOUT0_DIVIDE_F": {
-            "value": "44.250"
+            "value": "38.750"
           },
           "MMCM_CLKOUT1_DIVIDE": {
-            "value": "40"
+            "value": "35"
           },
           "MMCM_CLKOUT2_DIVIDE": {
-            "value": "8"
+            "value": "7"
           },
           "MMCM_DIVCLK_DIVIDE": {
             "value": "1"
@@ -3102,8 +3102,8 @@
           "processing_system7_0/S_AXI_HP1_ACLK",
           "proc_sys_reset_0/slowest_sync_clk",
           "smartconnect_0/aclk",
-          "audiomodule_0/aclk",
-          "videomodule_0/aclk"
+          "videomodule_0/aclk",
+          "audiomodule_0/aclk"
         ]
       },
       "audiomodule_0_audioSampleOutputLR": {
@@ -3145,8 +3145,8 @@
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
-          "audiomodule_0/aresetn",
-          "videomodule_0/aresetn"
+          "videomodule_0/aresetn",
+          "audiomodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
