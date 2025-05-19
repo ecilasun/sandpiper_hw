@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2024.2.2 (win64) Build 6060944 Thu Mar 06 19:10:01 MST 2025
-//Date        : Sat May 17 11:32:06 2025
+//Date        : Mon May 19 01:39:58 2025
 //Host        : fastturtle running 64-bit major release  (build 9200)
 //Command     : generate_target blockone.bd
 //Design      : blockone
@@ -175,6 +175,7 @@ module blockone
   wire [7:0]audiomodule_0_m_axi_WSTRB;
   wire audiomodule_0_m_axi_WVALID;
   wire clk_wiz_0_audioclk;
+  wire clk_wiz_0_locked;
   wire clk_wiz_0_pixelclk;
   wire clk_wiz_0_serdesclk;
   wire [0:0]proc_sys_reset_0_interconnect_aresetn;
@@ -343,7 +344,7 @@ module blockone
 
   blockone_audiomodule_0_0 audiomodule_0
        (.aclk(Net),
-        .aresetn(proc_sys_reset_0_peripheral_aresetn),
+        .aresetn(clk_wiz_0_locked),
         .audioSampleOutputLR(audiomodule_0_audioSampleOutputLR),
         .audioclock(clk_wiz_0_audioclk),
         .audiosampleclk(audiomodule_0_audiosampleclk),
@@ -424,6 +425,7 @@ module blockone
   blockone_clk_wiz_0_0 clk_wiz_0
        (.audioclk(clk_wiz_0_audioclk),
         .clk_in1(processing_system7_0_FCLK_CLK2),
+        .locked(clk_wiz_0_locked),
         .pixelclk(clk_wiz_0_pixelclk),
         .reset(proc_sys_reset_0_peripheral_reset),
         .serdesclk(clk_wiz_0_serdesclk));

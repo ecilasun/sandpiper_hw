@@ -1,5 +1,4 @@
 verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" \
-"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/sim/bd_4389.v" \
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_0/sim/bd_4389_one_0.v" \
 
 sv xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" \
@@ -33,6 +32,7 @@ sv xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/ip/ip_29/sim/bd_4389_m01e_0.sv" \
 
 verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/include" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/f0b6/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/0127/hdl/verilog" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/ec67/hdl" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/3cbc" --include "../../../../sandpiper.gen/sources_1/bd/blockone/ipshared/8391/hdl" \
+"../../../bd/blockone/ip/blockone_smartconnect_0_0/bd_0/sim/bd_4389.v" \
 "../../../bd/blockone/ip/blockone_smartconnect_0_0/sim/blockone_smartconnect_0_0.v" \
 "../../../bd/blockone/ip/blockone_audiomodule_0_0/sim/blockone_audiomodule_0_0.v" \
 "../../../bd/blockone/ip/blockone_videomodule_0_0/sim/blockone_videomodule_0_0.v" \

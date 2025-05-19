@@ -256,10 +256,10 @@ logic [3:0] pixelscanaddr;
 
 always_comb begin
 	unique case ({scanwidth, colormode})
-		2'b00: begin pixelscanaddr = video_x[4:1];			scanlinera = {2'b0, video_x[9:4]}; end	// 320*240 8bpp, /8, 40x burst
-		2'b01: begin pixelscanaddr = {1'b0,video_x[3:1]};	scanlinera = {1'b0, video_x[9:3]}; end	// 320*240 16bpp /4, 80x burst
-		2'b10: begin pixelscanaddr = video_x[3:0];			scanlinera = {1'b0, video_x[9:3]}; end	// 640*480 8bpp  /4, 80x burst
-		2'b11: begin pixelscanaddr = {1'b0,video_x[2:0]};	scanlinera = video_x[9:2]; end			// 640*480 16bpp /2, 160x burst
+		2'b00: begin pixelscanaddr = video_x[4:1];			scanlinera = {2'b0, video_x[9:4]}; end	// 320*240 8bpp,  5x64byte blocks, index = 1*(x/2)/8
+		2'b01: begin pixelscanaddr = {1'b0,video_x[3:1]};	scanlinera = {1'b0, video_x[9:3]}; end	// 320*240 16bpp 10x64byte blocks, index = 2*(x/2)/8
+		2'b10: begin pixelscanaddr = video_x[3:0];			scanlinera = {1'b0, video_x[9:3]}; end	// 640*480 8bpp  10x64byte blocks, index = 1*(x/1)/8
+		2'b11: begin pixelscanaddr = {1'b0,video_x[2:0]};	scanlinera = video_x[9:2]; end			// 640*480 16bpp 20x64byte blocks, index = 2*(x/1)/8
 	endcase
 end
 
@@ -505,6 +505,9 @@ always_ff @(posedge aclk) begin
 	end
 end
 
+wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
+wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
+
 // {0,scanline[9:0],vsynctoggle[0:0]}
 assign vpustate = {21'd0, scanline, blanktoggle};
 
@@ -554,10 +557,10 @@ always_ff @(posedge aclk) begin
 				// Only read on odd lines in 320-wide, or every other line in 640-wide mode
 				// The trick here: we'll initially hit odd-even-even-odd sequence which means
 				// the cache line we loaded on line 523 will only reload on line 1 after it's been displayed twice in 320 mode
-				if ((scanpixel == 512) && (scanline[0] || scanwidth)) begin
+				if (endofline && (scanline[0] || scanwidth)) begin
 					rdata_cnt <= 8'd0;
 					burststate <= burstmask;
-					scanstate <= scanline == 10'd479 ? DETECTFRAMESTART : STARTSCANOUT;
+					scanstate <= endofframe ? DETECTFRAMESTART : STARTSCANOUT;
 				end else begin
 					scanstate <= STARTLOAD;
 				end
