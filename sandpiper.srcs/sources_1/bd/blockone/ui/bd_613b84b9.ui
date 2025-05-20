@@ -27,64 +27,63 @@ pagesize -pg 1 -db -bbox -sgen 0 0 1060 250
    "Addressing View_ScaleFactor":"1.0",
    "Addressing View_TopLeft":"-400,-303",
    "Default View_Layers":"/processing_system7_0_FCLK_CLK0:true|/proc_sys_reset_0_interconnect_aresetn:true|/proc_sys_reset_0_peripheral_aresetn:true|/processing_system7_0_FCLK_RESET0_N:true|",
-   "Default View_ScaleFactor":"0.835938",
-   "Default View_TopLeft":"-53,4",
+   "Default View_ScaleFactor":"0.881324",
+   "Default View_TopLeft":"8,-68",
    "Display-PortTypeClock":"true",
    "Display-PortTypeReset":"true",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
 #  -string -flagsOSRD
-preplace port MDIO_PHY_0 -pg 1 -lvl 6 -x 1970 -y 200 -defaultsOSRD
-preplace port RGMII_0 -pg 1 -lvl 6 -x 1970 -y 220 -defaultsOSRD
-preplace port DDR -pg 1 -lvl 6 -x 1970 -y 120 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -lvl 6 -x 1970 -y 140 -defaultsOSRD
-preplace port GPIO_0_0 -pg 1 -lvl 6 -x 1970 -y 100 -defaultsOSRD
-preplace port UART_0_0 -pg 1 -lvl 6 -x 1970 -y 460 -defaultsOSRD
-preplace port port-id_HDMI_CLK_p_0 -pg 1 -lvl 6 -x 1970 -y 890 -defaultsOSRD
-preplace port port-id_HDMI_CLK_n_0 -pg 1 -lvl 6 -x 1970 -y 910 -defaultsOSRD
-preplace portBus HDMI_TMDS_p_0 -pg 1 -lvl 6 -x 1970 -y 930 -defaultsOSRD
-preplace portBus HDMI_TMDS_n_0 -pg 1 -lvl 6 -x 1970 -y 950 -defaultsOSRD
-preplace inst proc_sys_reset_0 -pg 1 -lvl 1 -x 200 -y 860 -defaultsOSRD
-preplace inst smartconnect_0 -pg 1 -lvl 2 -x 540 -y 860 -defaultsOSRD
-preplace inst audiomodule_0 -pg 1 -lvl 3 -x 890 -y 690 -defaultsOSRD
-preplace inst videomodule_0 -pg 1 -lvl 4 -x 1370 -y 910 -defaultsOSRD
-preplace inst clk_wiz_0 -pg 1 -lvl 2 -x 540 -y 690 -defaultsOSRD
-preplace inst gmii_to_rgmii_0 -pg 1 -lvl 5 -x 1800 -y 300 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 4 -x 1370 -y 230 -defaultsOSRD
-preplace inst util_vector_logic_0 -pg 1 -lvl 4 -x 1370 -y 500 -defaultsOSRD
-preplace netloc Net 1 0 5 30 960 390 600 690 580 1130 590 1610
-preplace netloc audiomodule_0_audioSampleOutputLR 1 3 1 1060 710n
-preplace netloc audiomodule_0_audiosampleclk 1 3 1 1070 690n
-preplace netloc clk_wiz_0_audioclk 1 2 1 710 660n
-preplace netloc clk_wiz_0_locked 1 2 1 N 720
-preplace netloc clk_wiz_0_pixelclk 1 2 2 670 590 1100J
-preplace netloc clk_wiz_0_serdesclk 1 2 2 700 600 1080J
-preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 N 880
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 3 370 950 NJ 950 NJ
-preplace netloc proc_sys_reset_0_peripheral_reset 1 1 1 370 680n
-preplace netloc processing_system7_0_FCLK_CLK1 1 4 1 1670 340n
-preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 400 550 NJ 550 1100J 570 1600
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 20 540 NJ 540 NJ 540 1140 580 1590
-preplace netloc util_vector_logic_0_Res 1 4 1 1660 300n
-preplace netloc videomodule_0_HDMI_CLK_n 1 4 2 NJ 910 NJ
-preplace netloc videomodule_0_HDMI_CLK_p 1 4 2 NJ 890 NJ
-preplace netloc videomodule_0_HDMI_TMDS_n 1 4 2 NJ 950 NJ
-preplace netloc videomodule_0_HDMI_TMDS_p 1 4 2 NJ 930 NJ
-preplace netloc audiomodule_0_m_axi 1 3 1 1090 220n
+preplace port MDIO_PHY_0 -pg 1 -lvl 6 -x 1940 -y 200 -defaultsOSRD
+preplace port RGMII_0 -pg 1 -lvl 6 -x 1940 -y 220 -defaultsOSRD
+preplace port DDR -pg 1 -lvl 6 -x 1940 -y 120 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -lvl 6 -x 1940 -y 140 -defaultsOSRD
+preplace port GPIO_0_0 -pg 1 -lvl 6 -x 1940 -y 100 -defaultsOSRD
+preplace port UART_0_0 -pg 1 -lvl 6 -x 1940 -y 460 -defaultsOSRD
+preplace port port-id_HDMI_CLK_p_0 -pg 1 -lvl 6 -x 1940 -y 700 -defaultsOSRD
+preplace port port-id_HDMI_CLK_n_0 -pg 1 -lvl 6 -x 1940 -y 720 -defaultsOSRD
+preplace portBus HDMI_TMDS_p_0 -pg 1 -lvl 6 -x 1940 -y 740 -defaultsOSRD
+preplace portBus HDMI_TMDS_n_0 -pg 1 -lvl 6 -x 1940 -y 760 -defaultsOSRD
+preplace inst proc_sys_reset_0 -pg 1 -lvl 1 -x 200 -y 700 -defaultsOSRD
+preplace inst smartconnect_0 -pg 1 -lvl 2 -x 540 -y 450 -defaultsOSRD
+preplace inst audiomodule_0 -pg 1 -lvl 3 -x 880 -y 490 -defaultsOSRD
+preplace inst videomodule_0 -pg 1 -lvl 4 -x 1330 -y 720 -defaultsOSRD
+preplace inst clk_wiz_0 -pg 1 -lvl 2 -x 540 -y 710 -defaultsOSRD
+preplace inst gmii_to_rgmii_0 -pg 1 -lvl 5 -x 1770 -y 300 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 4 -x 1330 -y 230 -defaultsOSRD
+preplace inst util_vector_logic_0 -pg 1 -lvl 4 -x 1330 -y 500 -defaultsOSRD
+preplace netloc Net 1 0 5 20 530 370 530 700 580 1080 570 1590
+preplace netloc audiomodule_0_audioSampleOutputLR 1 3 1 1050 510n
+preplace netloc audiomodule_0_audiosampleclk 1 3 1 1060 490n
+preplace netloc clk_wiz_0_audioclk 1 2 1 690 500n
+preplace netloc clk_wiz_0_pixelclk 1 2 2 N 700 NJ
+preplace netloc clk_wiz_0_serdesclk 1 2 2 N 720 NJ
+preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 380 470n
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 3 370 800 710 760 NJ
+preplace netloc proc_sys_reset_0_peripheral_reset 1 1 1 N 700
+preplace netloc processing_system7_0_FCLK_CLK1 1 4 1 1630 340n
+preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 400 600 NJ 600 NJ 600 1580
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 30 600 390J 610 NJ 610 1070 560 1570
+preplace netloc util_vector_logic_0_Res 1 4 1 1620 300n
+preplace netloc videomodule_0_HDMI_CLK_n 1 4 2 NJ 720 NJ
+preplace netloc videomodule_0_HDMI_CLK_p 1 4 2 NJ 700 NJ
+preplace netloc videomodule_0_HDMI_TMDS_n 1 4 2 NJ 760 NJ
+preplace netloc videomodule_0_HDMI_TMDS_p 1 4 2 NJ 740 NJ
+preplace netloc audiomodule_0_m_axi 1 3 1 1050 220n
 preplace netloc gmii_to_rgmii_0_MDIO_PHY 1 5 1 NJ 200
 preplace netloc gmii_to_rgmii_0_RGMII 1 5 1 NJ 220
 preplace netloc processing_system7_0_DDR 1 4 2 NJ 120 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 4 2 1610J 130 1940J
-preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1640 60n
+preplace netloc processing_system7_0_FIXED_IO 1 4 2 1590J 130 1920J
+preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1620 60n
 preplace netloc processing_system7_0_GPIO_0 1 4 2 NJ 100 NJ
-preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1630 80n
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 410 560 NJ 560 NJ 560 1620
-preplace netloc processing_system7_0_UART_0 1 4 2 1620J 140 1930J
-preplace netloc smartconnect_0_M00_AXI 1 2 2 N 850 NJ
-preplace netloc smartconnect_0_M01_AXI 1 2 1 720 660n
-preplace netloc videomodule_0_m_axi 1 3 2 1150 600 1590
-levelinfo -pg 1 0 200 540 890 1370 1800 1970
-pagesize -pg 1 -db -bbox -sgen 0 0 2170 1030
+preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1610 80n
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 400 590 NJ 590 NJ 590 1600
+preplace netloc processing_system7_0_UART_0 1 4 2 1600J 140 1910J
+preplace netloc smartconnect_0_M00_AXI 1 2 2 680 660 NJ
+preplace netloc smartconnect_0_M01_AXI 1 2 1 N 460
+preplace netloc videomodule_0_m_axi 1 3 2 1090 580 1570
+levelinfo -pg 1 0 200 540 880 1330 1770 1940
+pagesize -pg 1 -db -bbox -sgen 0 0 2140 840
 "
 }
 {

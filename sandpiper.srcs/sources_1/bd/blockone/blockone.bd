@@ -488,7 +488,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "ID_WIDTH": {
@@ -807,7 +807,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "ID_WIDTH": {
@@ -1138,7 +1138,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "CLK_DOMAIN": {
@@ -1218,7 +1218,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "ID_WIDTH": {
@@ -1537,7 +1537,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "ID_WIDTH": {
@@ -1864,7 +1864,7 @@
                 "value_src": "constant"
               },
               "FREQ_HZ": {
-                "value": "166666672",
+                "value": "1.66667e+08",
                 "value_src": "user_prop"
               },
               "CLK_DOMAIN": {
@@ -3127,12 +3127,6 @@
           "audiomodule_0/audioclock"
         ]
       },
-      "clk_wiz_0_locked": {
-        "ports": [
-          "clk_wiz_0/locked",
-          "audiomodule_0/aresetn"
-        ]
-      },
       "clk_wiz_0_pixelclk": {
         "ports": [
           "clk_wiz_0/pixelclk",
@@ -3154,7 +3148,8 @@
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
-          "videomodule_0/aresetn"
+          "videomodule_0/aresetn",
+          "audiomodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {

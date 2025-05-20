@@ -95,11 +95,9 @@ module audiocore(
 
 (* async_reg = "true" *) logic rstaudion;
 (* async_reg = "true" *) logic aresetnA;
-(* async_reg = "true" *) logic aresetnB;
 always @(posedge audioclock) begin
 	aresetnA <= aresetn;
-	aresetnB <= aresetnA;
-	rstaudion <= aresetnB;
+	rstaudion <= aresetnA;
 end
 
 // --------------------------------------------------
@@ -155,7 +153,7 @@ commandqueue apucommandinterface(
 // Clock divider
 // ------------------------------------------------------------------------------------
 
-// Counter for generating audio clock
+// Counter for generating other divided clocks
 bit [8:0] count;
 bit counterenabled;
 
@@ -318,27 +316,17 @@ always_ff @(posedge aclk) begin
 				endcase
 			end
 
-			APUSTART: begin
-				if (apufifovalid && ~apufifoempty) begin
-					apusourceaddr <= apufifodout;
-					// Advance FIFO
-					re <= 1'b1;
-					writeCursor <= 9'd0;
-					burststate <= burstmask;
-					cmdmode <= STARTDMA;
-				end
-			end
-
 			APUBUFFERSIZE: begin
 				if (apufifovalid && ~apufifoempty) begin
 
 					// Set number of 16byte bursts for each word count (each word is a single stereo pair)
 					unique case (apufifodout[2:0])
-						3'b000:  begin burstmask <= 32'b00000000000000000000000000000011; apuwordcount <= 64;   end //  x2,  64 stereo samples (256 bytes)
-						3'b001:  begin burstmask <= 32'b00000000000000000000000000001111; apuwordcount <= 128;  end //  x4, 128 stereo samples (512 bytes)
-						3'b010:  begin burstmask <= 32'b00000000000000000000000011111111; apuwordcount <= 256;  end //  x8, 256 stereo samples (1 Kbyte)
-						3'b011:  begin burstmask <= 32'b00000000000000001111111111111111; apuwordcount <= 512;  end // x16, 512 stereo samples (2 Kbytes)
-						default: begin burstmask <= 32'b11111111111111111111111111111111; apuwordcount <= 1024; end // x32, 1024 stereo samples (4 Kbytes)
+						3'b000: begin burstmask <= 32'b00000000000000000000000000000011; apuwordcount <= 64;   end	//  x2,  64 stereo samples (256 bytes)
+						3'b001: begin burstmask <= 32'b00000000000000000000000000001111; apuwordcount <= 128;  end	//  x4, 128 stereo samples (512 bytes)
+						3'b010: begin burstmask <= 32'b00000000000000000000000011111111; apuwordcount <= 256;  end	//  x8, 256 stereo samples (1 Kbyte)
+						3'b011: begin burstmask <= 32'b00000000000000001111111111111111; apuwordcount <= 512;  end	// x16, 512 stereo samples (2 Kbytes)
+						3'b100: begin burstmask <= 32'b11111111111111111111111111111111; apuwordcount <= 1024; end	// x32, 1024 stereo samples (4 Kbytes)
+						default:begin burstmask <= 32'b00000000000000000000000000000001; apuwordcount <= 32;   end 	// (x1, 32 stereo samples (128 bytes)
 					endcase
 
 					// Advance FIFO
@@ -356,9 +344,21 @@ always_ff @(posedge aclk) begin
 						2'b10: sampleoutputrateselector <= 4'b0001;
 						2'b11: sampleoutputrateselector <= 4'b0000;
 					endcase
+
 					// Advance FIFO
 					re <= 1'b1;
 					cmdmode <= FINALIZE;
+				end
+			end
+
+			APUSTART: begin
+				if (apufifovalid && ~apufifoempty) begin
+					apusourceaddr <= apufifodout;
+					// Advance FIFO
+					re <= 1'b1;
+					writeCursor <= 9'h1FF;
+					burststate <= burstmask;
+					cmdmode <= STARTDMA;
 				end
 			end
 
@@ -381,14 +381,14 @@ always_ff @(posedge aclk) begin
 
 			READLOOP: begin
 				if (s_axi_rvalid) begin
-					s_axi_rready <= ~s_axi_rlast;
-					sampleIn <= s_axi_rdata;
 					samplewe <= 1'b1;
+					sampleIn <= s_axi_rdata;
 					writeCursor <= writeCursor + 9'd1;
+					s_axi_rready <= ~s_axi_rlast;
 					cmdmode <= s_axi_rlast ? ADVANCEADDRESS : READLOOP;
 				end
 			end
-			
+
 			ADVANCEADDRESS: begin
 				// Are we done?
 				if (burststate[0] == 1'b0) begin
@@ -409,9 +409,10 @@ always_ff @(posedge aclk) begin
 end
 
 // ------------------------------------------------------------------------------------
-// I2S output
+// Audio output
 // ------------------------------------------------------------------------------------
 
+// Next clock is end of 44.1KHz cycle, advance read cursor and prepare to read next sample
 always@(posedge audioclock) begin
 	if (~rstaudion) begin
 		tx_data_lr <= 0;
@@ -420,14 +421,15 @@ always@(posedge audioclock) begin
 		bufferSwap <= 1'd0;
 		writeBufferSelect <= 1'b0;
 		samplere <= 1'b0;
-	end else begin
-		// Next clock is end of 44.1KHz cycle, advance read cursor and prepare to read next sample
+
+	end else begin	
+
 		if (count==9'h0ff) begin
 			// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
 			{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
 		end
 
-		// Read next pair of stereo samples
+		// Next pair of stereo samples
 		tx_data_lr <= sampleoutputrateselector == 4'd0 ? 32'd0 : sampleOut;
 		samplere <= sampleoutputrateselector == 4'd0 ? 1'b0 : 1'b1;
 
