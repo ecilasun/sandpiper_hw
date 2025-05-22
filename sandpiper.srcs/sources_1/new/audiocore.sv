@@ -87,7 +87,7 @@ module audiocore(
 
 	// Output
 	output wire audiosampleclk,			// Audio clock
-    output wire [31:0] tx_sdout );		// Stream out
+    output bit [31:0] tx_sdout );		// Stream out
 
 // ------------------------------------------------------------------------------------
 // Reset CDC
@@ -180,6 +180,7 @@ typedef enum bit [3:0] {
 	INIT,
 	WCMD, DISPATCH,
 	APUSTART,
+	APUSWAPCHANNELS,
 	APUBUFFERSIZE,
 	APUSETRATE,
 	STARTDMA, WAITREADADDR, READLOOP, ADVANCEADDRESS,
@@ -212,7 +213,15 @@ wire [10:0] outaddr = {~writeBufferSelect, readCursor};
 bit [31:0] tx_data_lr;
 bit re;
 assign apufifore = re;
-assign tx_sdout = tx_data_lr;
+
+bit channelSwap;
+always_comb begin : channelSwapBlock
+	if (channelSwap) begin
+		tx_sdout = {tx_data_lr[15:0], tx_data_lr[31:16]};
+	end else begin
+		tx_sdout = tx_data_lr;
+	end
+end
 
 // Internal sample memory
 samplemem samplememinst (
@@ -243,10 +252,11 @@ always_ff @(posedge aclk) begin
 end
 
 // CPU can access this
-assign swapcount = {31'd0, bufferSwapCDC2};
+assign swapcount = {21'd0, apuwordcount, bufferSwapCDC2};
 
-localparam SIZE_8_BYTE   = 3'b011;
-localparam SIZE_16_BYTE  = 3'b100;
+localparam SIZE_4_BYTE   = 3'b010; // 2^2
+localparam SIZE_8_BYTE   = 3'b011; // 2^3
+localparam SIZE_16_BYTE  = 3'b100; // 2^4
 
 localparam BURST_FIXED = 2'b00;
 localparam BURST_INCR  = 2'b01;
@@ -258,6 +268,7 @@ logic [31:0] burststate;
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		re <= 1'b0;
+		channelSwap <= 1'b0;
 		samplewe <= 1'b0;
 		writeCursor <= 9'd0;
 		sampleoutputrateselector <= 4'b0000;
@@ -270,8 +281,8 @@ always_ff @(posedge aclk) begin
 		s_axi_rready <= 0;
 		s_axi_araddr <= 32'd0;
 		s_axi_awlen <= 0;
-		s_axi_awsize <= 0;
-		s_axi_awburst <= 2'b00;
+		s_axi_awsize <= SIZE_4_BYTE;
+		s_axi_awburst <= BURST_FIXED;
 		s_axi_awvalid <= 0;
 		s_axi_awaddr <= 'd0;
 		s_axi_wvalid <= 0;
@@ -309,11 +320,21 @@ always_ff @(posedge aclk) begin
 				case (apucmd)
 					4'h0:		cmdmode <= APUBUFFERSIZE;	// Set up size of DMA copies and playback range, in words
 					4'h1:		cmdmode <= APUSTART;		// Start DMA into write page
-					//4'h2:		cmdmode <= APUSETVOL;		// Spare command, unused
-					//4'h3:		cmdmode <= APUSWAPCHANNELS;	// Spare command, unused
+					//4'h2:		cmdmode <= APUSETVOLUME;	// Set output volume (0-255)
+					4'h3:		cmdmode <= APUSWAPCHANNELS;	// Swap L/R channels
 					4'h4:		cmdmode <= APUSETRATE;		// TODO: Set sample duplication count to x1 (44.1KHz), x2(22.05KHz) or x4(11.025KHz)
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
+			end
+
+			APUSWAPCHANNELS: begin
+				if (apufifovalid && ~apufifoempty) begin
+					// Swap channels: 1=swap, 0=normal
+					channelSwap <= apufifodout[0];
+					// Advance FIFO
+					re <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
 			end
 
 			APUBUFFERSIZE: begin
@@ -321,12 +342,13 @@ always_ff @(posedge aclk) begin
 
 					// Set number of 16byte bursts for each word count (each word is a single stereo pair)
 					unique case (apufifodout[2:0])
-						3'b000: begin burstmask <= 32'b00000000000000000000000000000011; apuwordcount <= 64;   end	//  x2,  64 stereo samples (256 bytes)
-						3'b001: begin burstmask <= 32'b00000000000000000000000000001111; apuwordcount <= 128;  end	//  x4, 128 stereo samples (512 bytes)
-						3'b010: begin burstmask <= 32'b00000000000000000000000011111111; apuwordcount <= 256;  end	//  x8, 256 stereo samples (1 Kbyte)
-						3'b011: begin burstmask <= 32'b00000000000000001111111111111111; apuwordcount <= 512;  end	// x16, 512 stereo samples (2 Kbytes)
-						3'b100: begin burstmask <= 32'b11111111111111111111111111111111; apuwordcount <= 1024; end	// x32, 1024 stereo samples (4 Kbytes)
-						default:begin burstmask <= 32'b00000000000000000000000000000001; apuwordcount <= 32;   end 	// (x1, 32 stereo samples (128 bytes)
+						3'b000: begin burstmask <= 32'b00000000000000000000000000000011; apuwordcount <= 10'h03F;	end	//  x2,   64 stereo samples (256 bytes)
+						3'b001: begin burstmask <= 32'b00000000000000000000000000001111; apuwordcount <= 10'h07F;	end	//  x4,  128 stereo samples (512 bytes)
+						3'b010: begin burstmask <= 32'b00000000000000000000000011111111; apuwordcount <= 10'h0FF;	end	//  x8,  256 stereo samples (1 Kbyte)
+						3'b011: begin burstmask <= 32'b00000000000000001111111111111111; apuwordcount <= 10'h1FF;	end	// x16,  512 stereo samples (2 Kbytes)
+						3'b100: begin burstmask <= 32'b11111111111111111111111111111111; apuwordcount <= 10'h3FF;	end	// x32, 1024 stereo samples (4 Kbytes)
+						3'b101: begin burstmask <= 32'b00000000000000000000000000000001; apuwordcount <= 10'h001;   end //  x1,   32 stereo samples (128 bytes
+						default begin burstmask <= 32'b00000000000000000000000000000000; apuwordcount <= 0;			end // nothing
 					endcase
 
 					// Advance FIFO
@@ -392,7 +414,7 @@ always_ff @(posedge aclk) begin
 			ADVANCEADDRESS: begin
 				// Are we done?
 				if (burststate[0] == 1'b0) begin
-					cmdmode <= WCMD;
+					cmdmode <= FINALIZE;
 				end else begin
 					// Next burst
 					cmdmode <= STARTDMA;
