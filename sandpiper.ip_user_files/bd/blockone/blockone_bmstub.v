@@ -45,7 +45,9 @@ module blockone (
   HDMI_CLK_p_0,
   HDMI_CLK_n_0,
   HDMI_TMDS_p_0,
-  HDMI_TMDS_n_0
+  HDMI_TMDS_n_0,
+  keyboardcolumns,
+  keyboardrows
 );
 
   (* X_INTERFACE_INFO = "xilinx.com:interface:mdio:1.0 MDIO_PHY_0 MDC" *)
@@ -141,6 +143,10 @@ module blockone (
   output [2:0]HDMI_TMDS_p_0;
   (* X_INTERFACE_IGNORE = "true" *)
   output [2:0]HDMI_TMDS_n_0;
+  (* X_INTERFACE_IGNORE = "true" *)
+  output [13:0]keyboardcolumns;
+  (* X_INTERFACE_IGNORE = "true" *)
+  input [4:0]keyboardrows;
 
   // stub module has no contents
 

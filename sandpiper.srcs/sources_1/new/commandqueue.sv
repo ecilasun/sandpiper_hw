@@ -47,7 +47,9 @@ module commandqueue(
 	input wire fifore,
 	output wire fifovalid,
 	// Device state such as bit flags / counters
-    input wire [31:0] devicestate);
+    input wire [31:0] devicestateLow,
+    // Upper device state
+    input wire [31:0] devicestateHigh);
 
 assign m_axi_bresp = 2'b00;
 assign m_axi_rresp = 2'b00;
@@ -152,12 +154,23 @@ always @(posedge aclk) begin
 			2'b01: begin
 				if (m_axi_arvalid) begin
 					m_axi_arready <= 1'b1;
-					raddrstate <= 2'b10;
+					case (m_axi_araddr[3:0])
+						4'b0000: raddrstate <=  2'b10; // =0x_0 low device state
+						default: raddrstate <=  2'b11; // !0x_0 high device state
+					endcase
 				end
 			end
 			2'b10: begin
 				if (m_axi_rready) begin
-					m_axi_rdata <= {devicestate, devicestate};
+					m_axi_rdata <= {devicestateLow, devicestateLow};
+					m_axi_rvalid <= 1'b1;
+					m_axi_rlast <= 1'b1;
+					raddrstate <= 2'b01;
+				end
+			end
+			2'b11: begin
+				if (m_axi_rready) begin
+					m_axi_rdata <= {devicestateHigh, devicestateHigh};
 					m_axi_rvalid <= 1'b1;
 					m_axi_rlast <= 1'b1;
 					raddrstate <= 2'b01;

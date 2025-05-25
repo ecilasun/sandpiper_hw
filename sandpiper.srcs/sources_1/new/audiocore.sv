@@ -105,6 +105,7 @@ end
 // --------------------------------------------------
 
 wire [31:0] swapcount;
+wire [31:0] apustate;
 
 // --------------------------------------------------
 // APU command interface
@@ -147,7 +148,8 @@ commandqueue apucommandinterface(
 	.fifodout(apufifodout),
 	.fifore(apufifore),
 	.fifovalid(apufifovalid),
-    .devicestate(swapcount));
+    .devicestateLow(swapcount),
+    .devicestateHigh(apustate));
 
 // ------------------------------------------------------------------------------------
 // Clock divider
@@ -253,6 +255,7 @@ end
 
 // CPU can access this
 assign swapcount = {21'd0, apuwordcount, bufferSwapCDC2};
+assign apustate = {21'd0, writeBufferSelect, readCursor};
 
 localparam SIZE_4_BYTE   = 3'b010; // 2^2
 localparam SIZE_8_BYTE   = 3'b011; // 2^3

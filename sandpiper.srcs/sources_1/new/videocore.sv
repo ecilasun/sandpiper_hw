@@ -153,7 +153,8 @@ commandqueue vpucommandinterface(
 	.fifodout(vpufifodout),
 	.fifore(vpufifore),
 	.fifovalid(vpufifovalid),
-    .devicestate(vpustate));
+    .devicestateLow(vpustate),
+    .devicestateHigh(32'd0));
 
 // --------------------------------------------------
 // HDMI video output 640x480 @ 60Hz
@@ -325,8 +326,8 @@ always @(posedge clk25) begin
 		case ({notblank, scanenable, colormode})
 			3'b110: paletteout <= paletteentries[paletteindex];
 			3'b111: paletteout <= rgbcolor;
-			3'b100: paletteout <= 12'hF00;
-			3'b101: paletteout <= 12'h00F;
+			3'b100,
+			3'b101: paletteout <= 12'h334;
 			default: paletteout <= 12'h000;
 		endcase
 	end
