@@ -268,18 +268,18 @@ end
 // Output color
 // --------------------------------------------------
 
-logic [11:0] rgbcolor;
+logic [15:0] rgbcolor;
 logic [7:0] paletteindex;
 
 // 4x 16bit pixels
 always_comb begin
-	// Pixel data is 12 bits but stored as 16 bits (the spare 4 bits are unused for now, could be utilized as alpha etc
+	// Pixel data is 16 bits
 	unique case (pixelscanaddr[1:0])
-		//                   R:G:B                    TODO: Use as dual-plane blend factor
-		2'b00: rgbcolor = { scanlinedout[11:0]     }; // scanlinedout[15:12]
-		2'b01: rgbcolor = { scanlinedout[27:16]    }; // scanlinedout[31:28]
-		2'b10: rgbcolor = { scanlinedout[43:32]    }; // scanlinedout[47:44]
-		2'b11: rgbcolor = { scanlinedout[59:48]    }; // scanlinedout[63:60]
+		//                   R:G:B
+		2'b00: rgbcolor = { scanlinedout[15:0]     };
+		2'b01: rgbcolor = { scanlinedout[31:16]    };
+		2'b10: rgbcolor = { scanlinedout[47:32]    };
+		2'b11: rgbcolor = { scanlinedout[63:48]    };
 	endcase
 end
 
@@ -301,11 +301,11 @@ end
 // Palette RAM
 // --------------------------------------------------
 
-logic [11:0] palettedin;
+logic [23:0] palettedin;
 logic [7:0] palettewa;
 logic palettewe;
 
-logic [11:0] paletteentries[0:255];
+logic [23:0] paletteentries[0:255];
 
 initial begin
 	$readmemh("colorpalette.mem", paletteentries);
@@ -318,17 +318,17 @@ always @(posedge aclk) begin
 end
 
 // Read port
-logic [11:0] paletteout;
+logic [23:0] paletteout;
 always @(posedge clk25) begin
 	if (~rst25n) begin
-		paletteout <= 12'd0;
+		paletteout <= 24'd0;
 	end else begin
 		case ({notblank, scanenable, colormode})
 			3'b110: paletteout <= paletteentries[paletteindex];
-			3'b111: paletteout <= rgbcolor;
+			3'b111: paletteout <= {rgbcolor[15:11], 3'b0, rgbcolor[10:5], 2'b0, rgbcolor[4:0], 3'b0}; // Expand from 16 to 24 bits
 			3'b100,
-			3'b101: paletteout <= 12'h334;
-			default: paletteout <= 12'h000;
+			3'b101: paletteout <= 24'h333333;
+			default: paletteout <= 24'h000000;
 		endcase
 	end
 end
@@ -362,14 +362,14 @@ logic [31:0] vpucmd;
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		vpucmd <= 32'd0;
-		scanaddr <= 32'h18000000; // Default scan-out address if the OS has not set up anything else
-		burstmask <= 10'b0000000111;
+		scanaddr <= 32'h18000000; // Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
+		burstmask <= 10'b1111111111; // 640x2 bytes
 		lastscanline <= 10'd523;
-		palettedin <= 12'd0;
-		scanenable <= 1'b0;
+		palettedin <= 24'd0;
+		scanenable <= 1'b1; // Video output is enabled by default
 		cmdre <= 1'b0;
-		scanwidth <= 1'b0;
-		colormode <= 1'b0;
+		scanwidth <= 1'b1;  // 640-wide by default
+		colormode <= 1'b1;  // 16 bit color by default
 		palettewe <= 1'b0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
@@ -411,9 +411,7 @@ always_ff @(posedge aclk) begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					palettewe <= 1'b1;					// NOTE: This can change anywhere on a scanline as with older machines
 					palettewa <= vpufifodout[31:24];	// 8 bit palette index
-					//??? <= vpufifodout[23:16];		// 8 bit extra data, unused
-					//??? <= vpufifodout[15:11];		// 4 bit extra data, alpha perhaps?
-					palettedin <= vpufifodout[11:0];	// 12 bit color
+					palettedin <= vpufifodout[23:0];	// 24 bit color
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
@@ -622,7 +620,6 @@ end
 // Final output
 // --------------------------------------------------
 
-// 12 bit RGB output expanded to 24 bit (using top 4 bits per component only)
-assign rgbdat = {paletteout[11:8], 4'h0, paletteout[7:4], 4'h0, paletteout[3:0], 4'h0};
+assign rgbdat = paletteout;
 
 endmodule
