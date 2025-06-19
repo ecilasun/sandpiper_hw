@@ -46,7 +46,6 @@ module blockone (
   HDMI_CLK_n_0,
   HDMI_TMDS_p_0,
   HDMI_TMDS_n_0,
-  keyboardcolumns,
   keyboardrows
 );
 
@@ -143,8 +142,6 @@ module blockone (
   output [2:0]HDMI_TMDS_p_0;
   (* X_INTERFACE_IGNORE = "true" *)
   output [2:0]HDMI_TMDS_n_0;
-  (* X_INTERFACE_IGNORE = "true" *)
-  output [13:0]keyboardcolumns;
   (* X_INTERFACE_IGNORE = "true" *)
   input [4:0]keyboardrows;
 

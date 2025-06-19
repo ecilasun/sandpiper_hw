@@ -5,7 +5,6 @@ verilog xil_defaultlib --include "G:/Xilinx/Vivado/2024.2/data/xilinx_vip/includ
 "../../../bd/blockone/ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0.v" \
 "../../../bd/blockone/ip/blockone_processing_system7_0_1/sim/blockone_processing_system7_0_1.v" \
 "../../../bd/blockone/ip/blockone_util_vector_logic_0_0/sim/blockone_util_vector_logic_0_0.v" \
-"../../../bd/blockone/ip/blockone_keyboardmodule_0_0/sim/blockone_keyboardmodule_0_0.v" \
 "../../../bd/blockone/ip/blockone_axi_interconnect_0_imp_xbar_0/sim/blockone_axi_interconnect_0_imp_xbar_0.v" \
 "../../../bd/blockone/ip/blockone_axi_interconnect_0_imp_auto_us_0/sim/blockone_axi_interconnect_0_imp_auto_us_0.v" \
 "../../../bd/blockone/sim/blockone.v" \

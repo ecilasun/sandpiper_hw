@@ -169,6 +169,8 @@ wire [2:0] tmds;
 wire tmds_clock;
 
 // "SndPipe" "FPGA" "Game" 60Hz 640x480 44.1KHz 16bit
+// 1: 640x480x60 @25.2MHz
+// 4: 1280x720x60 @74.25MHz
 hdmi #(.VIDEO_ID_CODE(1), .IT_CONTENT(1'b1), .VIDEO_REFRESH_RATE(60.0), .VENDOR_NAME({"SndPipe", 8'd0}), .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), .SOURCE_DEVICE_INFORMATION(8), .AUDIO_RATE(44100), .AUDIO_BIT_WIDTH(16)) HDMIInst(
     .clk_pixel_x5(clk125),
     .clk_pixel(clk25),
@@ -208,6 +210,15 @@ logic scanenable;
 
 logic cmdre;
 assign vpufifore = cmdre;
+
+(* async_reg = "true" *) logic [9:0] scanlinepre;
+(* async_reg = "true" *) logic [9:0] scanline;
+(* async_reg = "true" *) logic [9:0] scanpixelpre;
+(* async_reg = "true" *) logic [9:0] scanpixel;
+(* async_reg = "true" *) logic blanktogglepre;
+(* async_reg = "true" *) logic blanktoggle;
+(* async_reg = "true" *) logic displayingpre;
+(* async_reg = "true" *) logic displaying;
 
 // --------------------------------------------------
 // Setup
@@ -323,7 +334,7 @@ always @(posedge clk25) begin
 	if (~rst25n) begin
 		paletteout <= 24'd0;
 	end else begin
-		case ({notblank, scanenable, colormode})
+		case ({displaying, scanenable, colormode})
 			3'b110: paletteout <= paletteentries[paletteindex];
 			3'b111: paletteout <= {rgbcolor[15:11], 3'b0, rgbcolor[10:5], 2'b0, rgbcolor[4:0], 3'b0}; // Expand from 16 to 24 bits
 			3'b100,
@@ -478,13 +489,6 @@ always_ff @(posedge clk25) begin
 	end
 end
 
-(* async_reg = "true" *) logic [9:0] scanlinepre;
-(* async_reg = "true" *) logic [9:0] scanline;
-(* async_reg = "true" *) logic [9:0] scanpixelpre;
-(* async_reg = "true" *) logic [9:0] scanpixel;
-(* async_reg = "true" *) logic blanktogglepre;
-(* async_reg = "true" *) logic blanktoggle;
-
 // Vertical blanking and pixel tracking
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
@@ -501,6 +505,8 @@ always_ff @(posedge aclk) begin
 		scanpixel <= scanpixelpre;
 		blanktogglepre <= blankt;
 		blanktoggle <= blanktogglepre;
+		displayingpre <= notblank;
+		displaying <= displayingpre;
 	end
 end
 
