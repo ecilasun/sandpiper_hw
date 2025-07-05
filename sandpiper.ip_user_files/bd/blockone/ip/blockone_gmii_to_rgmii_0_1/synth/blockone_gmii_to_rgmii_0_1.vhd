@@ -71,8 +71,8 @@ use ieee.std_logic_1164.all;
 library unisim;
 use unisim.vcomponents.all;
 
-library gmii_to_rgmii_v4_1_18;
-use gmii_to_rgmii_v4_1_18.all;
+library gmii_to_rgmii_v4_1_19;
+use gmii_to_rgmii_v4_1_19.all;
 
 entity blockone_gmii_to_rgmii_0_1 is
   port(
@@ -184,9 +184,9 @@ end component;
 
 
   ATTRIBUTE CORE_GENERATION_INFO : STRING;
-  ATTRIBUTE CORE_GENERATION_INFO OF wrapper : ARCHITECTURE IS "blockone_gmii_to_rgmii_0_1,gmii_to_rgmii_v4_1_18,{x_ipProduct=Vivado 2024.2.2,x_ipVendor=xilinx.com,x_ipLibrary=ip,x_ipName=gmii_to_rgmii,x_ipVersion=4.1,x_ipCoreRevision=18,x_ipLanguage=VERILOG,x_ipSimLanguage=MIXED,C_EXTERNAL_CLOCK=false,C_USE_IDELAY_CTRL=true,C_PHYADDR=8,c_support_level=true,C_FAMILY_CHK=0,C_VERSAL_SIM_DEVICE=ULTRASCALE,C_DEVICE_TYPE=2}";
+  ATTRIBUTE CORE_GENERATION_INFO OF wrapper : ARCHITECTURE IS "blockone_gmii_to_rgmii_0_1,gmii_to_rgmii_v4_1_19,{x_ipProduct=Vivado 2025.1,x_ipVendor=xilinx.com,x_ipLibrary=ip,x_ipName=gmii_to_rgmii,x_ipVersion=4.1,x_ipCoreRevision=19,x_ipLanguage=VERILOG,x_ipSimLanguage=MIXED,C_EXTERNAL_CLOCK=false,C_USE_IDELAY_CTRL=true,C_PHYADDR=8,c_support_level=true,C_FAMILY_CHK=0,C_VERSAL_SIM_DEVICE=ULTRASCALE,C_DEVICE_TYPE=2}";
   ATTRIBUTE X_CORE_INFO : STRING;
-  ATTRIBUTE X_CORE_INFO OF wrapper: ARCHITECTURE IS "gmii_to_rgmii_v4_1_18,Vivado 2024.2.2";
+  ATTRIBUTE X_CORE_INFO OF wrapper: ARCHITECTURE IS "gmii_to_rgmii_v4_1_19,Vivado 2025.1";
 
 begin
 

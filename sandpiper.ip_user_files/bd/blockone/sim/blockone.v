@@ -1,8 +1,8 @@
 //Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2024.2.2 (win64) Build 6060944 Thu Mar 06 19:10:01 MST 2025
-//Date        : Wed Jun 18 17:31:26 2025
+//Tool Version: Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
+//Date        : Fri Jun 20 17:04:29 2025
 //Host        : fastturtle running 64-bit major release  (build 9200)
 //Command     : generate_target blockone.bd
 //Design      : blockone
@@ -51,8 +51,7 @@ module blockone
     RGMII_0_tx_ctl,
     RGMII_0_txc,
     UART_0_0_rxd,
-    UART_0_0_txd,
-    keyboardrows);
+    UART_0_0_txd);
   (* X_INTERFACE_INFO = "xilinx.com:interface:ddrx:1.0 DDR ADDR" *) (* X_INTERFACE_MODE = "Master" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME DDR, AXI_ARBITRATION_SCHEME TDM, BURST_LENGTH 8, CAN_DEBUG false, CAS_LATENCY 11, CAS_WRITE_LATENCY 11, CS_ENABLED true, DATA_MASK_ENABLED true, DATA_WIDTH 8, MEMORY_TYPE COMPONENTS, MEM_ADDR_MAP ROW_COLUMN_BANK, SLOT Single, TIMEPERIOD_PS 1250" *) inout [14:0]DDR_addr;
   (* X_INTERFACE_INFO = "xilinx.com:interface:ddrx:1.0 DDR BA" *) inout [2:0]DDR_ba;
   (* X_INTERFACE_INFO = "xilinx.com:interface:ddrx:1.0 DDR CAS_N" *) inout DDR_cas_n;
@@ -93,7 +92,6 @@ module blockone
   (* X_INTERFACE_INFO = "xilinx.com:interface:rgmii:1.0 RGMII_0 TXC" *) output RGMII_0_txc;
   (* X_INTERFACE_INFO = "xilinx.com:interface:uart:1.0 UART_0_0 RxD" *) (* X_INTERFACE_MODE = "Master" *) input UART_0_0_rxd;
   (* X_INTERFACE_INFO = "xilinx.com:interface:uart:1.0 UART_0_0 TxD" *) output UART_0_0_txd;
-  input [4:0]keyboardrows;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -1480,7 +1478,7 @@ module blockone_axi_interconnect_0_0
         .S_AXI_wready(S00_AXI_wready),
         .S_AXI_wstrb(S00_AXI_wstrb),
         .S_AXI_wvalid(S00_AXI_wvalid));
-  blockone_axi_interconnect_0_imp_xbar_0 xbar
+  blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0 xbar
        (.aclk(ACLK),
         .aresetn(ARESETN),
         .m_axi_araddr({xbar_to_m01_couplers_ARADDR,xbar_to_m00_couplers_ARADDR}),

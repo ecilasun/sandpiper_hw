@@ -27,8 +27,8 @@ pagesize -pg 1 -db -bbox -sgen 0 0 1060 250
    "Addressing View_ScaleFactor":"1.0",
    "Addressing View_TopLeft":"-400,-303",
    "Default View_Layers":"/processing_system7_0_FCLK_CLK0:true|/proc_sys_reset_0_interconnect_aresetn:true|/proc_sys_reset_0_peripheral_aresetn:true|/processing_system7_0_FCLK_RESET0_N:true|",
-   "Default View_ScaleFactor":"0.754185",
-   "Default View_TopLeft":"-243,3",
+   "Default View_ScaleFactor":"0.75485",
+   "Default View_TopLeft":"-152,3",
    "Display-PortTypeClock":"true",
    "Display-PortTypeReset":"true",
    "ExpandedHierarchyInLayout":"",
@@ -44,7 +44,6 @@ preplace port port-id_HDMI_CLK_p_0 -pg 1 -lvl 6 -x 1960 -y 820 -defaultsOSRD
 preplace port port-id_HDMI_CLK_n_0 -pg 1 -lvl 6 -x 1960 -y 840 -defaultsOSRD
 preplace portBus HDMI_TMDS_p_0 -pg 1 -lvl 6 -x 1960 -y 860 -defaultsOSRD
 preplace portBus HDMI_TMDS_n_0 -pg 1 -lvl 6 -x 1960 -y 880 -defaultsOSRD
-preplace portBus keyboardrows -pg 1 -lvl 0 -x 0 -y 20 -defaultsOSRD
 preplace inst proc_sys_reset_0 -pg 1 -lvl 1 -x 200 -y 1040 -defaultsOSRD
 preplace inst audiomodule_0 -pg 1 -lvl 3 -x 900 -y 690 -defaultsOSRD
 preplace inst videomodule_0 -pg 1 -lvl 4 -x 1350 -y 840 -defaultsOSRD
@@ -84,7 +83,7 @@ preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 390 590 NJ 590 NJ 590 1630
 preplace netloc processing_system7_0_UART_0 1 4 2 1640J 460 NJ
 preplace netloc videomodule_0_m_axi 1 3 2 1110 560 1600
 levelinfo -pg 1 0 200 540 900 1350 1800 1960
-pagesize -pg 1 -db -bbox -sgen -170 0 2160 1140
+pagesize -pg 1 -db -bbox -sgen 0 0 2160 1140
 "
 }
 {

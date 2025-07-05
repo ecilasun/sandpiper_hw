@@ -4,7 +4,7 @@
     "xci_name": "blockone_util_vector_logic_0_0",
     "cell_name": "util_vector_logic_0",
     "component_reference": "xilinx.com:ip:util_vector_logic:2.0",
-    "ip_revision": "4",
+    "ip_revision": "5",
     "gen_directory": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_util_vector_logic_0_0",
     "parameters": {
       "component_parameters": {
@@ -32,12 +32,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
-        "IPREVISION": [ { "value": "4" } ],
+        "IPREVISION": [ { "value": "5" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_util_vector_logic_0_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "../../ipshared" } ],
-        "SWVERSION": [ { "value": "2024.2.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
       }
     },

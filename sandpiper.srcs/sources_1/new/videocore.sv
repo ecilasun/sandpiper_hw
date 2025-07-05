@@ -201,7 +201,6 @@ endgenerate
 // NOTE: First, set up the scanout address, then enable video scanout
 logic [31:0] scanaddr;
 logic [31:0] scanoffset;
-logic [10:0] scaninc;
 logic scanenable;
 
 // --------------------------------------------------
@@ -359,12 +358,11 @@ localparam BURST_WRAP  = 2'b10;
 // Command FIFO
 // --------------------------------------------------
 
-typedef enum logic [3:0] {
+typedef enum logic [2:0] {
 	WCMD, DISPATCH,
 	SETVPAGE,
 	SETPAL,
 	VMODE,
-	VSCANSIZE,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -384,7 +382,6 @@ always_ff @(posedge aclk) begin
 		palettewe <= 1'b0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
-		scaninc <= 11'd320;
 	end else begin
 		cmdre <= 1'b0;
 		palettewe <= 1'b0;
@@ -449,19 +446,8 @@ always_ff @(posedge aclk) begin
 
 					// Advance FIFO
 					cmdre <= 1'b1;
-					cmdmode <= VSCANSIZE;
+					cmdmode <= FINALIZE;
 				end
-			end
-
-			VSCANSIZE: begin
-				// Number of bytes per scanline for each video mode  
-				unique case (vpufifodout[2:1])
-					2'b00: scaninc <= 11'd320;	// 320*240 8bpp
-					2'b01: scaninc <= 11'd640;	// 640*480 8bpp
-					2'b10: scaninc <= 11'd640;	// 320*240 16bpp
-					2'b11: scaninc <= 11'd1280;	// 640*480 16bpp
-				endcase
-				cmdmode <= FINALIZE;
 			end
 
 			FINALIZE: begin

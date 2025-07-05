@@ -4,7 +4,7 @@
     "xci_name": "blockone_processing_system7_0_1",
     "cell_name": "processing_system7_0",
     "component_reference": "xilinx.com:ip:processing_system7:5.5",
-    "ip_revision": "6",
+    "ip_revision": "7",
     "gen_directory": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_1",
     "parameters": {
       "component_parameters": {
@@ -654,7 +654,7 @@
         "PCW_MIO_8_SLEW": [ { "value": "slow", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PCW_MIO_9_PULLUP": [ { "value": "enabled", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PCW_MIO_9_IOTYPE": [ { "value": "LVCMOS 3.3V", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
-        "PCW_MIO_9_DIRECTION": [ { "value": "out", "resolve_type": "user", "enabled": false, "usage": "all" } ],
+        "PCW_MIO_9_DIRECTION": [ { "value": "inout", "resolve_type": "user", "enabled": false, "usage": "all" } ],
         "PCW_MIO_9_SLEW": [ { "value": "slow", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PCW_MIO_10_PULLUP": [ { "value": "enabled", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "PCW_MIO_10_IOTYPE": [ { "value": "LVCMOS 3.3V", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
@@ -960,12 +960,12 @@
       },
       "runtime_parameters": {
         "IPCONTEXT": [ { "value": "IP_Integrator" } ],
-        "IPREVISION": [ { "value": "6" } ],
+        "IPREVISION": [ { "value": "7" } ],
         "MANAGED": [ { "value": "TRUE" } ],
         "OUTPUTDIR": [ { "value": "../../../../../../sandpiper.gen/sources_1/bd/blockone/ip/blockone_processing_system7_0_1" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "../../ipshared" } ],
-        "SWVERSION": [ { "value": "2024.2.2" } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
         "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
       }
     },
@@ -1550,7 +1550,7 @@
           "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
           "mode": "master",
           "parameters": {
-            "FREQ_HZ": [ { "value": "1.66667e+08", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "166666672", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
             "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PHASE": [ { "value": "0.0", "value_permission": "bd", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
             "CLK_DOMAIN": [ { "value": "blockone_processing_system7_0_1_FCLK_CLK0", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
@@ -1568,7 +1568,7 @@
           "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
           "mode": "master",
           "parameters": {
-            "FREQ_HZ": [ { "value": "2e+08", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "200000000", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
             "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PHASE": [ { "value": "0.0", "value_permission": "bd", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
             "CLK_DOMAIN": [ { "value": "blockone_processing_system7_0_1_FCLK_CLK1", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
@@ -1586,7 +1586,7 @@
           "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
           "mode": "master",
           "parameters": {
-            "FREQ_HZ": [ { "value": "1e+08", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "100000000", "value_src": "user", "value_permission": "bd", "resolve_type": "generated", "format": "float", "usage": "all" } ],
             "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PHASE": [ { "value": "0.0", "value_permission": "bd", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
             "CLK_DOMAIN": [ { "value": "blockone_processing_system7_0_1_FCLK_CLK2", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],

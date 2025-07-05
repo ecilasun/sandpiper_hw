@@ -77,8 +77,8 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-library gmii_to_rgmii_v4_1_18;
-use gmii_to_rgmii_v4_1_18.all;
+library gmii_to_rgmii_v4_1_19;
+use gmii_to_rgmii_v4_1_19.all;
 
 --------------------------------------------------------------------------------
 -- The entity declaration for the PHY IF design.
@@ -135,7 +135,7 @@ end blockone_gmii_to_rgmii_0_1_block;
 
 architecture block_level of blockone_gmii_to_rgmii_0_1_block is
 
-  component gmii_to_rgmii_v4_1_18 is
+  component gmii_to_rgmii_v4_1_19 is
     generic(
       C_RGMII_TXC_SKEW_EN       : integer range 0 to 2  := 0;
       C_RGMII_TXC_ODELAY_VAL    : integer range 0 to 1250 := 26;                --@ 200MHz REFCLK, 1 tap = 78ps delay
@@ -267,7 +267,7 @@ begin
    end generate;  
 
   -- Instantiate the GMII to RGMII v3.0 Converter Core
-  blockone_gmii_to_rgmii_0_1_core: gmii_to_rgmii_v4_1_18
+  blockone_gmii_to_rgmii_0_1_core: gmii_to_rgmii_v4_1_19
     generic map(
       C_RGMII_TXC_SKEW_EN       => 0,
     

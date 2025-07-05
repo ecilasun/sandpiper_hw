@@ -1,8 +1,8 @@
 -- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 -- Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
--- Tool Version: Vivado v.2024.2.2 (win64) Build 6060944 Thu Mar 06 19:10:01 MST 2025
--- Date        : Sun May 11 03:03:41 2025
+-- Tool Version: Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
+-- Date        : Fri Jun 20 16:44:40 2025
 -- Host        : fastturtle running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode funcsim -rename_top blockone_util_vector_logic_0_0 -prefix
 --               blockone_util_vector_logic_0_0_ blockone_util_vector_logic_0_0_sim_netlist.vhdl
@@ -23,11 +23,11 @@ entity blockone_util_vector_logic_0_0 is
   attribute NotValidForBitStream : boolean;
   attribute NotValidForBitStream of blockone_util_vector_logic_0_0 : entity is true;
   attribute CHECK_LICENSE_TYPE : string;
-  attribute CHECK_LICENSE_TYPE of blockone_util_vector_logic_0_0 : entity is "blockone_util_vector_logic_0_0,util_vector_logic_v2_0_4_util_vector_logic,{}";
+  attribute CHECK_LICENSE_TYPE of blockone_util_vector_logic_0_0 : entity is "blockone_util_vector_logic_0_0,util_vector_logic_v2_0_5_util_vector_logic,{}";
   attribute DowngradeIPIdentifiedWarnings : string;
   attribute DowngradeIPIdentifiedWarnings of blockone_util_vector_logic_0_0 : entity is "yes";
   attribute X_CORE_INFO : string;
-  attribute X_CORE_INFO of blockone_util_vector_logic_0_0 : entity is "util_vector_logic_v2_0_4_util_vector_logic,Vivado 2024.2.2";
+  attribute X_CORE_INFO of blockone_util_vector_logic_0_0 : entity is "util_vector_logic_v2_0_5_util_vector_logic,Vivado 2025.1";
 end blockone_util_vector_logic_0_0;
 
 architecture STRUCTURE of blockone_util_vector_logic_0_0 is

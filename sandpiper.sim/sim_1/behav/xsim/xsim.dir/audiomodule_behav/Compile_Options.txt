@@ -1,0 +1,1 @@
+--incr --debug "typical" --relax --mt "2" -L "xil_defaultlib" -L "blk_mem_gen_v8_4_11" -L "fifo_generator_v13_2_13" -L "uvm" -L "xilinx_vip" -L "unisims_ver" -L "unimacro_ver" -L "secureip" -L "xpm" --snapshot "audiomodule_behav" "xil_defaultlib.audiomodule" "xil_defaultlib.glbl" -log "elaborate.log" 

@@ -48,7 +48,7 @@
 
 
 // IP VLNV: xilinx.com:ip:util_vector_logic:2.0
-// IP Revision: 4
+// IP Revision: 5
 
 `timescale 1ns/1ps
 
@@ -61,7 +61,7 @@ module blockone_util_vector_logic_0_0 (
 input wire [0 : 0] Op1;
 output wire [0 : 0] Res;
 
-  util_vector_logic_v2_0_4_util_vector_logic #(
+  util_vector_logic_v2_0_5_util_vector_logic #(
     .C_OPERATION("not"),
     .C_SIZE(1)
   ) inst (

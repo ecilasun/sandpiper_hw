@@ -1,13 +1,13 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x19C6F57F7EFF855",
+      "boundary_crc": "0x2A9DA84C60384D97",
       "device": "xc7z020clg484-1",
       "gen_directory": "../../../../sandpiper.gen/sources_1/bd/blockone",
       "name": "blockone",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2024.2.2",
+      "tool_version": "2025.1",
       "validated": "true"
     },
     "design_tree": {
@@ -363,20 +363,16 @@
         "direction": "O",
         "left": "2",
         "right": "0"
-      },
-      "keyboardrows": {
-        "direction": "I",
-        "left": "4",
-        "right": "0"
       }
     },
     "components": {
       "proc_sys_reset_0": {
         "vlnv": "xilinx.com:ip:proc_sys_reset:5.0",
-        "ip_revision": "16",
+        "ip_revision": "17",
         "xci_name": "blockone_proc_sys_reset_0_1",
         "xci_path": "ip\\blockone_proc_sys_reset_0_1\\blockone_proc_sys_reset_0_1.xci",
-        "inst_hier_path": "proc_sys_reset_0"
+        "inst_hier_path": "proc_sys_reset_0",
+        "has_run_ip_tcl": "true"
       },
       "audiomodule_0": {
         "vlnv": "xilinx.com:module_ref:audiomodule:1.0",
@@ -384,6 +380,7 @@
         "xci_name": "blockone_audiomodule_0_0",
         "xci_path": "ip\\blockone_audiomodule_0_0\\blockone_audiomodule_0_0.xci",
         "inst_hier_path": "audiomodule_0",
+        "has_run_ip_tcl": "true",
         "reference_info": {
           "ref_type": "hdl",
           "ref_name": "audiomodule",
@@ -501,6 +498,12 @@
               "minimum": "0x00000000",
               "maximum": "0xFFFFFFFF",
               "width": "32"
+            },
+            "bd_attributes": {
+              "TYPE": {
+                "value": "END_POINT",
+                "value_src": "auto"
+              }
             },
             "port_maps": {
               "AWID": {
@@ -1101,7 +1104,7 @@
           "address_spaces": {
             "m_axi": {
               "range": "4G",
-              "width": "32"
+              "width": "64"
             }
           }
         }
@@ -1112,6 +1115,7 @@
         "xci_name": "blockone_videomodule_0_0",
         "xci_path": "ip\\blockone_videomodule_0_0\\blockone_videomodule_0_0.xci",
         "inst_hier_path": "videomodule_0",
+        "has_run_ip_tcl": "true",
         "reference_info": {
           "ref_type": "hdl",
           "ref_name": "videomodule",
@@ -1229,6 +1233,12 @@
               "minimum": "0x00000000",
               "maximum": "0xFFFFFFFF",
               "width": "32"
+            },
+            "bd_attributes": {
+              "TYPE": {
+                "value": "END_POINT",
+                "value_src": "auto"
+              }
             },
             "port_maps": {
               "AWID": {
@@ -1872,17 +1882,18 @@
           "address_spaces": {
             "m_axi": {
               "range": "4G",
-              "width": "32"
+              "width": "64"
             }
           }
         }
       },
       "clk_wiz_0": {
         "vlnv": "xilinx.com:ip:clk_wiz:6.0",
-        "ip_revision": "15",
+        "ip_revision": "16",
         "xci_name": "blockone_clk_wiz_0_0",
         "xci_path": "ip\\blockone_clk_wiz_0_0\\blockone_clk_wiz_0_0.xci",
         "inst_hier_path": "clk_wiz_0",
+        "has_run_ip_tcl": "true",
         "parameters": {
           "CLKIN1_JITTER_PS": {
             "value": "100.0"
@@ -1960,10 +1971,11 @@
       },
       "gmii_to_rgmii_0": {
         "vlnv": "xilinx.com:ip:gmii_to_rgmii:4.1",
-        "ip_revision": "18",
+        "ip_revision": "19",
         "xci_name": "blockone_gmii_to_rgmii_0_1",
         "xci_path": "ip\\blockone_gmii_to_rgmii_0_1\\blockone_gmii_to_rgmii_0_1.xci",
         "inst_hier_path": "gmii_to_rgmii_0",
+        "has_run_ip_tcl": "true",
         "parameters": {
           "C_EXTERNAL_CLOCK": {
             "value": "false"
@@ -1981,10 +1993,11 @@
       },
       "processing_system7_0": {
         "vlnv": "xilinx.com:ip:processing_system7:5.5",
-        "ip_revision": "6",
+        "ip_revision": "7",
         "xci_name": "blockone_processing_system7_0_1",
         "xci_path": "ip\\blockone_processing_system7_0_1\\blockone_processing_system7_0_1.xci",
         "inst_hier_path": "processing_system7_0",
+        "has_run_ip_tcl": "true",
         "parameters": {
           "PCW_ACT_APU_PERIPHERAL_FREQMHZ": {
             "value": "666.666687"
@@ -2773,6 +2786,12 @@
         },
         "interface_ports": {
           "M_AXI_GP0": {
+            "bd_attributes": {
+              "TYPE": {
+                "value": "END_POINT",
+                "value_src": "auto"
+              }
+            },
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
             "mode": "Master",
             "address_space_ref": "Data",
@@ -2914,10 +2933,11 @@
       },
       "util_vector_logic_0": {
         "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
-        "ip_revision": "4",
+        "ip_revision": "5",
         "xci_name": "blockone_util_vector_logic_0_0",
         "xci_path": "ip\\blockone_util_vector_logic_0_0\\blockone_util_vector_logic_0_0.xci",
         "inst_hier_path": "util_vector_logic_0",
+        "has_run_ip_tcl": "true",
         "parameters": {
           "C_OPERATION": {
             "value": "not"
@@ -3035,10 +3055,11 @@
         "components": {
           "xbar": {
             "vlnv": "xilinx.com:ip:axi_crossbar:2.1",
-            "ip_revision": "36",
-            "xci_name": "blockone_axi_interconnect_0_imp_xbar_0",
-            "xci_path": "ip\\blockone_axi_interconnect_0_imp_xbar_0\\blockone_axi_interconnect_0_imp_xbar_0.xci",
+            "ip_revision": "37",
+            "xci_name": "blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0",
+            "xci_path": "ip\\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0\\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0.xci",
             "inst_hier_path": "axi_interconnect_0/xbar",
+            "has_run_ip_tcl": "true",
             "parameters": {
               "NUM_MI": {
                 "value": "2"
@@ -3052,12 +3073,38 @@
             },
             "interface_ports": {
               "S00_AXI": {
+                "bd_attributes": {
+                  "BRIDGES": {
+                    "value": "M00_AXI:M01_AXI",
+                    "value_src": "auto"
+                  },
+                  "TYPE": {
+                    "value": "interior",
+                    "value_src": "default"
+                  }
+                },
                 "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
                 "mode": "Slave",
                 "bridges": [
                   "M00_AXI",
                   "M01_AXI"
                 ]
+              },
+              "M00_AXI": {
+                "bd_attributes": {
+                  "TYPE": {
+                    "value": "interior",
+                    "value_src": "default"
+                  }
+                }
+              },
+              "M01_AXI": {
+                "bd_attributes": {
+                  "TYPE": {
+                    "value": "interior",
+                    "value_src": "default"
+                  }
+                }
               }
             }
           },
@@ -3111,10 +3158,11 @@
             "components": {
               "auto_us": {
                 "vlnv": "xilinx.com:ip:axi_dwidth_converter:2.1",
-                "ip_revision": "35",
+                "ip_revision": "36",
                 "xci_name": "blockone_axi_interconnect_0_imp_auto_us_0",
                 "xci_path": "ip\\blockone_axi_interconnect_0_imp_auto_us_0\\blockone_axi_interconnect_0_imp_auto_us_0.xci",
                 "inst_hier_path": "axi_interconnect_0/s00_couplers/auto_us",
+                "has_run_ip_tcl": "true",
                 "parameters": {
                   "MI_DATA_WIDTH": {
                     "value": "64"
@@ -3125,11 +3173,29 @@
                 },
                 "interface_ports": {
                   "S_AXI": {
+                    "bd_attributes": {
+                      "BRIDGES": {
+                        "value": "M_AXI",
+                        "value_src": "auto"
+                      },
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    },
                     "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
                     "mode": "Slave",
                     "bridges": [
                       "M_AXI"
                     ]
+                  },
+                  "M_AXI": {
+                    "bd_attributes": {
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    }
                   }
                 }
               }
@@ -3426,16 +3492,16 @@
       "Net": {
         "ports": [
           "processing_system7_0/FCLK_CLK0",
-          "processing_system7_0/M_AXI_GP0_ACLK",
-          "processing_system7_0/S_AXI_HP0_ACLK",
-          "processing_system7_0/S_AXI_HP1_ACLK",
           "videomodule_0/aclk",
-          "proc_sys_reset_0/slowest_sync_clk",
           "audiomodule_0/aclk",
           "axi_interconnect_0/ACLK",
           "axi_interconnect_0/S00_ACLK",
           "axi_interconnect_0/M00_ACLK",
-          "axi_interconnect_0/M01_ACLK"
+          "axi_interconnect_0/M01_ACLK",
+          "proc_sys_reset_0/slowest_sync_clk",
+          "processing_system7_0/M_AXI_GP0_ACLK",
+          "processing_system7_0/S_AXI_HP0_ACLK",
+          "processing_system7_0/S_AXI_HP1_ACLK"
         ]
       },
       "audiomodule_0_audioSampleOutputLR": {
@@ -3512,8 +3578,8 @@
       "util_vector_logic_0_Res": {
         "ports": [
           "util_vector_logic_0/Res",
-          "gmii_to_rgmii_0/rx_reset",
-          "gmii_to_rgmii_0/tx_reset"
+          "gmii_to_rgmii_0/tx_reset",
+          "gmii_to_rgmii_0/rx_reset"
         ]
       },
       "videomodule_0_HDMI_CLK_n": {

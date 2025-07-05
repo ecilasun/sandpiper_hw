@@ -53,9 +53,10 @@
 -- Description: This testbench will exercise the funcationality of the gmii_to_rgmii pcore.
 ------------------------------------------------------------------------
 
-library ieee;
+library std, ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.env.all;
 
 entity demo_tb is
   generic(
@@ -1560,10 +1561,8 @@ begin
     wait for 200 ns;
 
     assert false
-      report "Test completed successfully" 
-      severity note;
-      report "Simulation stopped"
-      severity failure;
+      report "Test Completed Successfully" severity note;
+      std.env.stop(0);
   end process p_gmii_monitor;
 
     ------------------------------------------------------------------------------
@@ -1948,8 +1947,8 @@ begin
        wait for 200 ns;
 
        assert false
-        report "Simulation stopped"
-        severity failure;
+         report "Test Completed Successfully" severity note;
+         std.env.stop(0);
 
   end process p_rgmii_monitor;
 
