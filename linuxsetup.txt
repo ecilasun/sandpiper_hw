@@ -367,3 +367,13 @@ then run:
 
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+
+
+/////////// fbterm
+
+sudo nano /lib/systemd/system/getty@.service
+change matching line to these, including the empty execstart:
+ExecStart=
+ExecStart=-/sbin/agetty -n -l /usr/bin/fbterm -o /bin/login %I $TERM
+
+see: https://read.yjmbo.net/yojimbo/fbterm-on-debian-12
