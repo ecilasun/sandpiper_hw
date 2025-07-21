@@ -1,0 +1,369 @@
+# see https://www.youtube.com/watch?v=kq3cVUjpXgQ
+
+# to disable the annoying apparmor, use:
+echo 'kernel.apparmor_restrict_unprivileged_userns = 0' | sudo tee /etc/sysctl.d/20-apparmor-donotrestrict.conf
+
+# use these to build the Linux image
+source ./petalinux/settings.sh
+petalinux-create --type project --template zynq --name sandpiper_petalinux
+cd sandpiper_petalinux
+# now copy the .xsa file (from export hardware) to the project folder (blockone_wrapper.xsa -> sandpiper_petalinux/)
+# also copy the device tree file to the project-spec folder (see NOTE#1)
+petalinux-config --get-hw-description=. (see NOTE#2)
+petalinux-config -c kernel (see NOTE#3)
+petalinux-config -c u-boot (set autoboot delay from 2 to -2, set loglevel to 1, support silent console, also optionally enable boot options and type quiet)
+petalinux-config -c rootfs (don't forget to pick dev tools (especially libmetal) and set username/pwd, also set autoboot, add: sudo, busybox, tar, usbutils, git, grep, vim, minicom, wget, autoconf, automake, binutils, bison, flex, make, kexec-tools, libmetal, libpng, libusb1, libstdc++, gdb, gdbserver, gcc sanitizers, glib-2.0, glibc, ldd, iotop, packagegroup-code-sdk, packagegroup-self-hosted, python3, netcat, empty-root-password, serial-autologin-root, see https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management for package management info)
+petalinux-build
+cd images/linux
+petalinux-package boot --format BIN --fsbl zynq_fsbl.elf --u-boot u-boot.elf --fpga system.bit --force
+
+To make things from scratch, either of:
+petalinux-build -x distclean
+petalinux-build -x mrproper
+petalinux-build -x clean
+
+# preparing the boot media (sdcard)
+# create three partitions on the sdcard: BOOT(1G, FAT32), rootfs(10G, ext4), and data(rest of the space, ext4)
+# copy boot.scr, BOOT.bin, image.ub to root folder of first partition (/media/uname/boot)
+sudo dd if=rootfs.ext4 of=/dev/sdb2 # sdb2 is the second partition of the sdcard
+
+--------------------------------------------------------------------
+NOTE#1:
+--------------------------------------------------------------------
+Paste this into project-spec/meta-user/recipies-bsp/device-tree/files/system-user.dtsi
+Please note that the sandpiper driver is assigned to the reserved memory region, and the
+second intent of this driver is to act as an interface between the control registers of
+other devices on board and the user process, using ioctl() calls.
+This way the software won't need to know about raw memory addresses of device registers.
+
+/include/ "system-conf.dtsi"
+/ {
+   reserved-memory {
+      #address-cells = <1>;
+      #size-cells = <1>;
+      ranges;
+
+      reserved: buffer@0x18000000 {
+         no-map;
+         reg = <0x18000000 0x2000000>;
+      };
+   };
+
+   chosen {
+      #address-cells = <1>;
+      #size-cells = <1>;
+      ranges;
+
+      framebuffer@18000000 {
+         compatible = "simple-framebuffer";
+         reg = <0x18000000 (640*480*2)>;
+         width = <640>;
+         height = <480>;
+         stride = <(640*2)>;
+         format = "r5g6b5";
+         status = "okay";
+      };
+   };
+
+   reserved-driver@0 {
+      compatible = "sandpiper";
+      memory-region = <&reserved>;
+   };
+
+   usb_phy0: usb_phy@0 {
+      compatible = "ulpi-phy";
+      #phy-cells = <0>;
+      reg = <0xe0002000 0x1000>;
+      view-port = <0x0170>;
+      drv-vbus;
+   };
+};
+
+&usb0 {
+   dr_mode = "host";
+   usb-phy = <&usb_phy0>;
+};
+
+&gem0 {
+   phy-handle = <&phy1>; // Assuming your PHY is connected to gem0
+   ps7_ethernet_0_mdio: mdio {
+      phy1: phy@1 {
+         device_type = "ethernet-phy";
+      };
+   };
+};
+
+--------------------------------------------------------------------
+NOTE#2:
+--------------------------------------------------------------------
+* Image Packaging Configuration -> Root Filesystem Type -> EXT4                         
+* Image Packaging Configuration -> Device node of SD device -> mmcblk0p2                
+* Subsystem Hardware Settings -> SD/SDIO Settings -> Primary SD/SDIO -> ps7_sd_0     
+* Not necessary: DTG Settings -> Kernel Bootargs -> manual bootargs -> console=ttyPS0,115200 earlycon quiet root=/dev/mmcblk0p2 rw rootwait
+
+--------------------------------------------------------------------
+NOTE#3:
+--------------------------------------------------------------------
+* Device Drivers -> Network Device Support -> PHY Device Support and Infrastructure -> Xilinx GMII2RGMII Converter Driver
+* TODO: USB etc
+
+--------------------------------------------------------------------
+NOTE#4:
+--------------------------------------------------------------------
+Git will give you trouble due to missing certificate authority. To work around, use these to set up git for use:
+git config --global http.sslVerify false
+git config --global credential.helper store
+git config --global user.name "Engin Cilasun"
+git config --global user.email "ecilasun@me.com"
+
+--------------------------------------------------------------------
+NOTE#5:
+--------------------------------------------------------------------
+To build nano from scratch, do the following:
+
+date -s "Sun May 25 13:42:00 UTC 2025"  (use your current time)
+wget https://www.nano-editor.org/dist/v4/nano-4.7.tar.gz
+tar -zxvf nano-4.7.tar.gz
+cd nano-4.7
+./configure
+make
+make install
+
+OR
+
+$ git clone https://git.savannah.gnu.org/git/nano.git
+$ cd nano
+$ git checkout v7.2
+$ ./autogen.sh
+$ ./configure
+$ make -j$(nproc)
+$ make install
+
+to uninstall it:
+$ sudo dpkg -r mynano
+
+--------------------------------------------------------------------
+NOTE#6:
+--------------------------------------------------------------------
+To copy files to the device, first type ifconfig to find the IP and then use the following to copy files to the device:
+
+scp somepath/something.txt user@serverIP:/home/petal/something.txt
+
+(P.S. you will be asked to enter a password for petal which is 'petal' by default)
+
+--------------------------------------------------------------------
+NOTE#7:
+--------------------------------------------------------------------
+Using metal, device names are listed under /sys/bus/platform/devices/
+Feed these to metal_device_open as device path:
+
+audio device: "platform", "40000000.audiomodule"
+video device: "platform", "40001000.videomodule"
+keyboard device: "platform", "40002000.keyboardmodule"
+
+--------------------------------------------------------------------
+NOTE#8:
+--------------------------------------------------------------------
+Recommended drive setup is:
+
+partition 1: boot, 1gb
+partition 2: rootfs, 10gb
+partition 3: data, rest of your drive space
+
+--------------------------------------------------------------------
+NOTE#9:
+--------------------------------------------------------------------
+
+--------------------------------------------------------------------
+NOTE#10:
+--------------------------------------------------------------------
+
+--------------------------------------------------------------------
+NOTE#11:
+--------------------------------------------------------------------
+By default eth0 gets renamed to enx000a35001e53
+To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
+(In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
+
+--------------------------------------------------------------------
+CMAKE:
+--------------------------------------------------------------------
+Build cmake from source
+
+Grab the source from git:
+git clone https://github.com/Kitware/CMake CMake
+
+Run following from the CMake directory:
+./bootstrap && make && make install
+
+--------------------------------------------------------------------
+APT: Building apt-* from source:
+--------------------------------------------------------------------
+
+Grab the source from git
+git clone https://github.com/Debian/apt.git apt
+
+
+
+Other notes
+--------------
+
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+https://github.com/stoffera/fbdoom
+
+if configured during petalinux-configure -c kernel, kernel header files will be placed in:
+/sys/kernel/kheaders.tar.xz
+to extract, use:
+xz -cd linux-4.X.tar.xz | tar xvf -
+(dnf install kernel-dev appears to do something but not sure what)
+
+see this for package management:
+https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management
+(dnf is the tool to use for package download / removal)
+
+
+////////// UBUNTU //////////
+
+download
+https://rcn-ee.com/rootfs/eewiki/minfs/ubuntu-20.04.6-minimal-armhf-2023-08-22.tar.xz
+tar xf ubuntu-20.04.6-minimal-armhf-2023–08–22.tar.xz
+
+Copy the prebuilt Ubuntu .tar to sdcard:
+sudo tar xfvp $ZC706_UBUNTU_DIR/armhf-rootfs-ubuntu-focal.tar -C /media/ecilasun/rootfs
+
+Now we need to copy all drivers to lib/modules/6.***-xilinx-**** folder from petalinux build rootfs.tar file from lib/modules (images/Linux)
+Might need to use tar -xzf rootfs.tar.gz if the file system doesn't have built in tar decompression.
+
+Next, we set up the rights
+sudo chown root:root /media/ecilasun/rootfs
+sudo chmod 755 /media/ecilasun/rootfs
+
+And we flush everything to disk
+sync
+
+Remove the card from the linux machine, plug it into the zynq board and reboot
+
+First thing to do is to fix the read-only filesystem issue:
+sudo mount -o remount,rw /dev/mmcblk0p2
+
+Next most important thing is to make sure /etc/fstab is populated
+/dev/mmcblk0p2 / auto errors=remount-ro 0 1
+/dev/mmcblk0p1 /boot/uboot auto defaults 0 2
+/dev/mmcblk0p3 /data auto defaults 0 3
+
+The a few host name changes are required
+etc/hostname:
+sandpiper
+
+etc/hosts:
+127.0.1.1       sandpiper.localdomain   sandpiper
+
+/// At this point doing a reboot is a good idea to see if everything is working
+sudo reboot
+
+After this we need to ensure systemd-networkd (and resolved) are running and not NetworkManager
+sudo systemctl stop NetworkManager.service
+sudo systemctl disable NetworkManager.service
+sudo systemctl start systemd-networkd
+
+Also make sure this symbolink link is correct and is not a file:
+sudo rm /etc/resolv.conf
+sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+Then we edit /etc/netplan/01-network-manager-all.yaml and add these lines:
+sudo nano /etc/netplan/01-network-manager-all.yaml
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: true
+      gateway4: 192.168.0.1
+      nameservers:
+        addresses: [1.1.1.1, 8.8.8.8, 8.8.4.4]
+
+Then running this and rebooting should work:
+sudo netplan apply
+
+Now ping www.google.com should work as expected
+
+/// At this point doing a reboot is a good idea to see if everything is working
+sudo reboot
+
+Time to make sure everything is up to date (upgrade part will take a while):
+sudo apt-get update
+sudo apt-get upgrade
+
+Now we can probably update our temppwd to something else. Use:
+passwd
+and enter the old password (temppwd) followed by the new one
+
+Along with this we probably don't want to see the old 'username:password' prompt:
+sudo mv /etc/issue /etc/issue.orig
+
+////////// Framebuffer &  fbcon: //////////
+After doing this the fbcon should 'just work' on next reboot
+To change the current font, use:
+sudo dpkg-reconfigure console-setup
+(Recommended one is Terminus at 6x12 resolution)
+
+
+////////// Development tools: //////////
+For gcc 13 to run as gcc:
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt update
+sudo apt install gcc-13 g++-13 make
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 131 --slave /usr/bin/g++ g++ /usr/bin/g++-13 --slave /usr/bin/gcov gcov /usr/bin/gcov-13
+
+Now we can pull the sandpiper SDK onto /data drive (mmc partition #3):
+git clone https://github.com/ecilasun/sandpiper_sdk
+
+Try running Quake:
+cd /data/sandpiper_sdk/quake
+sudo ./quake (we need sudo for now due to use of /dev/mem, will work on a custom driver soon)
+
+//// To write device drivers we need these:
+sudo apt-get install build-essential kmod
+sudo apt-get install linux-headers-5.4.0-armv7-x8 <--- actual version to be figured out
+see https://sysprog21.github.io/lkmpg/
+
+
+////////// Using fbterm instead: /////////
+
+sudoedit /usr/sbin/fbterm-login and paste the following:
+#!/usr/bin/sh
+fbterm -- /bin/bash -c "TERM=fbterm login -p"
+
+make it executable with sudo chmod +x /usr/sbin/fbterm-login
+
+edit /lib/systemd/system/getty@.service and change ExecStart line to:
+ExecStart=-/sbin/agetty --noclear -n -l /usr/sbin/fbterm-login %I $TERM
+
+save, sudo reboot.
+
+To turn off fbcon which will keep interfering:
+TODO
+
+NOTE:
+now edit the /etc/modules file and add just this line (without the .ko extension)
+simplefb
+then reboot. We should be able to see simplefb as a driver now when we do a lsmod
+But then what?
+
+---------- Setting up sandpiper driver
+
+To give access to current user (which must be added to 'video' group) for the sandpiper platform driver:
+
+sudo nano /etc/udev/rules.d/99-sandpiper.rules
+
+add the following and save the file:
+KERNEL=="sandpiper", GROUP="video", MODE="0666"
+
+then run:
+
+sudo udevadm control --reload-rules
+sudo udevadm trigger
