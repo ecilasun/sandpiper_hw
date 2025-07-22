@@ -100,13 +100,6 @@ always @(posedge audioclock) begin
 	rstaudion <= aresetnA;
 end
 
-(* async_reg = "true" *) logic rstaudion2;
-(* async_reg = "true" *) logic aresetnA2;
-always @(posedge audiosampleclk) begin
-	aresetnA2 <= aresetn;
-	rstaudion2 <= aresetnA2;
-end
-
 // --------------------------------------------------
 // Misc
 // --------------------------------------------------
@@ -178,7 +171,7 @@ COUNTER_LOAD_MACRO #(
 	.LOAD_DATA(9'd0),
 	.RST(1'b0) );
 
-// Rising edge of 44.1KHz clock triggers audiosampleclk
+// Rising edge of 44.1KHz clock
 BUFG BUFG_inst ( .O(audiosampleclk), .I(count[8]));
 
 // ------------------------------------------------------------------------------------
@@ -238,7 +231,7 @@ samplemem samplememinst (
   .wea(samplewe),
   .addra(inaddr),
   .dina(sampleIn),
-  .clkb(audiosampleclk),
+  .clkb(audioclock),
   .addrb(outaddr),
   .enb(samplere),
   .doutb(sampleOut) );
@@ -445,8 +438,8 @@ end
 // ------------------------------------------------------------------------------------
 
 // Next clock is end of 44.1KHz cycle, advance read cursor and prepare to read next sample
-always@(posedge audiosampleclk) begin
-	if (~rstaudion2) begin
+always@(posedge audioclock) begin
+	if (~rstaudion) begin
 		tx_data_lr <= 0;
 		readCursor <= 10'd0;
 		readLowbits <= 2'd0;
@@ -455,8 +448,12 @@ always@(posedge audiosampleclk) begin
 		samplere <= 1'b0;
 
 	end else begin	
-		// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
-		{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
+
+		// Increment cursor on rising edge of sample clock
+		if (count==9'h0ff) begin
+			// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
+			{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
+		end
 
 		// Next pair of stereo samples
 		tx_data_lr <= sampleoutputrateselector == 4'd0 ? 32'd0 : sampleOut;
