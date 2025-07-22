@@ -100,6 +100,13 @@ always @(posedge audioclock) begin
 	rstaudion <= aresetnA;
 end
 
+(* async_reg = "true" *) logic rstaudion2;
+(* async_reg = "true" *) logic aresetnA2;
+always @(posedge audiosampleclk) begin
+	aresetnA2 <= aresetn;
+	rstaudion2 <= aresetnA2;
+end
+
 // --------------------------------------------------
 // Misc
 // --------------------------------------------------
@@ -164,14 +171,14 @@ COUNTER_LOAD_MACRO #(
 	.DEVICE("7SERIES"), 
 	.WIDTH_DATA(9) ) counterinst (
 	.Q(count),
-	.CLK(audioclock),
+	.CLK(audioclock), // Assuming this is 22579200Hz, a divide by 512 yields 44100Hz
 	.CE(counterenabled),
 	.DIRECTION(1'b1),
 	.LOAD(~rstaudion),
 	.LOAD_DATA(9'd0),
 	.RST(1'b0) );
 
-// 44.1KHz output clock for audio
+// Rising edge of 44.1KHz clock triggers audiosampleclk
 BUFG BUFG_inst ( .O(audiosampleclk), .I(count[8]));
 
 // ------------------------------------------------------------------------------------
@@ -231,7 +238,7 @@ samplemem samplememinst (
   .wea(samplewe),
   .addra(inaddr),
   .dina(sampleIn),
-  .clkb(audioclock),
+  .clkb(audiosampleclk),
   .addrb(outaddr),
   .enb(samplere),
   .doutb(sampleOut) );
@@ -438,8 +445,8 @@ end
 // ------------------------------------------------------------------------------------
 
 // Next clock is end of 44.1KHz cycle, advance read cursor and prepare to read next sample
-always@(posedge audioclock) begin
-	if (~rstaudion) begin
+always@(posedge audiosampleclk) begin
+	if (~rstaudion2) begin
 		tx_data_lr <= 0;
 		readCursor <= 10'd0;
 		readLowbits <= 2'd0;
@@ -448,11 +455,8 @@ always@(posedge audioclock) begin
 		samplere <= 1'b0;
 
 	end else begin	
-
-		if (count==9'h0ff) begin
-			// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
-			{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
-		end
+		// Step cursor based on playback rate (+1.0, +0.5, +0.25 or +0.0)
+		{readCursor, readLowbits} <= {readCursor, readLowbits} + {8'd0, sampleoutputrateselector};
 
 		// Next pair of stereo samples
 		tx_data_lr <= sampleoutputrateselector == 4'd0 ? 32'd0 : sampleOut;
