@@ -234,8 +234,7 @@ logic colormode;			// 0:indexed color, 1:16bit color
 // --------------------------------------------------
 
 // Sufficient space for 2048x8bit pixels
-// Use synthesis attribute to ensure block RAM inference
-(* ram_style = "block" *) logic [63:0] scanlinecache [0:255];
+logic [63:0] scanlinecache [0:255];
 
 initial begin
 	for (int i=0; i<256; i=i+1) begin
@@ -243,27 +242,20 @@ initial begin
 	end
 end
 
-logic [63:0] scanlinedout;
+wire [63:0] scanlinedout;
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
+logic [7:0] scanlinewa_offset;
 logic [7:0] scanlinera;
+logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
 
-// Write port - clocked
 always @(posedge aclk) begin
 	if (scanlinewe)
-		scanlinecache[scanlinewa] <= scanlinedin;
+		scanlinecache[scanlinewa + scanlinewa_offset] <= scanlinedin;
 end
-
-// Read port - clocked for block RAM inference
-always @(posedge clk25) begin
-	if (~rst25n) begin
-		scanlinedout <= 64'd0; 
-	end else begin
-		scanlinedout <= scanlinecache[scanlinera];
-	end
-end
+assign scanlinedout = scanlinecache[scanlinera + scanlinera_offset];
 
 // --------------------------------------------------
 // Output address selection
@@ -280,15 +272,6 @@ always_comb begin
 	endcase
 end
 
-logic [3:0] pixelscanaddr_r;
-always @(posedge clk25) begin
-	if (~rst25n) begin
-		pixelscanaddr_r <= 4'd0;
-	end else begin
-		pixelscanaddr_r <= pixelscanaddr;
-	end
-end
-
 // --------------------------------------------------
 // Output color
 // --------------------------------------------------
@@ -299,7 +282,7 @@ logic [7:0] paletteindex;
 // 4x 16bit pixels
 always_comb begin
 	// Pixel data is 16 bits
-	unique case (pixelscanaddr_r[1:0])
+	unique case (pixelscanaddr[1:0])
 		//                   R:G:B
 		2'b00: rgbcolor = { scanlinedout[15:0]     };
 		2'b01: rgbcolor = { scanlinedout[31:16]    };
@@ -310,7 +293,7 @@ end
 
 // 8x 8bit pixels
 always_comb begin
-	unique case (pixelscanaddr_r[2:0])
+	unique case (pixelscanaddr[2:0])
 		3'b000: paletteindex = scanlinedout[7:0];
 		3'b001: paletteindex = scanlinedout[15:8];
 		3'b010: paletteindex = scanlinedout[23:16];
@@ -378,6 +361,8 @@ typedef enum logic [2:0] {
 	SETVPAGE,
 	SETPAL,
 	VMODE,
+	SHIFTCACHE,
+	SHIFTSCANOUT,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -395,6 +380,8 @@ always_ff @(posedge aclk) begin
 		scanwidth <= 1'b1;  // 640-wide by default
 		colormode <= 1'b1;  // 16 bit color by default
 		palettewe <= 1'b0;
+		scanlinewa_offset <= 8'd0;
+		scanlinera_offset <= 8'd0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
 	end else begin
@@ -417,6 +404,8 @@ always_ff @(posedge aclk) begin
 					8'h00:		cmdmode <= SETVPAGE;	// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
 					8'h01:		cmdmode <= SETPAL;		// Set 24 bit color palette entry (followed by 8bit address+24bit color in next word)
 					8'h02:		cmdmode <= VMODE;		// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
+					8'h03:		cmdmode <= SHIFTCACHE;	// Offset for scanline cache writes
+					8'h04:		cmdmode <= SHIFTSCANOUT; // Offset for scanline cache reads
 					default:	cmdmode <= FINALIZE;	// Invalid command, wait one clock and try next
 				endcase
 			end
@@ -459,6 +448,26 @@ always_ff @(posedge aclk) begin
 						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 10*128
 					endcase
 
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SHIFTCACHE: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					// Scanline cache write address offset
+					scanlinewa_offset <= vpufifodout[7:0];
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SHIFTSCANOUT: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					// Scanline cache read address offset
+					scanlinera_offset <= vpufifodout[7:0];
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
