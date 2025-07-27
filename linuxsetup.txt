@@ -360,6 +360,10 @@ sudo apt-get install build-essential kmod
 sudo apt-get install linux-headers-5.4.0-armv7-x8 <--- actual version to be figured out
 see https://sysprog21.github.io/lkmpg/
 
+To develop on windows, you can use this build from ARM
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-linux-gnueabihf.exe
+Recommended install path is C:\gccarmlinux\ for easy access from vscode
 
 /////// Copying files to-from the device from other machines
 
