@@ -302,12 +302,41 @@ and enter the old password (temppwd) followed by the new one
 Along with this we probably don't want to see the old 'username:password' prompt:
 sudo mv /etc/issue /etc/issue.orig
 
-////////// Framebuffer &  fbcon: //////////
-After doing this the fbcon should 'just work' on next reboot
-To change the current font, use:
-sudo dpkg-reconfigure console-setup
-(Recommended one is Terminus at 6x12 resolution)
+//////////////////// Setting up sandpiper driver
 
+To give access to current user (which must be added to 'video' group) for the sandpiper platform driver:
+
+sudo nano /etc/udev/rules.d/99-sandpiper.rules
+
+add the following and save the file:
+KERNEL=="sandpiper", GROUP="video", MODE="0666"
+
+then run:
+
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+/////////// fbterm
+
+install fbterm:
+sudo apt-get install fbterm
+
+edit getty service:
+sudo nano /lib/systemd/system/getty@.service
+change matching line to these, including the empty execstart:
+ExecStart=
+ExecStart=-/sbin/agetty -n -l /usr/bin/fbterm -o /bin/login %I $TERM
+
+NOTE: the font setup is in the /root user's directory since fbterm starts as root.
+
+Edit this file and set font/size to your preferences:
+sudo nano /root/.fbtermrc
+
+AudioLinkConsole Demi is a nice font to use at 10 pts. Add / replace these lines:
+font-names=AudioLinkConsole Demi
+font-size=10
+
+see: https://read.yjmbo.net/yojimbo/fbterm-on-debian-12
 
 ////////// Development tools: //////////
 For gcc 13 to run as gcc:
@@ -330,42 +359,3 @@ sudo ./quake (we need sudo for now due to use of /dev/mem, will work on a custom
 sudo apt-get install build-essential kmod
 sudo apt-get install linux-headers-5.4.0-armv7-x8 <--- actual version to be figured out
 see https://sysprog21.github.io/lkmpg/
-
-
----------- Setting up sandpiper driver
-
-To give access to current user (which must be added to 'video' group) for the sandpiper platform driver:
-
-sudo nano /etc/udev/rules.d/99-sandpiper.rules
-
-add the following and save the file:
-KERNEL=="sandpiper", GROUP="video", MODE="0666"
-
-then run:
-
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-
-
-/////////// fbterm
-
-install fbterm:
-sudo apt-get install fbterm
-
-edit getty service:
-sudo nano /lib/systemd/system/getty@.service
-change matching line to these, including the empty execstart:
-ExecStart=
-ExecStart=-/sbin/agetty -n -l /usr/bin/fbterm -o /bin/login %I $TERM
-
-NOTE: the font setup is in the /root user's directory since fbterm starts as root.
-
-Edit this file and set font/size to your preferences:
-sudo nano /root/.fbtermrc
-
-AudioLinkConsole Demi is a nice font to use at 10 pts. Add / replace these lines:
-font-names=AudioLinkConsole Demi
-font-size=10
-
-
-see: https://read.yjmbo.net/yojimbo/fbterm-on-debian-12
