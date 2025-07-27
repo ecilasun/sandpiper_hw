@@ -332,28 +332,6 @@ sudo apt-get install linux-headers-5.4.0-armv7-x8 <--- actual version to be figu
 see https://sysprog21.github.io/lkmpg/
 
 
-////////// Using fbterm instead: /////////
-
-sudoedit /usr/sbin/fbterm-login and paste the following:
-#!/usr/bin/sh
-fbterm -- /bin/bash -c "TERM=fbterm login -p"
-
-make it executable with sudo chmod +x /usr/sbin/fbterm-login
-
-edit /lib/systemd/system/getty@.service and change ExecStart line to:
-ExecStart=-/sbin/agetty --noclear -n -l /usr/sbin/fbterm-login %I $TERM
-
-save, sudo reboot.
-
-To turn off fbcon which will keep interfering:
-TODO
-
-NOTE:
-now edit the /etc/modules file and add just this line (without the .ko extension)
-simplefb
-then reboot. We should be able to see simplefb as a driver now when we do a lsmod
-But then what?
-
 ---------- Setting up sandpiper driver
 
 To give access to current user (which must be added to 'video' group) for the sandpiper platform driver:
@@ -371,9 +349,23 @@ sudo udevadm trigger
 
 /////////// fbterm
 
+install fbterm:
+sudo apt-get install fbterm
+
+edit getty service:
 sudo nano /lib/systemd/system/getty@.service
 change matching line to these, including the empty execstart:
 ExecStart=
 ExecStart=-/sbin/agetty -n -l /usr/bin/fbterm -o /bin/login %I $TERM
+
+NOTE: the font setup is in the /root user's directory since fbterm starts as root.
+
+Edit this file and set font/size to your preferences:
+sudo nano /root/.fbtermrc
+
+AudioLinkConsole Demi is a nice font to use at 10 pts. Add / replace these lines:
+font-names=AudioLinkConsole Demi
+font-size=10
+
 
 see: https://read.yjmbo.net/yojimbo/fbterm-on-debian-12
