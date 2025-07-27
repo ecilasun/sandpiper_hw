@@ -365,6 +365,12 @@ https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
 arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-linux-gnueabihf.exe
 Recommended install path is C:\gccarmlinux\ for easy access from vscode
 
+/////// Development tools - git
+
+git config --global http.sslVerify false
+git config --global credential.helper store
+git config --global user.name "Engin Cilasun"
+git config --global user.email "ecilasun@me.com"
 
 /////// Development tools - gcc 14.3.0
 
@@ -379,6 +385,9 @@ sudo make install
 
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/local/gcc-14.3.0/bin/g++14.3.0 14
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-14.3.0/bin/gcc14.3.0 14
+
+alternatively this might also work (untested)
+https://launchpad.net/ubuntu/questing/armhf/gccgo-14-arm-linux-gnueabihf-dbgsym/14.3.0-1ubuntu1
 
 /////// Copying files to-from the device from other machines
 
