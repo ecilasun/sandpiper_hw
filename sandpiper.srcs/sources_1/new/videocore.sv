@@ -258,7 +258,11 @@ end
 
 // Read port - clocked for block RAM inference
 always @(posedge clk25) begin
-	scanlinedout <= scanlinecache[scanlinera];
+	if (~rst25n) begin
+		scanlinedout <= 64'd0; 
+	end else begin
+		scanlinedout <= scanlinecache[scanlinera];
+	end
 end
 
 // --------------------------------------------------
@@ -276,6 +280,15 @@ always_comb begin
 	endcase
 end
 
+logic [3:0] pixelscanaddr_r;
+always @(posedge clk25) begin
+	if (~rst25n) begin
+		pixelscanaddr_r <= 4'd0;
+	end else begin
+		pixelscanaddr_r <= pixelscanaddr;
+	end
+end
+
 // --------------------------------------------------
 // Output color
 // --------------------------------------------------
@@ -286,7 +299,7 @@ logic [7:0] paletteindex;
 // 4x 16bit pixels
 always_comb begin
 	// Pixel data is 16 bits
-	unique case (pixelscanaddr[1:0])
+	unique case (pixelscanaddr_r[1:0])
 		//                   R:G:B
 		2'b00: rgbcolor = { scanlinedout[15:0]     };
 		2'b01: rgbcolor = { scanlinedout[31:16]    };
@@ -297,7 +310,7 @@ end
 
 // 8x 8bit pixels
 always_comb begin
-	unique case (pixelscanaddr[2:0])
+	unique case (pixelscanaddr_r[2:0])
 		3'b000: paletteindex = scanlinedout[7:0];
 		3'b001: paletteindex = scanlinedout[15:8];
 		3'b010: paletteindex = scanlinedout[23:16];
