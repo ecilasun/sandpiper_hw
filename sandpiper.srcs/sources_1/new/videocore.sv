@@ -234,7 +234,8 @@ logic colormode;			// 0:indexed color, 1:16bit color
 // --------------------------------------------------
 
 // Sufficient space for 2048x8bit pixels
-logic [63:0] scanlinecache [0:255];
+// Use synthesis attribute to ensure block RAM inference
+(* ram_style = "block" *) logic [63:0] scanlinecache [0:255];
 
 initial begin
 	for (int i=0; i<256; i=i+1) begin
@@ -242,22 +243,23 @@ initial begin
 	end
 end
 
-wire [63:0] scanlinedout;
+logic [63:0] scanlinedout;
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
 logic [7:0] scanlinera;
 logic [7:0] rdata_cnt;
 
+// Write port - clocked
 always @(posedge aclk) begin
-	/*if (~aresetn) begin
-		
-	end else begin*/
-		if (scanlinewe)
-			scanlinecache[scanlinewa] <= scanlinedin;
-	/*end*/
+	if (scanlinewe)
+		scanlinecache[scanlinewa] <= scanlinedin;
 end
-assign scanlinedout = scanlinecache[scanlinera];
+
+// Read port - clocked for block RAM inference
+always @(posedge clk25) begin
+	scanlinedout <= scanlinecache[scanlinera];
+end
 
 // --------------------------------------------------
 // Output address selection
