@@ -250,6 +250,7 @@ logic [7:0] scanlinewa_offset;
 logic [7:0] scanlinera;
 logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
+logic [2:0] pixel_offset;
 
 always @(posedge aclk) begin
 	if (scanlinewe)
@@ -262,13 +263,14 @@ assign scanlinedout = scanlinecache[scanlinera + scanlinera_offset];
 // --------------------------------------------------
 
 logic [3:0] pixelscanaddr;
+wire [9:0] video_x_shifted = video_x + pixel_offset;
 
 always_comb begin
 	unique case ({scanwidth, colormode})
-		2'b00: begin pixelscanaddr = video_x[4:1];			scanlinera = {2'b0, video_x[9:4]}; end	// 320*240 8bpp,  5x64byte blocks, index = 1*(x/2)/8
-		2'b01: begin pixelscanaddr = {1'b0,video_x[3:1]};	scanlinera = {1'b0, video_x[9:3]}; end	// 320*240 16bpp 10x64byte blocks, index = 2*(x/2)/8
-		2'b10: begin pixelscanaddr = video_x[3:0];			scanlinera = {1'b0, video_x[9:3]}; end	// 640*480 8bpp  10x64byte blocks, index = 1*(x/1)/8
-		2'b11: begin pixelscanaddr = {1'b0,video_x[2:0]};	scanlinera = video_x[9:2]; end			// 640*480 16bpp 20x64byte blocks, index = 2*(x/1)/8
+		2'b00: begin pixelscanaddr = video_x_shifted[4:1];			scanlinera = {2'b0, video_x_shifted[9:4]}; end	// 320*240 8bpp,  5x64byte blocks, index = 1*(x/2)/8
+		2'b01: begin pixelscanaddr = {1'b0,video_x_shifted[3:1]};	scanlinera = {1'b0, video_x_shifted[9:3]}; end	// 320*240 16bpp 10x64byte blocks, index = 2*(x/2)/8
+		2'b10: begin pixelscanaddr = video_x_shifted[3:0];			scanlinera = {1'b0, video_x_shifted[9:3]}; end	// 640*480 8bpp  10x64byte blocks, index = 1*(x/1)/8
+		2'b11: begin pixelscanaddr = {1'b0,video_x_shifted[2:0]};	scanlinera = video_x_shifted[9:2]; end			// 640*480 16bpp 20x64byte blocks, index = 2*(x/1)/8
 	endcase
 end
 
@@ -356,13 +358,14 @@ localparam BURST_WRAP  = 2'b10;
 // Command FIFO
 // --------------------------------------------------
 
-typedef enum logic [2:0] {
+typedef enum logic [3:0] {
 	WCMD, DISPATCH,
 	SETVPAGE,
 	SETPAL,
 	VMODE,
 	SHIFTCACHE,
 	SHIFTSCANOUT,
+	SHIFTPIXEL,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -382,6 +385,7 @@ always_ff @(posedge aclk) begin
 		palettewe <= 1'b0;
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
+		pixel_offset <= 3'd0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
 	end else begin
@@ -401,12 +405,13 @@ always_ff @(posedge aclk) begin
 
 			DISPATCH: begin
 				case (vpucmd[7:0])
-					8'h00:		cmdmode <= SETVPAGE;	// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
-					8'h01:		cmdmode <= SETPAL;		// Set 24 bit color palette entry (followed by 8bit address+24bit color in next word)
-					8'h02:		cmdmode <= VMODE;		// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
-					8'h03:		cmdmode <= SHIFTCACHE;	// Offset for scanline cache writes
-					8'h04:		cmdmode <= SHIFTSCANOUT; // Offset for scanline cache reads
-					default:	cmdmode <= FINALIZE;	// Invalid command, wait one clock and try next
+					8'h00:		cmdmode <= SETVPAGE;		// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
+					8'h01:		cmdmode <= SETPAL;			// Set 24 bit color palette entry (followed by 8bit address+24bit color in next word)
+					8'h02:		cmdmode <= VMODE;			// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
+					8'h03:		cmdmode <= SHIFTCACHE;		// Offset for scanline cache writes
+					8'h04:		cmdmode <= SHIFTSCANOUT;	// Offset for scanline cache reads
+					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
+					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
 
@@ -468,6 +473,16 @@ always_ff @(posedge aclk) begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					// Scanline cache read address offset
 					scanlinera_offset <= vpufifodout[7:0];
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SHIFTPIXEL: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					// Pixel address offset
+					pixel_offset <= vpufifodout[2:0];
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
