@@ -250,7 +250,7 @@ logic [7:0] scanlinewa_offset;
 logic [7:0] scanlinera;
 logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
-logic [2:0] pixel_offset;
+logic [3:0] pixel_offset;
 
 always @(posedge aclk) begin
 	if (scanlinewe)
@@ -385,7 +385,7 @@ always_ff @(posedge aclk) begin
 		palettewe <= 1'b0;
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
-		pixel_offset <= 3'd0;
+		pixel_offset <= 4'd0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
 	end else begin
@@ -482,7 +482,7 @@ always_ff @(posedge aclk) begin
 			SHIFTPIXEL: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					// Pixel address offset
-					pixel_offset <= vpufifodout[2:0];
+					pixel_offset <= vpufifodout[3:0];
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
