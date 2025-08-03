@@ -394,3 +394,14 @@ https://launchpad.net/ubuntu/questing/armhf/gccgo-14-arm-linux-gnueabihf-dbgsym/
 Download WinSCP for a graphical user interface.
 
 Use the scp user@ipaddress command to copy files from Linux command line.
+
+
+///////// Installing glibc 2.34 if you're using the 14.3.0 compiler toolchaing on windows
+
+sudo apt-get install gawk bison -y
+wget -c https://ftp.gnu.org/gnu/glibc/glibc-2.34.tar.gz
+tar -zxvf glibc-2.34.tar.gz && cd glibc-2.34
+mkdir glibc-build && cd glibc-build
+../configure --prefix=/opt/glibc-2.34
+make 
+sudo make install
