@@ -200,8 +200,11 @@ endgenerate
 
 // NOTE: First, set up the scanout address, then enable video scanout
 logic [31:0] scanaddr;
+logic [31:0] scanaddrsecondary;
 logic [31:0] scanoffset;
 logic scanenable;
+logic syncmode;
+logic swapmode;
 
 // --------------------------------------------------
 // Common
@@ -366,6 +369,8 @@ typedef enum logic [3:0] {
 	SHIFTCACHE,
 	SHIFTSCANOUT,
 	SHIFTPIXEL,
+	SETSECONDBUFFER,
+	SYNCSWAP,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -374,20 +379,23 @@ logic [31:0] vpucmd;
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		vpucmd <= 32'd0;
-		scanaddr <= 32'h18000000; // Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
-		burstmask <= 10'b1111111111; // 640x2 bytes
+		scanaddr <= 32'h18000000;			// Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
+		scanaddrsecondary <= 32'h18000000;	// Secondary buffer to use for swap
+		burstmask <= 10'b1111111111;		// 640x2 bytes
 		lastscanline <= 10'd523;
 		palettedin <= 24'd0;
-		scanenable <= 1'b1; // Video output is enabled by default
+		scanenable <= 1'b1;					// Video output is enabled by default
 		cmdre <= 1'b0;
-		scanwidth <= 1'b1;  // 640-wide by default
-		colormode <= 1'b1;  // 16 bit color by default
+		scanwidth <= 1'b1;					// 640-wide by default
+		colormode <= 1'b1;					// 16 bit color by default
 		palettewe <= 1'b0;
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
 		pixel_offset <= 4'd0;
 		cmdmode <= WCMD;
 		palettewa <= 8'd0;
+		syncmode <= 1'b0;
+		swapmode <= 1'b0;
 	end else begin
 		cmdre <= 1'b0;
 		palettewe <= 1'b0;
@@ -411,6 +419,8 @@ always_ff @(posedge aclk) begin
 					8'h03:		cmdmode <= SHIFTCACHE;		// Offset for scanline cache writes
 					8'h04:		cmdmode <= SHIFTSCANOUT;	// Offset for scanline cache reads
 					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
+					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
+					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and spawn buffers on the hardware side
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
@@ -489,6 +499,30 @@ always_ff @(posedge aclk) begin
 				end
 			end
 
+			SETSECONDBUFFER: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					scanaddrsecondary <= vpufifodout;	// Set new video scanout address (64 byte cache aligned, as we read in bursts)
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+			
+			SYNCSWAP: begin
+				// Wait for vsync then swap buffers
+				// or alternatively do not wait if bit 8 is set in the command
+				// NOTE: This lets CPU request a synced swap which is more precise when done here,
+				// however it still needs to check if there are any pending commands in the FIFO
+				// before resuming submits (~vpufifoempty == 1'b1)
+				// The advantage here is that the FIFO empty wait doesn't have to be that precise
+				// and can start somewhere within the to 80%-ish of the frame
+				if (blanktoggle || vpufifodout[8]) begin
+					scanaddrsecondary <= scanaddr;
+					scanaddr <= scanaddrsecondary;
+					cmdmode <= FINALIZE;
+				end
+			end
+
 			FINALIZE: begin
 				cmdmode <= WCMD;
 			end
@@ -538,8 +572,8 @@ end
 wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
 wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
 
-// {0,scanline[9:0],vsynctoggle[0:0]}
-assign vpustate = {21'd0, scanline, blanktoggle};
+// {0,!fifoempty,scanline[9:0],vsynctoggle[0:0]}
+assign vpustate = {20'd0, ~vpufifoempty, scanline, blanktoggle};
 
 typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, DATABURST, ADVANCESCANLINEADDRESS} scanstatetype;
 scanstatetype scanstate;
