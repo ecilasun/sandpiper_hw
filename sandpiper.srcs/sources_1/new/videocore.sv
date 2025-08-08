@@ -371,14 +371,48 @@ typedef enum logic [3:0] {
 	SHIFTPIXEL,
 	SETSECONDBUFFER,
 	SYNCSWAP,
+	WCONTROLREG,
+	WPROG, WPROGADDRS, WPROGDATA,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
 logic [31:0] vpucmd;
+logic [7:0] vpuctl;
+
+logic [31:0] progdin;
+logic [9:0] progaddr;
+logic [3:0] progwe;
+logic [3:0] prgwmask;
+
+logic [3:0] vpuprgwe;
+logic [9:0] vpuprgPC;
+logic [31:0] vpuprgdin;
+wire [31:0] vpuprgdout;
+
+blk_mem_gen_0 VPUProgmem4K (
+  // command buffer side
+  .clka(aclk),
+  .ena(1'b1),
+  .wea(progwe),
+  .addra(progaddr),
+  .dina(progdin),
+  .douta(),
+  // VPU side
+  .clkb(aclk),
+  .enb(vpuctl[0]), // Program enable
+  .web(vpuprgwe),
+  .addrb(vpuprgPC),
+  .dinb(vpuprgdin),
+  .doutb(vpuprgdout) );
 
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
+		progwe <= 4'd0;
+		prgwmask <= 4'd0;
+		progaddr <= 10'd0;
+		progdin <= 32'd0;
 		vpucmd <= 32'd0;
+		vpuctl <= 8'd0;
 		scanaddr <= 32'h18000000;			// Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
 		scanaddrsecondary <= 32'h18000000;	// Secondary buffer to use for swap
 		burstmask <= 10'b1111111111;		// 640x2 bytes
@@ -399,6 +433,7 @@ always_ff @(posedge aclk) begin
 	end else begin
 		cmdre <= 1'b0;
 		palettewe <= 1'b0;
+		progwe <= 4'd0;
 
 		case (cmdmode)
 			WCMD: begin
@@ -421,6 +456,8 @@ always_ff @(posedge aclk) begin
 					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
 					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and spawn buffers on the hardware side
+					8'h08:		cmdmode <= WCONTROLREG;		// Control register write
+					8'h09:		cmdmode <= WPROG;			// Write program word to given address (WPROGWORD addr, command)
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
@@ -507,7 +544,7 @@ always_ff @(posedge aclk) begin
 					cmdmode <= FINALIZE;
 				end
 			end
-			
+
 			SYNCSWAP: begin
 				// Wait for vsync then swap buffers
 				// or alternatively do not wait if bit 8 is set in the command
@@ -516,9 +553,45 @@ always_ff @(posedge aclk) begin
 				// before resuming submits (~vpufifoempty == 1'b1)
 				// The advantage here is that the FIFO empty wait doesn't have to be that precise
 				// and can start somewhere within the to 80%-ish of the frame
-				if (blanktoggle || vpufifodout[8]) begin
+				if (blanktoggle || vpufifodout[8]) begin // wait/don't wait vsync
 					scanaddrsecondary <= scanaddr;
 					scanaddr <= scanaddrsecondary;
+					cmdmode <= FINALIZE;
+				end
+			end
+			
+			WCONTROLREG: begin
+				// Set or clear VPU control register bits
+				// ...  7    6    5    4    3    2    1    0
+				// -    -    -    -    -    -    -    -    VRUN
+				// VRUN: Run VPU program when high
+				if (vpufifodout[8]) // Set mask
+					vpuctl <= vpuctl | vpufifodout[16:9];
+				else // Clear mask
+					vpuctl <= vpuctl & (~vpufifodout[16:9]);
+				cmdmode <= FINALIZE;
+			end
+			
+			WPROG: begin
+				prgwmask <= vpufifodout[11:8]; // write strobe
+				cmdmode <= WPROGADDRS;
+			end
+			
+			WPROGADDRS: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					progaddr <= vpufifodout; // Address at which the command goes to
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= WPROGDATA;
+				end
+			end
+			
+			WPROGDATA: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					progdin <= vpufifodout; // Program word
+					progwe <= prgwmask;
+					// Advance FIFO
+					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
 				end
 			end
@@ -665,18 +738,158 @@ always_ff @(posedge aclk) begin
 			end
 
 			ADVANCESCANLINEADDRESS: begin
-				// Are we done?
-				if (burststate[0] == 1'b0) begin
-					scanstate <= STARTLOAD;
-				end else begin
-					// Next burst
-					scanstate <= STARTSCANOUT;
-				end
+				// Next burst or done
+				scanstate <= burststate[0] ? STARTSCANOUT : STARTLOAD;
+
 				// Next burst or scanline always starts 128 bytes away from current one to make hardware simpler
 				// i.e. once we're at the last burst of a scanline, next one is same distance as this one's to previous
 				scanoffset <= scanoffset + 128;
 			end
 
+		endcase
+	end
+end
+
+// --------------------------------------------------
+// VPU state machine
+// --------------------------------------------------
+
+// Instructions
+`define NOOP	4'h0
+`define WHORZ	4'h1
+`define WVERT	4'h2
+`define SPAL	4'h3
+`define SHFTPIX	4'h4
+`define BRANCH	4'h5
+
+// State
+typedef enum logic [3:0] {
+	VIDLE,
+	FETCH, EXEC,
+	READPARAM,
+	SETUPWAITH, WAITH, SETUPWAITV, WAITV,
+	SETUPPAL,
+	SETUPHSHIFT,
+	SETUPBRANCH,
+	VHALT } vpuprogstatetype;
+vpuprogstatetype vpuprgstate;
+vpuprogstatetype followupstate;
+
+logic [9:0] vpuwaitline;
+logic [9:0] vpuwaitpixel;
+logic [31:0] vpuinstr;
+logic [31:0] vpuparam;
+
+// TODO: VPU register file
+
+always_ff @(posedge clk25) begin
+	if (~rst25n) begin
+		vpuprgstate <= VIDLE;
+		followupstate <= VIDLE;
+		vpuprgwe <= 4'd0;
+		vpuprgPC <= 10'd0;
+		vpuprgdin <= 32'd0;
+		vpuinstr <= 32'd0;
+		vpuparam <= 32'd0;
+		vpuwaitline <= 10'd0;
+		vpuwaitpixel <= 10'd0;
+	end else begin
+		case ({vpuctl[0], vpuprgstate})
+			{1'b1, FETCH}: begin
+				// Read instruction that was already selected with previous vpuprgPC
+				vpuinstr <= vpuprgdout;
+				vpuprgstate <= EXEC;
+			end
+
+			{1'b1, EXEC}: begin
+				vpuprgstate <= FETCH;
+				case (vpuinstr[3:0])
+					`NOOP: begin
+						// Nothing, just wastes one instruction slot
+					end
+					`WHORZ: begin
+						// Wait for scanline (can be outside screen up to scanline 525)
+						// NOTE: Passing an impossible line (>525) here will stop program execution 
+						followupstate <= SETUPWAITH;
+						vpuprgstate <= READPARAM;
+					end
+					`WVERT: begin
+						// Wait for pixel (can be outside screen up to pixel 800)
+						// NOTE: Passing an impossible pixel (>800) here will stop program execution
+						followupstate <= SETUPWAITV;
+						vpuprgstate <= READPARAM;
+					end
+					`SPAL: begin
+						// Set single palette color
+						followupstate <= SETUPPAL;
+						vpuprgstate <= READPARAM;
+					end
+					`SHFTPIX: begin
+						// Set shift amount for this scanline and any following ones
+						followupstate <= SETUPHSHIFT;
+						vpuprgstate <= READPARAM;
+					end
+					`BRANCH: begin
+						// TODO: conditional branch
+						followupstate <= SETUPBRANCH;
+						vpuprgstate <= READPARAM;				
+					end
+				endcase
+
+				// Step to next instruction (TODO: branch / loop)
+				vpuprgPC <= vpuprgPC + 'd4;
+			end
+
+			{1'b1, READPARAM}: begin
+				vpuparam <= vpuprgdout;
+				vpuprgPC <= vpuprgPC + 'd4;
+				vpuprgstate <= followupstate;
+			end
+
+			{1'b1, SETUPWAITH}: begin
+				vpuwaitpixel <= vpuparam;
+				vpuprgstate <= WAITH;
+			end
+
+			{1'b1, WAITH}: begin
+				vpuprgstate <= scanpixel == vpuwaitpixel ? FETCH : WAITH;
+			end
+
+			{1'b1, SETUPWAITV}: begin
+				vpuwaitline <= vpuparam;
+				vpuprgstate <= WAITV;
+			end
+
+			{1'b1, WAITV}: begin
+				vpuprgstate <= scanline == vpuwaitline ? FETCH : WAITV;
+			end
+			
+			{1'b1, SETUPPAL}: begin
+				// TODO: We need a way to circumvent the command input palette writes here or use a write override flag
+				// vpuparam is palette index + color (8+24 bits)
+				vpuprgstate <= FETCH;
+			end
+			
+			{1'b1, SETUPHSHIFT}: begin
+				// TODO: We need a way to circumvent the command input shifts here or use a write override flag
+				//pixel_offset <= vpuparam[3:0];
+				//scanlinewa_offset <= vpufifodout[11:4];
+				//scanlinera_offset <= vpufifodout[19:12];
+				vpuprgstate <= FETCH;
+			end
+			
+			{1'b1, SETUPBRANCH}: begin
+				// Set new program counter
+				vpuprgPC <= vpuparam;
+				vpuprgstate <= FETCH;
+			end
+
+			// Idle, unknown, or exec mode off
+			default: begin
+				vpuprgstate <= vpuctl[0] ? FETCH : VIDLE;
+				// Idle/unknown/execoff modes reset PC to zero
+				vpuprgPC <= 10'd0;
+			end
 		endcase
 	end
 end
