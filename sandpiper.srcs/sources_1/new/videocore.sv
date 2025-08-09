@@ -378,6 +378,10 @@ vpucmdmodetype cmdmode = WCMD;
 
 logic [31:0] vpucmd;
 logic [7:0] vpuctl;
+logic blankt;
+
+logic [1:0] blankshift;
+logic blanktrigger;
 
 logic [31:0] progdin;
 logic [9:0] progaddr;
@@ -430,10 +434,19 @@ always_ff @(posedge aclk) begin
 		palettewa <= 8'd0;
 		syncmode <= 1'b0;
 		swapmode <= 1'b0;
+		blankshift <= 2'b00;
+		blanktrigger <= 1'b0;
 	end else begin
 		cmdre <= 1'b0;
 		palettewe <= 1'b0;
 		progwe <= 4'd0;
+
+		// Shift blanking state, we've just entered vblank if
+		// this shows 2'b01
+		blankshift <= {blankshift[0], blankt};
+		// Latch vblank entry until it's handled
+		if (blankshift == 2'b01)
+			blanktrigger <= 1'b1;
 
 		case (cmdmode)
 			WCMD: begin
@@ -553,7 +566,9 @@ always_ff @(posedge aclk) begin
 				// before resuming submits (~vpufifoempty == 1'b1)
 				// The advantage here is that the FIFO empty wait doesn't have to be that precise
 				// and can start somewhere within the to 80%-ish of the frame
-				if (blanktoggle || vpufifodout[8]) begin // wait/don't wait vsync
+				if (blanktrigger || vpufifodout[8]) begin // wait/don't wait vsync
+					// Reset vblank trigger since we caught it
+					blanktrigger <= 1'b0;
 					scanaddrsecondary <= scanaddr;
 					scanaddr <= scanaddrsecondary;
 					cmdmode <= FINALIZE;
@@ -612,7 +627,6 @@ wire startofrowp = video_x == 10'd0;
 wire endofcolumnp = video_y == 10'd490;
 wire vsyncnow = startofrowp && endofcolumnp;
 
-logic blankt;
 always_ff @(posedge clk25) begin
 	if (~rst25n) begin
 		blankt <= 1'b0;
