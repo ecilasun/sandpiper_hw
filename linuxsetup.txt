@@ -10,6 +10,10 @@ cd sandpiper_petalinux
 # now copy the .xsa file (from export hardware) to the project folder (blockone_wrapper.xsa -> sandpiper_petalinux/)
 # also copy the device tree file to the project-spec folder (see NOTE#1)
 petalinux-config --get-hw-description=. (see NOTE#2)
+petalinux-config -> make sure to enter this under u-boot Configuration/uboot Script Configuration/Pre Bootenv
+	fatload mmc 0:1 0x10000000 splash.bin; cp.b 0x10000000 0x18000000 0x96000
+	and make sure to copy the splash.bin file from this project's root folder into the BOOT folder of your mmc (mmc0 partition1)
+	(NOTE: This only adds about 40ms to startup)
 petalinux-config -c kernel (see NOTE#3)
 petalinux-config -c u-boot (set autoboot delay from 2 to -2, set loglevel to 1, support silent console, also optionally enable boot options and type quiet)
 petalinux-config -c rootfs (don't forget to pick dev tools (especially libmetal) and set username/pwd, also set autoboot, add: sudo, busybox, tar, usbutils, git, grep, vim, minicom, wget, autoconf, automake, binutils, bison, flex, make, kexec-tools, libmetal, libpng, libusb1, libstdc++, gdb, gdbserver, gcc sanitizers, glib-2.0, glibc, ldd, iotop, packagegroup-code-sdk, packagegroup-self-hosted, python3, netcat, empty-root-password, serial-autologin-root, see https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management for package management info)
