@@ -400,6 +400,31 @@ Download WinSCP for a graphical user interface.
 Use the scp user@ipaddress command to copy files from Linux command line.
 
 
+///////// Shutdown screen
+
+// create folder to hold our shutdown image
+sudo mkdir /usr/share/splash
+// copy a splashscreen binary to this folder
+sudo cp /boot/uboot/splash.bin /usr/share/splash/
+
+sudo nano /etc/systemd/sytem/sandpiper-shutdown.service
+[Unit]
+Description=Run custom command at shutdown
+DefaultDependencies=no
+After=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=cat /usr/share/splash/splash.bin > /dev/fb0
+RemainAfterExit=true
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable sandpiper-shutdown.service
+
 ///////// Installing glibc 2.34 if you're using the 14.3.0 compiler toolchaing on windows
 
 sudo apt-get install gawk bison -y
