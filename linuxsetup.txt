@@ -390,6 +390,18 @@ sudo make install
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/local/gcc-14.3.0/bin/g++14.3.0 14
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-14.3.0/bin/gcc14.3.0 14
 
+// For clang
+sudo apt-get install clang
+(clang doesn't want to play along with binutils of ubuntu 20.04 -> 2.34)
+
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+sudo update-alternatives --config clang
+sudo update-alternatives --config clang++
+
+clang --version
+clang++ --version
+
 alternatively this might also work (untested)
 https://launchpad.net/ubuntu/questing/armhf/gccgo-14-arm-linux-gnueabihf-dbgsym/14.3.0-1ubuntu1
 
