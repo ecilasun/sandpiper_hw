@@ -379,6 +379,7 @@ vpucmdmodetype cmdmode = WCMD;
 logic [31:0] vpucmd;
 logic [7:0] vpuctl;
 logic blankt;
+logic blanko;
 
 logic [1:0] blankshift;
 logic blanktrigger;
@@ -443,7 +444,7 @@ always_ff @(posedge aclk) begin
 
 		// Shift blanking state, we've just entered vblank if
 		// this shows 2'b01
-		blankshift <= {blankshift[0], blankt};
+		blankshift <= {blankshift[0], blanko};
 		// Latch vblank entry until it's handled
 		if (blankshift == 2'b01)
 			blanktrigger <= 1'b1;
@@ -624,14 +625,16 @@ end
 // --------------------------------------------------
 
 wire startofrowp = video_x == 10'd0;
-wire endofcolumnp = video_y == 10'd490;
+wire endofcolumnp = video_y == 10'd480;
 wire vsyncnow = startofrowp && endofcolumnp;
 
 always_ff @(posedge clk25) begin
 	if (~rst25n) begin
 		blankt <= 1'b0;
+		blanko <= 1'b0;
 	end else begin
 		blankt <= vsyncnow ? ~blankt : blankt;
+		blanko <= vsyncnow; // High when we hit vblank region
 	end
 end
 
