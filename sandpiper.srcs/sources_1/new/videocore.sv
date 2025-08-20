@@ -574,7 +574,7 @@ always_ff @(posedge aclk) begin
 					cmdmode <= FINALIZE;
 				end
 			end
-			
+
 			WCONTROLREG: begin
 				// Set or clear VPU control register bits
 				// ...  7    6    5    4    3    2    1    0
@@ -586,12 +586,12 @@ always_ff @(posedge aclk) begin
 					vpuctl <= vpuctl & (~vpufifodout[16:9]);
 				cmdmode <= FINALIZE;
 			end
-			
+
 			WPROG: begin
 				prgwmask <= vpufifodout[11:8]; // write strobe
 				cmdmode <= WPROGADDRS;
 			end
-			
+
 			WPROGADDRS: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					progaddr <= vpufifodout; // Address at which the command goes to
@@ -600,7 +600,7 @@ always_ff @(posedge aclk) begin
 					cmdmode <= WPROGDATA;
 				end
 			end
-			
+
 			WPROGDATA: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					progdin <= vpufifodout; // Program word
@@ -660,7 +660,7 @@ wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
 wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
 
 // {0,!fifoempty,scanline[9:0],vsynctoggle[0:0]}
-assign vpustate = {20'd0, ~vpufifoempty, scanline, blanktoggle};
+assign vpustate = {12'd0, vpuctl, ~vpufifoempty, scanline, blanktoggle};
 
 typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, DATABURST, ADVANCESCANLINEADDRESS} scanstatetype;
 scanstatetype scanstate;
@@ -716,7 +716,7 @@ always_ff @(posedge aclk) begin
 					scanstate <= STARTLOAD;
 				end
 			end
-			
+
 			STARTSCANOUT: begin
 				s_axi_arvalid <= 1'b1;
 				s_axi_araddr <= scanoffset;
