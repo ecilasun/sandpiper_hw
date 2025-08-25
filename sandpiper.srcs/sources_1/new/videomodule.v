@@ -10,6 +10,13 @@ module videomodule(
 	input wire pixelClockx5,
 	input wire audiosampleclk,
 	input wire aresetn,
+
+	output wire rst25n_o,
+	output wire [2:0] scanmode, // {displaying, scanenable, colormode}
+	output wire [23:0] passthroughrgb,
+	output wire [7:0] paletteindex_o,
+	input wire [23:0] colordata,
+
 	`HDMICLK(HDMI_CLK, 125000000) output wire HDMI_CLK_p,
 	`HDMICLK(HDMI_CLK, 125000000) output wire HDMI_CLK_n,
 	output wire [2:0] HDMI_TMDS_p,
@@ -116,6 +123,11 @@ videocore videocoreInst(
 	.clk25(pixelClock),
 	.clk125(pixelClockx5),
 	.aresetn(aresetn),
+	.rst25n_o(rst25n_o),
+	.scanmode(scanmode),
+	.passthroughrgb(passthroughrgb),
+	.paletteindex_o(paletteindex_o),
+	.colordata(colordata),
 	// Command FIFO
 	.m_axi_araddr(s_axi_araddr),
 	.m_axi_arvalid(s_axi_arvalid),

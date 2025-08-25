@@ -7,6 +7,12 @@ module videocore(
 	input wire clk125,
 	input wire aresetn,
 
+	output wire rst25n_o,
+	output wire [2:0] scanmode, // {displaying, scanenable, colormode}
+	output wire [23:0] passthroughrgb,
+	output wire [7:0] paletteindex_o,
+	input wire [23:0] colordata,
+
 	// Command fifo
 	output wire m_axi_arready,
 	output wire m_axi_awready,
@@ -310,45 +316,10 @@ always_comb begin
 	endcase
 end
 
-// --------------------------------------------------
-// Palette RAM
-// --------------------------------------------------
-
-logic [23:0] palettedin;
-logic [7:0] palettewa;
-logic palettewe;
-
-logic [23:0] paletteentries[0:255];
-
-initial begin
-	$readmemh("colorpalette.mem", paletteentries);
-end
-
-// Async write port from VPU programs
-/*always @(posedge clk125) begin
-end*/
-
-// Write port
-always @(posedge aclk) begin
-	if (palettewe)
-		paletteentries[palettewa] <= palettedin;
-end
-
-// Read port
-logic [23:0] paletteout;
-always @(posedge clk25) begin
-	if (~rst25n) begin
-		paletteout <= 24'd0;
-	end else begin
-		case ({displaying, scanenable, colormode})
-			3'b110: paletteout <= paletteentries[paletteindex];
-			3'b111: paletteout <= {rgbcolor[15:11], 3'b0, rgbcolor[10:5], 2'b0, rgbcolor[4:0], 3'b0}; // Expand from 16 to 24 bits
-			3'b100,
-			3'b101: paletteout <= 24'h333333;
-			default: paletteout <= 24'h000000;
-		endcase
-	end
-end
+assign scanmode = {displaying, scanenable, colormode};
+assign passthroughrgb = rgbcolor;
+assign paletteindex_o = paletteindex;
+assign rst25n_o = rst25n;
 
 // --------------------------------------------------
 // AXI4 defaults
@@ -368,7 +339,6 @@ localparam BURST_WRAP  = 2'b10;
 typedef enum logic [3:0] {
 	WCMD, DISPATCH,
 	SETVPAGE,
-	SETPAL,
 	VMODE,
 	SHIFTCACHE,
 	SHIFTSCANOUT,
@@ -425,24 +395,20 @@ always_ff @(posedge aclk) begin
 		scanaddrsecondary <= 32'h18000000;	// Secondary buffer to use for swap
 		burstmask <= 10'b1111111111;		// 640x2 bytes
 		lastscanline <= 10'd523;
-		palettedin <= 24'd0;
 		scanenable <= 1'b1;					// Video output is enabled by default
 		cmdre <= 1'b0;
 		scanwidth <= 1'b1;					// 640-wide by default
 		colormode <= 1'b1;					// 16 bit color by default
-		palettewe <= 1'b0;
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
 		pixel_offset <= 4'd0;
 		cmdmode <= WCMD;
-		palettewa <= 8'd0;
 		syncmode <= 1'b0;
 		swapmode <= 1'b0;
 		blanktracker <= 1'b0;
 		blanktrigger <= 1'b0;
 	end else begin
 		cmdre <= 1'b0;
-		palettewe <= 1'b0;
 		progwe <= 4'd0;
 
 		// Latch vblank entry until it's handled
@@ -465,7 +431,7 @@ always_ff @(posedge aclk) begin
 			DISPATCH: begin
 				case (vpucmd[7:0])
 					8'h00:		cmdmode <= SETVPAGE;		// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
-					8'h01:		cmdmode <= SETPAL;			// Set 24 bit color palette entry (followed by 8bit address+24bit color in next word)
+					8'h01:		cmdmode <= FINALIZE;		// Reserved for future
 					8'h02:		cmdmode <= VMODE;			// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
 					8'h03:		cmdmode <= SHIFTCACHE;		// Offset for scanline cache writes
 					8'h04:		cmdmode <= SHIFTSCANOUT;	// Offset for scanline cache reads
@@ -481,17 +447,6 @@ always_ff @(posedge aclk) begin
 			SETVPAGE: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					scanaddr <= vpufifodout;	// Set new video scanout address (64 byte cache aligned, as we read in bursts)
-					// Advance FIFO
-					cmdre <= 1'b1;
-					cmdmode <= FINALIZE;
-				end
-			end
-
-			SETPAL: begin
-				if (vpufifovalid && ~vpufifoempty) begin
-					palettewe <= 1'b1;					// NOTE: This can change anywhere on a scanline as with older machines
-					palettewa <= vpufifodout[31:24];	// 8 bit palette index
-					palettedin <= vpufifodout[23:0];	// 24 bit color
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
@@ -1041,6 +996,6 @@ end
 // Final output
 // --------------------------------------------------
 
-assign rgbdat = paletteout;
+assign rgbdat = colordata;
 
 endmodule
