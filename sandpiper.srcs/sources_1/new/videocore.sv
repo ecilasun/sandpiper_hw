@@ -524,7 +524,7 @@ always_ff @(posedge aclk) begin
 				// before resuming submits (~vpufifoempty == 1'b1)
 				// The advantage here is that the FIFO empty wait doesn't have to be that precise
 				// and can start somewhere within the to 80%-ish of the frame
-				if (blanktrigger || vpufifodout[8]) begin // wait/don't wait vsync
+				if (blanktrigger || vpucmd[8]) begin // wait/don't wait vsync
 					// Reset vblank trigger since we caught it
 					blanktrigger <= 1'b0;
 					scanaddrsecondary <= scanaddr;
@@ -538,15 +538,15 @@ always_ff @(posedge aclk) begin
 				// ...  7    6    5    4    3    2    1    0
 				// -    -    -    -    -    -    -    -    VRUN
 				// VRUN: Run VPU program when high
-				if (vpufifodout[8]) // Set mask
-					vpuctl <= vpuctl | vpufifodout[16:9];
+				if (vpucmd[8]) // Set mask
+					vpuctl <= vpuctl | vpucmd[16:9];
 				else // Clear mask
-					vpuctl <= vpuctl & (~vpufifodout[16:9]);
+					vpuctl <= vpuctl & (~vpucmd[16:9]);
 				cmdmode <= FINALIZE;
 			end
 
 			WPROG: begin
-				prgwmask <= vpufifodout[11:8]; // write strobe
+				prgwmask <= vpucmd[11:8]; // write strobe
 				cmdmode <= WPROGADDRS;
 			end
 
