@@ -1854,7 +1854,7 @@
           },
           "passthroughrgb": {
             "direction": "O",
-            "left": "23",
+            "left": "15",
             "right": "0"
           },
           "paletteindex_o": {
@@ -4801,7 +4801,7 @@
           },
           "passthroughrgb": {
             "direction": "I",
-            "left": "23",
+            "left": "15",
             "right": "0"
           },
           "paletteindex": {
@@ -4916,9 +4916,9 @@
           "processing_system7_0/M_AXI_GP0_ACLK",
           "processing_system7_0/S_AXI_HP0_ACLK",
           "processing_system7_0/S_AXI_HP1_ACLK",
+          "axi_interconnect_0/M02_ACLK",
           "colorpalettemodule_0/aclk",
-          "videomodule_0/aclk",
-          "axi_interconnect_0/M02_ACLK"
+          "videomodule_0/aclk"
         ]
       },
       "Net1": {

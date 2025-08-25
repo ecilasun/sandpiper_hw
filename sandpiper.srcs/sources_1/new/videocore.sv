@@ -9,7 +9,7 @@ module videocore(
 
 	output wire rst25n_o,
 	output wire [2:0] scanmode, // {displaying, scanenable, colormode}
-	output wire [23:0] passthroughrgb,
+	output wire [15:0] passthroughrgb,
 	output wire [7:0] paletteindex_o,
 	input wire [23:0] colordata,
 

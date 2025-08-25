@@ -46,7 +46,7 @@ module colorpalettemodule(
 	input wire clk25,
 	input wire rst25n,
 	input wire [2:0] scanmode, // {displaying, scanenable, colormode}
-	input wire [23:0] passthroughrgb,
+	input wire [15:0] passthroughrgb,
 	input wire [7:0] paletteindex,
 	output wire [23:0] colordata);
 	
@@ -169,7 +169,7 @@ always @(posedge aclk) begin
 			end
 			2'b10: begin
 				if (s_axi_rready) begin
-					s_axi_rdata <= {4'd0, paletteentries[palraddr]};
+					s_axi_rdata <= {40'd0, paletteentries[palraddr]};
 					s_axi_rvalid <= 1'b1;
 					s_axi_rlast <= 1'b1;
 					raddrstate <= 2'b01;
