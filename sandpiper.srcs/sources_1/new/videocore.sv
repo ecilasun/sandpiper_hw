@@ -346,7 +346,8 @@ typedef enum logic [3:0] {
 	SETSECONDBUFFER,
 	SYNCSWAP,
 	WCONTROLREG,
-	WPROG, WPROGADDRS, WPROGDATA,
+	WPROGADDR,
+	WPROGWORD, INCADDR,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -360,7 +361,6 @@ logic blanktrigger;
 logic [31:0] progdin;
 logic [9:0] progaddr;
 logic [3:0] progwe;
-logic [3:0] prgwmask;
 
 logic [3:0] vpuprgwe;
 logic [9:0] vpuprgPC;
@@ -386,7 +386,6 @@ blk_mem_gen_0 VPUProgmem4K (
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		progwe <= 4'd0;
-		prgwmask <= 4'd0;
 		progaddr <= 10'd0;
 		progdin <= 32'd0;
 		vpucmd <= 32'd0;
@@ -439,7 +438,8 @@ always_ff @(posedge aclk) begin
 					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and spawn buffers on the hardware side
 					8'h08:		cmdmode <= WCONTROLREG;		// Control register write
-					8'h09:		cmdmode <= WPROG;			// Write program word to given address (WPROGWORD addr, command)
+					8'h09:		cmdmode <= WPROGADDR;		// Set program upload start address
+					8'h0A:		cmdmode <= WPROGWORD;		// Send one program word and increment upload address
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
@@ -545,28 +545,28 @@ always_ff @(posedge aclk) begin
 				cmdmode <= FINALIZE;
 			end
 
-			WPROG: begin
-				prgwmask <= vpucmd[11:8]; // write strobe
-				cmdmode <= WPROGADDRS;
-			end
-
-			WPROGADDRS: begin
+			WPROGADDR: begin
 				if (vpufifovalid && ~vpufifoempty) begin
-					progaddr <= vpufifodout; // Address at which the command goes to
-					// Advance FIFO
-					cmdre <= 1'b1;
-					cmdmode <= WPROGDATA;
-				end
-			end
-
-			WPROGDATA: begin
-				if (vpufifovalid && ~vpufifoempty) begin
-					progdin <= vpufifodout; // Program word
-					progwe <= prgwmask;
+					progaddr <= vpufifodout[9:0]; // Program upload start address
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
 				end
+			end
+
+			WPROGWORD: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					progdin <= vpufifodout; // Program word
+					progwe <= 4'hF;
+					// Advance FIFO
+					cmdre <= 1'b1;
+					cmdmode <= INCADDR;
+				end
+			end
+
+			INCADDR: begin
+				progaddr <= progaddr + 4;
+				cmdmode <= FINALIZE;
 			end
 
 			FINALIZE: begin
