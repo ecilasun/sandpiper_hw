@@ -93,8 +93,11 @@ assign s_axi_bid = 6'd0;
 assign s_axi_rid = 6'd0;
 
 reg [3:0] cpuwe;
-reg [11:0] cpuaddr;
+reg cpure;
+reg [11:0] cpuraddr;
+reg [11:0] cpuwaddr;
 reg [31:0] cpudin;
+wire [31:0] cpudout;
 
 // Program memory
 
@@ -107,11 +110,11 @@ wire [31:0] vcpdout;
 vcpmemory vcpInstruction (
   .clka(aclk),
   // CPU side - write only
-  .ena(1'b0),
+  .ena(cpure),
   .wea(cpuwe),
-  .addra(cpuaddr),
+  .addra(cpure ? cpuraddr : cpuwaddr),
   .dina(cpudin),
-  .douta(),
+  .douta(cpudout),
   // VCP side - read / write
   .clkb(aclk),
   .enb(vcpre),
@@ -125,12 +128,13 @@ vcpmemory vcpInstruction (
 // AXI
 reg [1:0] waddrstate;
 reg [1:0] writestate;
+reg [1:0] raddrstate;
 
-// AXI write
+// AXI write - CPU
 always @(posedge aclk) begin
 	if (~aresetn) begin
 		waddrstate <= 2'b00;
-		cpuaddr <= 12'd0;
+		cpuwaddr <= 12'd0;
 	end else begin
 		case (waddrstate)
 			2'b00: begin
@@ -140,7 +144,7 @@ always @(posedge aclk) begin
 			2'b01: begin
 				if (s_axi_awvalid) begin
 					// TODO: Check address to see if we're writing to control registers or program memory
-					cpuaddr <= s_axi_awaddr[13:2];
+					cpuwaddr <= s_axi_awaddr[13:2];
 					s_axi_awready <= 1'b1;
 					waddrstate <= 2'b10;
 				end
@@ -162,7 +166,7 @@ always @(posedge aclk) begin
 		cpuwe <= 4'd0;
 		s_axi_wready <= 1'b0;
 		s_axi_bvalid <= 1'b0;
-	
+
 		case (writestate)
 			2'b00: begin
 				s_axi_bvalid <= 1'b0;
@@ -181,6 +185,45 @@ always @(posedge aclk) begin
 				if (s_axi_bready) begin
 					s_axi_bvalid <= 1'b1;
 					writestate <= 2'b01;
+				end
+			end
+		endcase
+	end
+end
+
+// AXI read - CPU
+always @(posedge aclk) begin
+	if (~aresetn) begin
+		raddrstate <= 2'b00;
+		s_axi_rlast <= 1'b0;
+		cpuraddr <= 32'd0;
+		cpure <= 1'b0;
+	end else begin
+		s_axi_rvalid <= 1'b0;
+		s_axi_arready <= 1'b0;
+		s_axi_rlast <= 1'b0;
+		cpure <= 1'b0;
+
+		case (raddrstate)
+			2'b00: begin
+				s_axi_arready <= 1'b0;
+				s_axi_rvalid <= 1'b0;
+				raddrstate <= 2'b01;
+			end
+			2'b01: begin
+				if (s_axi_arvalid) begin
+					cpuraddr <= s_axi_araddr[13:2];
+					cpure <= 1'b1;
+					s_axi_arready <= 1'b1;
+					raddrstate <=  2'b10;
+				end
+			end
+			2'b10: begin
+				if (s_axi_rready) begin
+					s_axi_rdata <= {32'd0, cpudout};
+					s_axi_rvalid <= 1'b1;
+					s_axi_rlast <= 1'b1;
+					raddrstate <= 2'b01;
 				end
 			end
 		endcase

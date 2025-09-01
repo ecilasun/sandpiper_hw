@@ -106,10 +106,11 @@ typedef enum logic [3:0] {
 vpuprogstatetype vpuprgstate;
 
 logic [23:0] vpuconst24;
+logic [7:0] flags8;
+logic [7:0] vpuconst8;
 logic [9:0] vpuwaitline;
 logic [9:0] vpuwaitpixel;
 logic [7:0] vpuinstr;
-logic [7:0] idx;
 logic [3:0] src1;
 logic [3:0] src2;
 logic [3:0] dest;
@@ -164,11 +165,6 @@ logic mathready;
 logic [23:0] A;
 logic [23:0] B;
 logic [23:0] mathout;
-
-wire iseq = vpudout2 == vpudout;
-wire islt = vpudout2 < vpudout;
-wire isle = vpudout2 <= vpudout;
-wire iszero = vpudout2 == 24'd0;
 
 always @(posedge aclk) begin
 	if (~aresetn) begin
@@ -254,11 +250,12 @@ always @(posedge aclk) begin
 		vpuprgstate <= VIDLE;
 		vpuprgPC <= 10'd0;
 		vpuconst24 <= 24'd0;
+		vpuconst8 <= 8'd0;
+		flags8 <= 8'd0;
 		vpuwaitline <= 10'd0;
 		vpuwaitpixel <= 10'd0;
 		vpuinstr <= 8'd0;
 		ccond <= 5'd0;
-		idx <= 8'd0;
 		src1 <= 4'd0;
 		src2 <= 4'd0;
 		dest <= 4'd0;
@@ -282,12 +279,13 @@ always @(posedge aclk) begin
 			{1'b1, DECODE}: begin
 				// Decode the instruction that was already selected with previous vpuprgPC
 				vpuconst24 <= vcpdout[31:8];
+				vpuconst8 <= vcpdout[31:24];
+				flags8 <= vcpdout[23:16];		// extra flags
+				ccond <= vcpdout[26:24];		// compare condition
+				src2 <= vcpdout[15:12]; 		// srcreg (default source)
+				src1 <= vcpdout[11:8];			// same as dest
+				dest <= (vcpdout[7:0] == `VPU_SETACC) ? 4'd0 : vcpdout[15:12]; // setacc always aims at R0 (ACC register)
 				vpuinstr <= vcpdout[7:0];
-				idx <= vcpdout[23:20];
-				ccond <= vcpdout[24:20];
-				src1 <= vcpdout[19:16];
-				src2 <= vcpdout[15:12];
-				dest <= (vcpdout[7:0] == `VPU_SETACC) ? 4'd0 : vcpdout[15:12]; // setacc always aims at R0
 				vpuprgstate <= vcpdout[4] ? MATHEXEC : EXEC;
 			end
 
@@ -306,23 +304,23 @@ always @(posedge aclk) begin
 						vpuprgstate <= VIDLE;
 					end
 					`VPU_WAITLINE: begin
-						vpuwaitpixel <= vpudout;
+						vpuwaitpixel <= 2;
 						vpuprgstate <= WAITH;
 					end
 					`VPU_WAITCOLUMN: begin
-						vpuwaitline <= vpudout;
+						vpuwaitline <= vpudout2;
 						vpuprgstate <= WAITV;
 					end
 					`VPU_SETPIXOFF: begin
-						//pixel_offset <= vpudout[3:0];
+						//pixel_offset <= vpudout2[3:0];
 						vpuprgstate <= FETCH;
 					end
 					`VPU_SETCACHEROFF: begin
-						//scanlinera_offset <= vpudout[7:0];
+						//scanlinea_offset <= vpudout2[7:0];
 						vpuprgstate <= FETCH;
 					end
 					`VPU_SETCACHEWOFF: begin
-						//scanlinewa_offset <= vpudout[7:0];
+						//scanlinewa_offset <= vpudout2[7:0];
 						vpuprgstate <= FETCH;
 					end
 					`VPU_SETACC: begin
@@ -330,15 +328,19 @@ always @(posedge aclk) begin
 						vpuprgstate <= WRITEREG;
 					end
 					`VPU_SETPAL: begin
-						// TODO: This is currently handled by the command FIFO
-						// We need a way to make it work through either path. 
-						//palettewe <= 1'b1;
-						//palettewa <= idx;
-						//palettedin <= vpudout;
-						vpuprgstate <= FETCH;
+						// Directly poke the palette RAM over AXI
+						// Palette RAM address is 0x4000_2000 + (index << 2)
+						m_axi_awaddr <= {32'h40002000 | (vpuconst8 << 2)};
+						m_axi_awvalid <= 1'b1;
+						m_axi_wdata <= vpudout2;
+						m_axi_wvalid <= 1'b1;
+						m_axi_wstrb <= 16'h000F;
+						m_axi_wlast <= 1'b1;
+						m_axi_bready <= 1'b1;
+						vpuprgstate <= STOREFINALIZE;
 					end
 					`VPU_COPYREG: begin
-						vpudin <= vpudout;
+						vpudin <= vpudout2;
 						vpuprgstate <= WRITEREG;
 					end
 					`VPU_COMPARE: begin
@@ -359,16 +361,18 @@ always @(posedge aclk) begin
 						vpuprgstate <= FETCH;
 					end
 					`VPU_LOAD: begin
-						m_axi_araddr <= vpudout;
+						m_axi_araddr <= vpudout2;
 						m_axi_arvalid <= 1'b1;
 						m_axi_rready <= 1'b1;
 						vpuprgstate <= LOADFINALIZE;
 					end
 					`VPU_STORE: begin
-						m_axi_awaddr <= vpudout2;
+						m_axi_awaddr <= {32'h40000000 | vpudout}; // VCP can only write to reserved memory region
 						m_axi_awvalid <= 1'b1;
-						m_axi_wdata <= vpudout;
+						m_axi_wdata <= vpudout2;
 						m_axi_wvalid <= 1'b1;
+						m_axi_wstrb <= {8'h00, vpuconst8}; // 0x0F for word write and variations thereof
+						m_axi_wlast <= 1'b1;
 						m_axi_bready <= 1'b1;
 						vpuprgstate <= STOREFINALIZE;
 					end
