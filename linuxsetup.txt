@@ -414,20 +414,23 @@ Use the scp user@ipaddress command to copy files from Linux command line.
 
 ///////// Shutdown screen
 
+// You can use the following site to convert an image into a 640x480 r5g6b5 format:
+// https://longfangsong.github.io/en/image-to-rgb565/
+
 // create folder to hold our shutdown image
 sudo mkdir /usr/share/splash
-// copy a splashscreen binary to this folder
-sudo cp /boot/uboot/splash.bin /usr/share/splash/
+// copy the shutdown screen binary image to this folder
+sudo cp /boot/uboot/poweroff.bin /usr/share/splash/
 
 sudo nano /etc/systemd/sytem/sandpiper-shutdown.service
 [Unit]
 Description=Run custom command at shutdown
 DefaultDependencies=no
-After=shutdown.target reboot.target halt.target
+Before=shutdown.target reboot.target halt.target
 
 [Service]
 Type=oneshot
-ExecStart=cat /usr/share/splash/splash.bin > /dev/fb0
+ExecStart=/bin/sh -c "cat /usr/share/splash/poweroff.bin > /dev/fb0"
 RemainAfterExit=true
 
 [Install]
