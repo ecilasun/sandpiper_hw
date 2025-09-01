@@ -190,6 +190,24 @@
             },
             "V3": {
                 "VT": "AC",
+                "BA": "0x00000000",
+                "HA": "0x1FFFFFFF",
+                "BP": "C_BASEADDR",
+                "HP": "C_HIGHADDR",
+                "MA": "m_axi",
+                "MX": "/vcpmodule_0",
+                "MI": "m_axi",
+                "MS": "SEG_processing_system7_0_HP2_DDR_LOWOCM",
+                "MV": "xilinx.com:module_ref:vcpmodule:1.0",
+                "SX": "/processing_system7_0",
+                "SI": "S_AXI_HP2",
+                "SS": "HP2_DDR_LOWOCM",
+                "SV": "xilinx.com:ip:processing_system7:5.5",
+                "TM": "both",
+                "TU": "memory"
+            },
+            "V4": {
+                "VT": "AC",
                 "BA": "0x18000000",
                 "HA": "0x19FFFFFF",
                 "BP": "C_BASEADDR",
@@ -206,7 +224,7 @@
                 "TM": "both",
                 "TU": "memory"
             },
-            "V4": {
+            "V5": {
                 "VT": "AC",
                 "BA": "0x18000000",
                 "HA": "0x19FFFFFF",
@@ -224,7 +242,7 @@
                 "TM": "both",
                 "TU": "memory"
             },
-            "V5": {
+            "V6": {
                 "VT": "AC",
                 "BA": "0x40000000",
                 "HA": "0x40000FFF",
@@ -242,7 +260,7 @@
                 "TM": "both",
                 "TU": "register"
             },
-            "V6": {
+            "V7": {
                 "VT": "AC",
                 "BA": "0x40001000",
                 "HA": "0x40001FFF",
@@ -260,7 +278,7 @@
                 "TM": "both",
                 "TU": "register"
             },
-            "V7": {
+            "V8": {
                 "VT": "AC",
                 "BA": "0x40002000",
                 "HA": "0x40002FFF",
@@ -275,6 +293,24 @@
                 "SI": "s_axi",
                 "SS": "reg0",
                 "SV": "xilinx.com:module_ref:colorpalettemodule:1.0",
+                "TM": "both",
+                "TU": "register"
+            },
+            "V9": {
+                "VT": "AC",
+                "BA": "0x40003000",
+                "HA": "0x40003FFF",
+                "BP": "C_BASEADDR",
+                "HP": "C_HIGHADDR",
+                "MA": "Data",
+                "MX": "/processing_system7_0",
+                "MI": "M_AXI_GP0",
+                "MS": "SEG_vcpmodule_0_reg0",
+                "MV": "xilinx.com:ip:processing_system7:5.5",
+                "SX": "/vcpmodule_0",
+                "SI": "s_axi",
+                "SS": "reg0",
+                "SV": "xilinx.com:module_ref:vcpmodule:1.0",
                 "TM": "both",
                 "TU": "register"
             }
@@ -310,6 +346,16 @@
             },
             {
                 "src": "V7",
+                "trg": "V2",
+                "EH": "2"
+            },
+            {
+                "src": "V8",
+                "trg": "V2",
+                "EH": "2"
+            },
+            {
+                "src": "V9",
                 "trg": "V2",
                 "EH": "2"
             }

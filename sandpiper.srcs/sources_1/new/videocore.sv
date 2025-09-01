@@ -12,6 +12,10 @@ module videocore(
 	output wire [15:0] passthroughrgb,
 	output wire [7:0] paletteindex_o,
 	input wire [23:0] colordata,
+	output wire [9:0] scanline_o,
+	output wire [9:0] scanpixel_o,
+
+	output wire execena,
 
 	// Command fifo
 	output wire m_axi_arready,
@@ -116,6 +120,7 @@ always @(posedge clk25) begin
 	aresetnB <= aresetnA;
 	rst25n <= aresetnB;
 end
+assign rst25n_o = rst25n;
 
 // --------------------------------------------------
 // VPU command interface
@@ -319,7 +324,6 @@ end
 assign scanmode = {displaying, scanenable, colormode};
 assign passthroughrgb = rgbcolor;
 assign paletteindex_o = paletteindex;
-assign rst25n_o = rst25n;
 
 // --------------------------------------------------
 // AXI4 defaults
@@ -346,8 +350,6 @@ typedef enum logic [3:0] {
 	SETSECONDBUFFER,
 	SYNCSWAP,
 	WCONTROLREG,
-	WPROGADDR,
-	WPROGWORD, INCADDR,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -355,39 +357,13 @@ logic [31:0] vpucmd;
 logic [7:0] vpuctl;
 logic blankt;
 
+assign execena = vpuctl[0]; // VRUN
+
 logic blanktracker;
 logic blanktrigger;
 
-logic [31:0] progdin;
-logic [9:0] progaddr;
-logic [3:0] progwe;
-
-logic [3:0] vpuprgwe;
-logic [9:0] vpuprgPC;
-logic [31:0] vpuprgdin;
-wire [31:0] vpuprgdout;
-
-blk_mem_gen_0 VPUProgmem4K (
-  // command buffer side
-  .clka(aclk),
-  .ena(1'b1),
-  .wea(progwe),
-  .addra(progaddr),
-  .dina(progdin),
-  .douta(),
-  // VPU side
-  .clkb(clk125),
-  .enb(vpuctl[0]), // Program enable controls instruction fetch enable
-  .web(vpuprgwe),
-  .addrb(vpuprgPC),
-  .dinb(vpuprgdin),
-  .doutb(vpuprgdout) );
-
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
-		progwe <= 4'd0;
-		progaddr <= 10'd0;
-		progdin <= 32'd0;
 		vpucmd <= 32'd0;
 		vpuctl <= 8'd0;
 		scanaddr <= 32'h18000000;			// Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
@@ -408,7 +384,6 @@ always_ff @(posedge aclk) begin
 		blanktrigger <= 1'b0;
 	end else begin
 		cmdre <= 1'b0;
-		progwe <= 4'd0;
 
 		// Latch vblank entry until it's handled
 		if (blanktracker != blankt) begin
@@ -438,8 +413,6 @@ always_ff @(posedge aclk) begin
 					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and spawn buffers on the hardware side
 					8'h08:		cmdmode <= WCONTROLREG;		// Control register write
-					8'h09:		cmdmode <= WPROGADDR;		// Set program upload start address
-					8'h0A:		cmdmode <= WPROGWORD;		// Send one program word and increment upload address
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
@@ -545,30 +518,6 @@ always_ff @(posedge aclk) begin
 				cmdmode <= FINALIZE;
 			end
 
-			WPROGADDR: begin
-				if (vpufifovalid && ~vpufifoempty) begin
-					progaddr <= vpufifodout[9:0]; // Program upload start address
-					// Advance FIFO
-					cmdre <= 1'b1;
-					cmdmode <= FINALIZE;
-				end
-			end
-
-			WPROGWORD: begin
-				if (vpufifovalid && ~vpufifoempty) begin
-					progdin <= vpufifodout; // Program word
-					progwe <= 4'hF;
-					// Advance FIFO
-					cmdre <= 1'b1;
-					cmdmode <= INCADDR;
-				end
-			end
-
-			INCADDR: begin
-				progaddr <= progaddr + 4;
-				cmdmode <= FINALIZE;
-			end
-
 			FINALIZE: begin
 				cmdmode <= WCMD;
 			end
@@ -616,6 +565,9 @@ end
 
 wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
 wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
+
+assign scanline_o = scanline;
+assign scanpixel_o = scanpixel;
 
 // {0,!fifoempty,scanline[9:0],vsynctoggle[0:0]}
 assign vpustate = {12'd0, vpuctl, ~vpufifoempty, scanline, blanktoggle};
@@ -718,276 +670,6 @@ always_ff @(posedge aclk) begin
 				scanoffset <= scanoffset + 128;
 			end
 
-		endcase
-	end
-end
-
-// --------------------------------------------------
-// VPU state machine
-// --------------------------------------------------
-
-// Instructions (up to 7 bits wide)
-`define VPU_HALT			8'h00
-`define VPU_NOOP			8'h01
-`define VPU_WAITLINE		8'h02
-`define VPU_WAITCOLUMN		8'h03
-`define VPU_SETPIXOFF		8'h04
-`define VPU_SETCACHEROFF	8'h05
-`define VPU_SETCACHEWOFF	8'h06
-`define VPU_SETACC			8'h07
-`define VPU_SETPAL			8'h08
-`define VPU_COPYREG			8'h09
-`define VPU_ADD				8'h0A
-`define VPU_COMPARE			8'h0B
-`define VPU_BRANCH			8'h0C
-`define VPU_MUL				8'h0D
-`define VPU_DIV				8'h0E
-`define VPU_MOD				8'h0F
-`define VPU_AND				8'h10
-`define VPU_OR				8'h11
-`define VPU_XOR				8'h12
-`define VPU_NOT				8'h13
-`define VPU_SHL				8'h14
-`define VPU_SHR				8'h15
-`define VPU_LOAD			8'h16
-`define VPU_STORE			8'h17
-
-`define COND_EQ				8'h01	// or NE if inverted
-`define COND_LT				8'h02 	// or GE if inverted
-`define COND_LE				8'h04 	// or GT if inverted
-`define COND_ZERO			8'h08	// or NZ if inverted
-`define COND_INV			8'h10	// invert the condition code
-
-// NOTE: JMP is implemented in two instructions as:
-// compare(ACC,ACC,EQ)
-// branch(ACC, address)
-
-// State
-typedef enum logic [3:0] {
-	VIDLE,
-	FETCH, EXEC,
-	WAITH, WAITV,
-	SETUPPAL,
-	SETUPCACHEROFF, SETUPCACHEWOFF,
-	VHALT } vpuprogstatetype;
-vpuprogstatetype vpuprgstate;
-
-logic [23:0] vpuconst24;
-logic [9:0] vpuwaitline;
-logic [9:0] vpuwaitpixel;
-logic [7:0] vpuinstr;
-logic [7:0] idx;
-logic [3:0] src;
-logic [3:0] dest;
-
-// VPU register file
-// R0 ->  ACC
-logic [23:0] vpuregs[0:15];
-wire [23:0] vpudout;
-wire [23:0] vpudout2;
-logic [23:0] vpudin;
-logic [4:0] ccond;
-logic vpuwe;
-
-initial begin
-	for (int i=0;i<16;++i)
-		vpuregs[i] <= 24'd0;
-end
-
-always @(posedge clk125) begin
-	if (vpuwe)
-		vpuregs[dest] <= vpudin;
-end
-assign vpudout = vpuregs[src];
-assign vpudout2 = vpuregs[dest];
-
-wire iseq = vpudout2 == vpudout;
-wire islt = vpudout2 < vpudout;
-wire isle = vpudout2 < vpudout;
-wire iszero = vpudout2 == 24'd0;
-
-always_ff @(posedge clk125) begin
-	if (~aresetn) begin
-		vpuprgstate <= VIDLE;
-		vpuprgwe <= 4'd0;
-		vpuprgPC <= 10'd0;
-		vpuprgdin <= 32'd0;
-		vpuconst24 <= 24'd0;
-		vpuwaitline <= 10'd0;
-		vpuwaitpixel <= 10'd0;
-		vpuinstr <= 8'd0;
-		ccond <= 5'd0;
-		idx <= 8'd0;
-		src <= 4'd0;
-		dest <= 4'd0;
-		vpudin <= 24'd0;
-		vpuwe <= 1'b0;
-	end else begin
-		vpuwe <= 1'b0;
-
-		case ({vpuctl[0], vpuprgstate})
-			{1'b1, FETCH}: begin
-				// Read and decode the instruction that was already selected with previous vpuprgPC
-				vpuconst24 <= vpuprgdout[31:8];
-				vpuinstr <= vpuprgdout[7:0];
-				idx <= vpuprgdout[23:20];
-				ccond <= vpuprgdout[24:20];
-				src <= vpuprgdout[19:16];
-				dest <= (vpuprgdout[7:0] == `VPU_SETACC) ? 4'd0 : vpuprgdout[15:12]; // setacc always aims at R0
-				vpuprgstate <= EXEC;
-			end
-
-			{1'b1, EXEC}: begin
-				vpuprgstate <= FETCH;
-
-				// Ideally we resume at next instruction
-				// unless it's a branch instruction
-				vpuprgPC <= vpuprgPC + 'd4;
-
-				case (vpuinstr)
-					`VPU_HALT: begin
-						// TODO: Stop PC increment
-						vpuprgstate <= VIDLE;
-					end
-					`VPU_NOOP: begin
-						// Waste one clock
-						vpuprgstate <= VIDLE;
-					end
-					`VPU_WAITLINE: begin
-						vpuwaitpixel <= vpudout;
-						vpuprgstate <= WAITH;
-					end
-					`VPU_WAITCOLUMN: begin
-						vpuwaitline <= vpudout;
-						vpuprgstate <= WAITV;
-					end
-					`VPU_SETPIXOFF: begin
-						//pixel_offset <= vpudout[3:0];
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SETCACHEROFF: begin
-						//scanlinera_offset <= vpudout[7:0];
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SETCACHEWOFF: begin
-						//scanlinewa_offset <= vpudout[7:0];
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SETACC: begin
-						vpudin <= vpuconst24;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SETPAL: begin
-						// TODO: This is currently handled by the command FIFO
-						// We need a way to make it work through either path. 
-						//palettewe <= 1'b1;
-						//palettewa <= idx;
-						//palettedin <= vpudout;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_COPYREG: begin
-						vpudin <= vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_ADD: begin
-						vpudin <= vpudout2 + vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_COMPARE: begin
-						priority case (1'b1)
-							ccond[3] & (ccond[4] ^ iszero):	begin vpudin <= 24'd1; end
-							ccond[2] & (ccond[4] ^ isle):	begin vpudin <= 24'd1; end
-							ccond[1] & (ccond[4] ^ islt):	begin vpudin <= 24'd1; end
-							ccond[0] & (ccond[4] ^ iseq):	begin vpudin <= 24'd1; end
-							default:						begin vpudin <= 24'd0; end
-						endcase
-						// Compare result goes into ACC
-						dest <= 0;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_BRANCH: begin
-						// Branch to target based on zero or nonzero ACC (src==0)
-						vpuprgPC <= vpudout[0] ? vpudout2 : (vpuprgPC + 'd4);
-						vpuprgstate <= FETCH;
-					end
-					`VPU_MUL: begin
-						vpudin <= vpudout2 * vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_DIV: begin
-						vpudin <= vpudout2 / vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_MOD: begin
-						vpudin <= vpudout2 % vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_AND: begin
-						vpudin <= vpudout2 & vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_OR: begin
-						vpudin <= vpudout2 | vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_XOR: begin
-						vpudin <= vpudout2 ^ vpudout;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_NOT: begin
-						vpudin <= ~vpudout2;
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SHL: begin
-						vpudin <= vpudout2 << vpudout[5:0];
-						vpuwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_SHR: begin
-						vpudin <= vpudout2 >> vpudout[5:0];
-						vpuprgstate <= FETCH;
-					end
-					`VPU_LOAD: begin
-						// TODO: Set memory address here from src register and issue a read request, then populate dest register from memory
-						//memaddr <= vpudout;
-						//memre <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-					`VPU_STORE: begin
-						// TODO: Set memory address here from dest register and issue a write request, then to memory write from src register
-						//memaddr <= vpudout2;
-						//wdat < = vpudout;
-						//memwe <= 1'b1;
-						vpuprgstate <= FETCH;
-					end
-				endcase
-			end
-
-			{1'b1, WAITH}: begin
-				vpuprgstate <= scanpixel == vpuwaitpixel ? FETCH : WAITH;
-			end
-			
-			{1'b1, WAITV}: begin
-				vpuprgstate <= scanline == vpuwaitline ? FETCH : WAITV;
-			end
-			
-			// Idle, unknown, or exec mode off
-			default: begin
-				vpuprgstate <= vpuctl[0] ? FETCH : VIDLE;
-				// Idle/unknown/execoff modes reset PC to zero
-				vpuprgPC <= 10'd0;
-			end
 		endcase
 	end
 end

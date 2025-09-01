@@ -16,6 +16,9 @@ module videomodule(
 	output wire [15:0] passthroughrgb,
 	output wire [7:0] paletteindex_o,
 	input wire [23:0] colordata,
+	output wire [9:0] scanline,
+	output wire [9:0] scanpixel,
+	output wire execena,
 
 	`HDMICLK(HDMI_CLK, 125000000) output wire HDMI_CLK_p,
 	`HDMICLK(HDMI_CLK, 125000000) output wire HDMI_CLK_n,
@@ -128,6 +131,9 @@ videocore videocoreInst(
 	.passthroughrgb(passthroughrgb),
 	.paletteindex_o(paletteindex_o),
 	.colordata(colordata),
+	.scanline_o(scanline),
+	.scanpixel_o(scanpixel),
+	.execena(execena),
 	// Command FIFO
 	.m_axi_araddr(s_axi_araddr),
 	.m_axi_arvalid(s_axi_arvalid),
