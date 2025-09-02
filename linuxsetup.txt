@@ -430,7 +430,7 @@ Before=shutdown.target reboot.target halt.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c "cat /usr/share/splash/poweroff.bin > /dev/fb0"
+ExecStart="
 RemainAfterExit=true
 
 [Install]
@@ -449,3 +449,9 @@ mkdir glibc-build && cd glibc-build
 ../configure --prefix=/opt/glibc-2.34
 make 
 sudo make install
+
+
+////// Setting up the PAUSE key to do something:
+
+This might be useful to for example get the PAUSE key to restore the terminal after a stuck video output:
+bind -x '"\e[P":"cat /usr/share/splash/poweroff.bin > /dev/fb0"'
