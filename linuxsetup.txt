@@ -455,3 +455,20 @@ sudo make install
 
 This might be useful to for example get the PAUSE key to restore the terminal after a stuck video output:
 bind -x '"\e[P":"cat /usr/share/splash/poweroff.bin > /dev/fb0"'
+
+
+////// bash splash ascii art
+
+Insert the following to the ~/.bashrc file just before the ls aliases
+This will display the given ascii art in blue color on terminal startup
+
+# splash text
+echo -e "\033[0;34m"
+echo "                     _       _                 "
+echo " ___  __ _ _ __   __| |_ __ (_)_ __   ___ _ __ "
+echo "/ __|/ _\` | '_ \ / _\` | '_ \| | '_ \ / _ \ '__|"
+echo "\__ \ (_| | | | | (_| | |_) | | |_) |  __/ |   "
+echo "|___/\__,_|_| |_|\__,_| .__/|_| .__/ \___|_|   "
+echo "                      |_|     |_|              "
+echo " sandpiper v0.1     Running Ubuntu 20.04.6 LTS "
+echo -e "\033[0m"
