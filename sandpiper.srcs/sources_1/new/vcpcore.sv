@@ -94,7 +94,7 @@ assign vcpdin = vcpdin_r;
 `define COND_INV			8'h10	// invert the condition code
 
 // State
-typedef enum logic [3:0] {
+typedef enum logic [4:0] {
 	VIDLE,
 	FETCH, DECODE, EXEC, MATHEXEC, MATHWAIT, WRITEREG,
 	WAITH, WAITV,
@@ -410,7 +410,7 @@ always @(posedge aclk) begin
 					m_axi_wstrb <= 16'h0000;
 					m_axi_wlast <= 0;
 					m_axi_bready <= 1'b1;
-					cmdmode <= STOREFINALIZE;
+					vpuprgstate <= STOREFINALIZE;
 				end
 			end
 
