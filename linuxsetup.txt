@@ -159,11 +159,10 @@ scp somepath/something.txt user@serverIP:/home/petal/something.txt
 NOTE#7:
 --------------------------------------------------------------------
 Using metal, device names are listed under /sys/bus/platform/devices/
-Feed these to metal_device_open as device path:
+Feed these or others to metal_device_open as device path:
 
 audio device: "platform", "40000000.audiomodule"
 video device: "platform", "40001000.videomodule"
-keyboard device: "platform", "40002000.keyboardmodule"
 
 --------------------------------------------------------------------
 NOTE#8:

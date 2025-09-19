@@ -101,7 +101,7 @@ typedef enum logic [3:0] {
 	SETUPPAL,
 	SETUPCACHEROFF, SETUPCACHEWOFF,
 	LOADFINALIZE,
-	STOREFINALIZE,
+	STOREPRE, STOREWREADY, STOREFINALIZE,
 	VHALT } vpuprogstatetype;
 vpuprogstatetype vpuprgstate;
 
@@ -276,7 +276,7 @@ always @(posedge aclk) begin
 			{1'b1, DECODE}: begin
 				// Decode the instruction that was already selected with previous vcpaddr_r
 				vpuconst24 <= vcpdout[31:8];
-				vpuconst8 <= vcpdout[31:24];
+				vpuconst8 <= (vcpdout[7:0] == `VPU_SETPAL) ? 8'hF : vcpdout[31:24];
 				flags8 <= vcpdout[23:16];		// extra flags
 				ccond <= vcpdout[26:24];		// compare condition
 				src2 <= vcpdout[15:12]; 		// srcreg (default source)
@@ -327,14 +327,9 @@ always @(posedge aclk) begin
 					`VPU_SETPAL: begin
 						// Directly poke the palette RAM over AXI
 						// Palette RAM address is 0x4000_2000 + (index << 2)
-						m_axi_awaddr <= {32'h40002000 | (vpuconst8 << 2)};
 						m_axi_awvalid <= 1'b1;
-						m_axi_wdata <= vpudout2;
-						m_axi_wvalid <= 1'b1;
-						m_axi_wstrb <= 16'h000F;
-						m_axi_wlast <= 1'b1;
-						m_axi_bready <= 1'b1;
-						vpuprgstate <= STOREFINALIZE;
+						m_axi_awaddr <= {32'h40002000 | (vpuconst8 << 2)};
+						vpuprgstate <= STOREPRE;
 					end
 					`VPU_COPYREG: begin
 						vpudin <= vpudout2;
@@ -364,14 +359,10 @@ always @(posedge aclk) begin
 						vpuprgstate <= LOADFINALIZE;
 					end
 					`VPU_STORE: begin
-						m_axi_awaddr <= {32'h40000000 | vpudout}; // VCP can only write to reserved memory region
+						// Store data in VCP memory area 0x4000_3000
 						m_axi_awvalid <= 1'b1;
-						m_axi_wdata <= vpudout2;
-						m_axi_wvalid <= 1'b1;
-						m_axi_wstrb <= {8'h00, vpuconst8}; // 0x0F for word write and variations thereof
-						m_axi_wlast <= 1'b1;
-						m_axi_bready <= 1'b1;
-						vpuprgstate <= STOREFINALIZE;
+						m_axi_awaddr <= {32'h40003000 | vpudout};
+						vpuprgstate <= STOREPRE;
 					end
 					default: begin
 						vpuprgstate <= FETCH;
@@ -402,10 +393,29 @@ always @(posedge aclk) begin
 				end
 			end
 
+			{1'b1, STOREPRE}: begin
+				if (m_axi_awready) begin // m_axi.awvalid
+					m_axi_awvalid <= 1'b0;
+					m_axi_wvalid <= 1'b1;
+					m_axi_wstrb <= {8'h00, vpuconst8};
+					m_axi_wdata <= vpudout2;
+					m_axi_wlast <= 1'b1;
+					vpuprgstate <= STOREWREADY;
+				end
+			end
+
+			{1'b1, STOREWREADY}: begin
+				if (m_axi_wready) begin // && m_axi.wvalid
+					m_axi_wvalid <= 0;
+					m_axi_wstrb <= 16'h0000;
+					m_axi_wlast <= 0;
+					m_axi_bready <= 1'b1;
+					cmdmode <= STOREFINALIZE;
+				end
+			end
+
 			{1'b1, STOREFINALIZE}: begin
 				if (m_axi_bvalid) begin
-					m_axi_awvalid <= 1'b0;
-					m_axi_wvalid <= 1'b0;
 					m_axi_bready <= 1'b0;
 					vpuprgstate <= FETCH;
 				end
