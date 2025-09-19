@@ -150,8 +150,6 @@ assign m_axi_wid = 0;
 assign m_axi_awlock = 0;
 assign m_axi_arlock = 0;
 
-logic [9:0] vpuprgPC;
-
 localparam SIZE_4_BYTE   = 3'b010; // 2^2
 localparam SIZE_8_BYTE   = 3'b011; // 2^3
 localparam SIZE_16_BYTE  = 3'b100; // 2^4
@@ -248,7 +246,6 @@ always @(posedge aclk) begin
 		vcpdin_r <= 32'd0;
 
 		vpuprgstate <= VIDLE;
-		vpuprgPC <= 10'd0;
 		vpuconst24 <= 24'd0;
 		vpuconst8 <= 8'd0;
 		flags8 <= 8'd0;
@@ -272,12 +269,12 @@ always @(posedge aclk) begin
 			{1'b0, FETCH}: begin
 				// Trigger instruction read
 				vcpre_r <= 1'b1;
-				vcpaddr_r <= vpuprgPC;
+				vcpaddr_r <= 12'd0;
 				vpuprgstate <= DECODE;
 			end
 
 			{1'b1, DECODE}: begin
-				// Decode the instruction that was already selected with previous vpuprgPC
+				// Decode the instruction that was already selected with previous vcpaddr_r
 				vpuconst24 <= vcpdout[31:8];
 				vpuconst8 <= vcpdout[31:24];
 				flags8 <= vcpdout[23:16];		// extra flags
@@ -292,7 +289,7 @@ always @(posedge aclk) begin
 			{1'b1, EXEC}: begin
 				// Ideally we resume at next instruction
 				// unless it's a branch instruction
-				vpuprgPC <= vpuprgPC + 'd4;
+				vcpaddr_r <= vcpaddr_r + 'd4;
 
 				case (vpuinstr)
 					`VPU_HALT: begin
@@ -357,7 +354,7 @@ always @(posedge aclk) begin
 					end
 					`VPU_BRANCH: begin
 						// Branch to target based on zero or nonzero ACC (src==0)
-						vpuprgPC <= vpudout[0] ? vpudout2 : (vpuprgPC + 'd4);
+						vcpaddr_r <= vpudout[0] ? vpudout2 : (vcpaddr_r + 'd4);
 						vpuprgstate <= FETCH;
 					end
 					`VPU_LOAD: begin
@@ -431,7 +428,7 @@ always @(posedge aclk) begin
 			default: begin
 				vpuprgstate <= execena ? FETCH : VIDLE;
 				// Idle/unknown/execoff modes reset PC to zero
-				vpuprgPC <= 10'd0;
+				vcpaddr_r <= 12'd0;
 			end
 		endcase
 	end
