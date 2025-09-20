@@ -226,9 +226,9 @@ always @(posedge aclk) begin
 		m_axi_arvalid <= 0;
 		m_axi_rready <= 0;
 		m_axi_araddr <= 32'd0;
-		m_axi_awlen <= 0;
-		m_axi_awsize <= 0;
-		m_axi_awburst <= 2'b00;
+		m_axi_awlen <= 4'd0;
+		m_axi_awsize <= SIZE_8_BYTE;
+		m_axi_awburst <= BURST_INCR;
 		m_axi_awvalid <= 0;
 		m_axi_awaddr <= 'd0;
 		m_axi_wvalid <= 0;
@@ -275,7 +275,7 @@ always @(posedge aclk) begin
 			{1'b1, DECODE}: begin
 				// Decode the instruction that was already selected with previous vcpaddr_r
 				vpuconst24 <= vcpdout[31:8];
-				vpuconst8 <= (vcpdout[7:0] == `VPU_SETPAL) ? 8'hF : vcpdout[31:24];
+				vpuconst8 <= (vcpdout[7:0] == `VPU_SETPAL) ? 8'h0F : vcpdout[31:24];
 				flags8 <= vcpdout[23:16];		// extra flags or 8 bit index
 				ccond <= vcpdout[26:24];		// compare condition
 				src2 <= vcpdout[15:12]; 		// srcreg (default source)
@@ -393,11 +393,11 @@ always @(posedge aclk) begin
 			end
 
 			{1'b1, STOREPRE}: begin
-				if (m_axi_awready) begin // m_axi.awvalid
+				if (m_axi_awready) begin // && m_axi.awvalid
 					m_axi_awvalid <= 1'b0;
 					m_axi_wvalid <= 1'b1;
-					m_axi_wstrb <= {8'h00, vpuconst8};
-					m_axi_wdata <= vpudout2;
+					m_axi_wstrb <= vpuconst8;
+					m_axi_wdata <= {40'd0, vpudout2}; // 24-bit data in lower bits
 					m_axi_wlast <= 1'b1;
 					vpuprgstate <= STOREWREADY;
 				end
@@ -405,9 +405,9 @@ always @(posedge aclk) begin
 
 			{1'b1, STOREWREADY}: begin
 				if (m_axi_wready) begin // && m_axi.wvalid
-					m_axi_wvalid <= 0;
-					m_axi_wstrb <= 16'h0000;
-					m_axi_wlast <= 0;
+					m_axi_wvalid <= 1'b0;
+					m_axi_wstrb <= 8'h00;
+					m_axi_wlast <= 1'b0;
 					m_axi_bready <= 1'b1;
 					vpuprgstate <= STOREFINALIZE;
 				end
@@ -438,6 +438,13 @@ always @(posedge aclk) begin
 				vpuprgstate <= execena ? FETCH : VIDLE;
 				// Idle/unknown/execoff modes reset PC to zero
 				vcpaddr_r <= 12'd0;
+				// Ensure AXI control signals are quiescent
+				if (!execena) begin
+                    m_axi_awvalid <= 1'b0;
+                    m_axi_wvalid  <= 1'b0;
+                    m_axi_bready  <= 1'b0;
+                    m_axi_wstrb   <= 8'h00;
+                end
 			end
 		endcase
 	end

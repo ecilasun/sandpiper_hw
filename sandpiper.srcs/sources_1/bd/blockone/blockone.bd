@@ -3889,6 +3889,9 @@
           "M02_HAS_REGSLICE": {
             "value": "3"
           },
+          "M03_HAS_REGSLICE": {
+            "value": "3"
+          },
           "NUM_MI": {
             "value": "4"
           },
