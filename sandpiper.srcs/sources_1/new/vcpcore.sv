@@ -277,7 +277,7 @@ always @(posedge aclk) begin
 				// Decode the instruction that was already selected with previous vcpaddr_r
 				vpuconst24 <= vcpdout[31:8];
 				vpuconst8 <= (vcpdout[7:0] == `VPU_SETPAL) ? 8'hF : vcpdout[31:24];
-				flags8 <= vcpdout[23:16];		// extra flags
+				flags8 <= vcpdout[23:16];		// extra flags or 8 bit index
 				ccond <= vcpdout[26:24];		// compare condition
 				src2 <= vcpdout[15:12]; 		// srcreg (default source)
 				src1 <= vcpdout[11:8];			// same as dest
@@ -326,9 +326,9 @@ always @(posedge aclk) begin
 					end
 					`VPU_SETPAL: begin
 						// Directly poke the palette RAM over AXI
-						// Palette RAM address is 0x4000_2000 + (index << 2)
+						// Palette RAM address is 0x4000_2000 + (index * 4)
 						m_axi_awvalid <= 1'b1;
-						m_axi_awaddr <= {32'h40002000 | (vpuconst8 << 2)};
+						m_axi_awaddr <= 32'h40002000 | (flags8 << 2);
 						vpuprgstate <= STOREPRE;
 					end
 					`VPU_COPYREG: begin
@@ -361,7 +361,7 @@ always @(posedge aclk) begin
 					`VPU_STORE: begin
 						// Store data in VCP memory area 0x4000_3000
 						m_axi_awvalid <= 1'b1;
-						m_axi_awaddr <= {32'h40003000 | vpudout};
+						m_axi_awaddr <= 32'h40003000 | vpudout;
 						vpuprgstate <= STOREPRE;
 					end
 					default: begin
