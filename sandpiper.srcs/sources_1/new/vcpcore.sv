@@ -266,10 +266,9 @@ always @(posedge aclk) begin
 		mathena <= 1'b0;
 
 		case ({execena, vpuprgstate})
-			{1'b0, FETCH}: begin
+			{1'b1, FETCH}: begin
 				// Trigger instruction read
 				vcpre_r <= 1'b1;
-				vcpaddr_r <= 12'd0;
 				vpuprgstate <= DECODE;
 			end
 
