@@ -60,32 +60,30 @@ assign vcpaddr = vcpaddr_r;
 assign vcpdin = vcpdin_r;
 
 // Instructions (up to 7 bits wide)
-`define VPU_HALT			8'h00
-`define VPU_NOOP			8'h01
-`define VPU_WAITLINE		8'h02
-`define VPU_WAITCOLUMN		8'h03
-`define VPU_SETPIXOFF		8'h04
-`define VPU_SETCACHEROFF	8'h05
-`define VPU_SETCACHEWOFF	8'h06
-`define VPU_SETACC			8'h07
-`define VPU_SETPAL			8'h08
-`define VPU_COPYREG			8'h09
-`define VPU_COMPARE			8'h0A
-`define VPU_BRANCH			8'h0B
-`define VPU_LOAD			8'h0C
-`define VPU_STORE			8'h0D
-`define VPU_UNUSED0			8'h0E
-`define VPU_UNUSED1			8'h0F
-`define VPU_ADD				8'h10
-`define VPU_MUL				8'h11
-`define VPU_DIV				8'h12
-`define VPU_MOD				8'h13
-`define VPU_AND				8'h14
-`define VPU_OR				8'h15
-`define VPU_XOR				8'h16
-`define VPU_NOT				8'h17
-`define VPU_SHL				8'h18
-`define VPU_SHR				8'h19
+`define VCP_HALT			8'h00
+`define VCP_NOOP			8'h01
+`define VCP_WAITLINE		8'h02
+`define VCP_WAITCOLUMN		8'h03
+`define VCP_SETPIXOFF		8'h04
+`define VCP_SETCACHEROFF	8'h05
+`define VCP_SETCACHEWOFF	8'h06
+`define VCP_SETACC			8'h07
+`define VCP_SETPAL			8'h08
+`define VCP_COPYREG			8'h09
+`define VCP_ADD				8'h0A
+`define VCP_COMPARE			8'h0B
+`define VCP_BRANCH			8'h0C
+`define VCP_JUMP			8'h0D
+`define VCP_RESERVED1		8'h0E
+`define VCP_RESERVED2		8'h0F
+`define VCP_AND				8'h10
+`define VCP_OR				8'h11
+`define VCP_XOR				8'h12
+`define VCP_NOT				8'h13
+`define VCP_SHL				8'h14
+`define VCP_SHR				8'h15
+`define VCP_LOAD			8'h16
+`define VCP_STORE			8'h17
 
 `define COND_EQ				8'h01	// or NE if inverted
 `define COND_LT				8'h02 	// or GE if inverted
@@ -114,7 +112,6 @@ logic [7:0] vpuinstr;
 logic [3:0] src1;
 logic [3:0] src2;
 logic [3:0] dest;
-logic [4:0] ccond;
 
 // VPU register file
 // R0 ->  ACC
@@ -172,43 +169,43 @@ always @(posedge aclk) begin
 		mathready <= 0;
 		if (mathena) begin
 			case (vpuinstr)
-				`VPU_ADD: begin
+				`VCP_ADD: begin
 					mathout <= A + B;
 					mathready <= 1;
 				end
-				/*`VPU_MUL: begin
+				/*`VCP_MUL: begin
 					mathout <= A * B;
 					mathready <= 1;
 				end
-				`VPU_DIV: begin
+				`VCP_DIV: begin
 					mathout <= A / B;
 					mathready <= 1;
 				end
-				`VPU_MOD: begin
+				`VCP_MOD: begin
 					mathout <= A % B;
 					mathready <= 1;
 				end*/
-				`VPU_AND: begin
+				`VCP_AND: begin
 					mathout <= A & B;
 					mathready <= 1;
 				end
-				`VPU_OR: begin
+				`VCP_OR: begin
 					mathout <= A | B;
 					mathready <= 1;
 				end
-				`VPU_XOR: begin
+				`VCP_XOR: begin
 					mathout <= A ^ B;
 					mathready <= 1;
 				end
-				`VPU_NOT: begin
+				`VCP_NOT: begin
 					mathout <= ~A;
 					mathready <= 1;
 				end
-				`VPU_SHL: begin
+				`VCP_SHL: begin
 					mathout <= A << B[5:0];
 					mathready <= 1;
 				end
-				`VPU_SHR: begin
+				`VCP_SHR: begin
 					mathout <= A >> B[5:0];
 					mathready <= 1;
 				end
@@ -220,6 +217,8 @@ always @(posedge aclk) begin
 		end
 	end
 end
+
+wire isAcc = (vcpdout[7:0] == `VCP_SETACC);
 
 always @(posedge aclk) begin
 	if(~aresetn) begin
@@ -252,7 +251,6 @@ always @(posedge aclk) begin
 		vpuwaitline <= 10'd0;
 		vpuwaitpixel <= 10'd0;
 		vpuinstr <= 8'd0;
-		ccond <= 5'd0;
 		src1 <= 4'd0;
 		src2 <= 4'd0;
 		dest <= 4'd0;
@@ -274,14 +272,13 @@ always @(posedge aclk) begin
 
 			{1'b1, DECODE}: begin
 				// Decode the instruction that was already selected with previous vcpaddr_r
-				vpuconst24 <= vcpdout[31:8];
-				vpuconst8 <= (vcpdout[7:0] == `VPU_SETPAL) ? 8'h0F : vcpdout[31:24];
-				flags8 <= vcpdout[23:16];		// extra flags or 8 bit index
-				ccond <= vcpdout[26:24];		// compare condition
-				src2 <= vcpdout[15:12]; 		// srcreg (default source)
-				src1 <= vcpdout[11:8];			// same as dest
-				dest <= (vcpdout[7:0] == `VPU_SETACC) ? 4'd0 : vcpdout[15:12]; // setacc always aims at R0 (ACC register)
-				vpuinstr <= vcpdout[7:0];
+				vpuconst24 <= vcpdout[31:8];						// 24-bit constant
+				vpuconst8 <= vcpdout[31:24];						// write strobe
+				flags8 <= vcpdout[23:16];							// compare condition or 8 bit index
+				src2 <= vcpdout[15:12]; 							// srcreg (default source)
+				dest <= isAcc ? 4'd0 : vcpdout[11:8];				// setacc always aims 24 bit immed at R0 (ACC register)
+				src1 <= vcpdout[11:8];								// same as dest
+				vpuinstr <= vcpdout[7:0];							// instruction opcode
 				vpuprgstate <= vcpdout[4] ? MATHEXEC : EXEC;
 			end
 
@@ -291,73 +288,77 @@ always @(posedge aclk) begin
 				vcpaddr_r <= vcpaddr_r + 'd4;
 
 				case (vpuinstr)
-					`VPU_HALT: begin
+					`VCP_HALT: begin
 						// TODO: Stop PC increment
 						vpuprgstate <= VIDLE;
 					end
-					`VPU_NOOP: begin
+					`VCP_NOOP: begin
 						// Waste one clock
 						vpuprgstate <= VIDLE;
 					end
-					`VPU_WAITLINE: begin
+					`VCP_WAITLINE: begin
 						vpuwaitpixel <= 2;
 						vpuprgstate <= WAITH;
 					end
-					`VPU_WAITCOLUMN: begin
+					`VCP_WAITCOLUMN: begin
 						vpuwaitline <= vpudout2;
 						vpuprgstate <= WAITV;
 					end
-					`VPU_SETPIXOFF: begin
+					`VCP_SETPIXOFF: begin
 						//pixel_offset <= vpudout2[3:0];
 						vpuprgstate <= FETCH;
 					end
-					`VPU_SETCACHEROFF: begin
+					`VCP_SETCACHEROFF: begin
 						//scanlinea_offset <= vpudout2[7:0];
 						vpuprgstate <= FETCH;
 					end
-					`VPU_SETCACHEWOFF: begin
+					`VCP_SETCACHEWOFF: begin
 						//scanlinewa_offset <= vpudout2[7:0];
 						vpuprgstate <= FETCH;
 					end
-					`VPU_SETACC: begin
+					`VCP_SETACC: begin
 						vpudin <= vpuconst24;
 						vpuprgstate <= WRITEREG;
 					end
-					`VPU_SETPAL: begin
+					`VCP_SETPAL: begin
 						// Directly poke the palette RAM over AXI
 						// Palette RAM address is 0x4000_2000 + (index * 4)
 						m_axi_awvalid <= 1'b1;
 						m_axi_awaddr <= 32'h40002000 | (flags8 << 2);
 						vpuprgstate <= STOREPRE;
 					end
-					`VPU_COPYREG: begin
+					`VCP_COPYREG: begin
 						vpudin <= vpudout2;
 						vpuprgstate <= WRITEREG;
 					end
-					`VPU_COMPARE: begin
+					`VCP_COMPARE: begin
 						priority case (1'b1)
-							ccond[3] & (ccond[4] ^ iszero):	begin vpudin <= 24'd1; end
-							ccond[2] & (ccond[4] ^ isle):	begin vpudin <= 24'd1; end
-							ccond[1] & (ccond[4] ^ islt):	begin vpudin <= 24'd1; end
-							ccond[0] & (ccond[4] ^ iseq):	begin vpudin <= 24'd1; end
-							default:						begin vpudin <= 24'd0; end
+							flags8[3]:	vpudin <= {23'd0, (flags8[4] ^ iszero)};
+							flags8[2]:	vpudin <= {23'd0, (flags8[4] ^ isle)};
+							flags8[1]:	vpudin <= {23'd0, (flags8[4] ^ islt)};
+							flags8[0]:	vpudin <= {23'd0, (flags8[4] ^ iseq)};
+							default:	vpudin <= 24'd0;
 						endcase
 						// Compare result goes into ACC
 						dest <= 0;
 						vpuprgstate <= WRITEREG;
 					end
-					`VPU_BRANCH: begin
+					`VCP_BRANCH: begin
 						// Branch to target based on zero or nonzero ACC (src==0)
 						vcpaddr_r <= vpudout[0] ? vpudout2 : (vcpaddr_r + 'd4);
 						vpuprgstate <= FETCH;
 					end
-					`VPU_LOAD: begin
+					`VCP_JUMP: begin
+						vcpaddr_r <= vpudout2;
+						vpuprgstate <= FETCH;
+					end
+					`VCP_LOAD: begin
 						m_axi_araddr <= vpudout2;
 						m_axi_arvalid <= 1'b1;
 						m_axi_rready <= 1'b1;
 						vpuprgstate <= LOADFINALIZE;
 					end
-					`VPU_STORE: begin
+					`VCP_STORE: begin
 						// Store data in VCP memory area 0x4000_3000
 						m_axi_awvalid <= 1'b1;
 						m_axi_awaddr <= 32'h40003000 | vpudout;
