@@ -439,7 +439,7 @@ always @(posedge aclk) begin
 				vpuprgstate <= execena ? FETCH : VIDLE;
 				// Idle/unknown/execoff modes reset PC to zero
 				vcpaddr_r <= 12'd0;
-				// Ensure AXI control signals are quiescent
+				// Ensure AXI control signals are quiet
 				if (!execena) begin
                     m_axi_awvalid <= 1'b0;
                     m_axi_wvalid  <= 1'b0;
