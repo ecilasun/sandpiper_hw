@@ -8,6 +8,10 @@ module vcpmodule(
 	input wire [9:0] scanline,
 	input wire [9:0] scanpixel,
 	input wire execena,
+	// Palette RAM direct access
+	output wire [7:0] paladdr,
+	output wire [23:0] paldout,
+	output wire palwe,
 	// AXI4 wires for command interface to the CPU
 	output reg s_axi_arready,
 	output reg s_axi_awready,
@@ -242,6 +246,9 @@ vcpcore VCP(
 	.vcpaddr(vcpaddr),
 	.vcpdin(vcpdin),
 	.vcpdout(vcpdout),
+	.paladdr(paladdr),
+	.paldout(paldout),
+	.palwe(palwe),
 	.m_axi_arready(m_axi_arready),
 	.m_axi_awready(m_axi_awready),
 	.m_axi_bvalid(m_axi_bvalid),

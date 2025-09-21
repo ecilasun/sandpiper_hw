@@ -3,6 +3,10 @@
 module colorpalettemodule(
 	input wire aclk,
 	input wire aresetn,
+	// Palette RAM direct access
+	input wire [7:0] paladdr,
+	input wire [23:0] paldout,
+	input wire palwe,
 	// AXI4 wires for command interface to the CPU
 	output reg s_axi_arready,
 	output reg s_axi_awready,
@@ -61,6 +65,21 @@ reg [23:0] paletteout;
 
 initial begin
 	$readmemh("colorpalette.mem", paletteentries);
+end
+
+// Dual-port RAM style access for palette entries
+always @(posedge aclk) begin
+	if (~aresetn) begin
+		// Do nothing, handled via initial block
+	end else begin
+		// Handle both AXI and direct writes from VCP core
+		// Priority to AXI writes if both happen in same cycle
+		case ({s_axi_wvalid, palwe})
+			2'b10: paletteentries[palwaddr] <= s_axi_wdata[23:0];
+			2'b01: paletteentries[paladdr] <= paldout;
+			default: ;
+		endcase
+	end
 end
 
 // Read port for VPU
@@ -128,7 +147,6 @@ always @(posedge aclk) begin
 			end
 			2'b01: begin
 				if (s_axi_wvalid) begin
-					paletteentries[palwaddr] <= s_axi_wdata[23:0];
 					writestate <= 2'b10;
 					s_axi_wready <= 1'b1;
 				end

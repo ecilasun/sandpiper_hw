@@ -38,6 +38,9 @@
       "ports": {
         "aclk": [ { "direction": "in" } ],
         "aresetn": [ { "direction": "in" } ],
+        "paladdr": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
+        "paldout": [ { "direction": "in", "size_left": "23", "size_right": "0" } ],
+        "palwe": [ { "direction": "in" } ],
         "s_axi_arready": [ { "direction": "out" } ],
         "s_axi_awready": [ { "direction": "out" } ],
         "s_axi_bvalid": [ { "direction": "out" } ],

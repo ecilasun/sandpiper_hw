@@ -4899,6 +4899,19 @@
               }
             }
           },
+          "paladdr": {
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "paldout": {
+            "direction": "I",
+            "left": "23",
+            "right": "0"
+          },
+          "palwe": {
+            "direction": "I"
+          },
           "clk25": {
             "direction": "I",
             "parameters": {
@@ -5639,6 +5652,19 @@
           },
           "execena": {
             "direction": "I"
+          },
+          "paladdr": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "paldout": {
+            "direction": "O",
+            "left": "23",
+            "right": "0"
+          },
+          "palwe": {
+            "direction": "O"
           }
         },
         "addressing": {
@@ -5763,11 +5789,11 @@
           "processing_system7_0/S_AXI_HP0_ACLK",
           "processing_system7_0/S_AXI_HP1_ACLK",
           "axi_interconnect_0/M02_ACLK",
-          "colorpalettemodule_0/aclk",
           "processing_system7_0/S_AXI_HP2_ACLK",
           "axi_interconnect_0/M03_ACLK",
           "videomodule_0/aclk",
-          "vcpmodule_0/aclk"
+          "vcpmodule_0/aclk",
+          "colorpalettemodule_0/aclk"
         ]
       },
       "Net1": {
@@ -5803,8 +5829,8 @@
       "clk_wiz_0_pixelclk": {
         "ports": [
           "clk_wiz_0/pixelclk",
-          "colorpalettemodule_0/clk25",
-          "videomodule_0/pixelClock"
+          "videomodule_0/pixelClock",
+          "colorpalettemodule_0/clk25"
         ]
       },
       "clk_wiz_0_serdesclk": {
@@ -5834,9 +5860,9 @@
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
           "audiomodule_0/aresetn",
-          "colorpalettemodule_0/aresetn",
           "videomodule_0/aresetn",
-          "vcpmodule_0/aresetn"
+          "vcpmodule_0/aresetn",
+          "colorpalettemodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
@@ -5869,6 +5895,24 @@
           "util_vector_logic_0/Res",
           "gmii_to_rgmii_0/tx_reset",
           "gmii_to_rgmii_0/rx_reset"
+        ]
+      },
+      "vcpmodule_0_paladdr": {
+        "ports": [
+          "vcpmodule_0/paladdr",
+          "colorpalettemodule_0/paladdr"
+        ]
+      },
+      "vcpmodule_0_paldout": {
+        "ports": [
+          "vcpmodule_0/paldout",
+          "colorpalettemodule_0/paldout"
+        ]
+      },
+      "vcpmodule_0_palwe": {
+        "ports": [
+          "vcpmodule_0/palwe",
+          "colorpalettemodule_0/palwe"
         ]
       },
       "videomodule_0_HDMI_CLK_n": {
