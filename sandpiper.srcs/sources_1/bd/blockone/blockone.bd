@@ -5792,8 +5792,8 @@
           "processing_system7_0/S_AXI_HP2_ACLK",
           "axi_interconnect_0/M03_ACLK",
           "videomodule_0/aclk",
-          "vcpmodule_0/aclk",
-          "colorpalettemodule_0/aclk"
+          "colorpalettemodule_0/aclk",
+          "vcpmodule_0/aclk"
         ]
       },
       "Net1": {
@@ -5861,8 +5861,8 @@
           "proc_sys_reset_0/peripheral_aresetn",
           "audiomodule_0/aresetn",
           "videomodule_0/aresetn",
-          "vcpmodule_0/aresetn",
-          "colorpalettemodule_0/aresetn"
+          "colorpalettemodule_0/aresetn",
+          "vcpmodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
