@@ -146,6 +146,12 @@ assign m_axi_awid = 0;
 assign m_axi_wid = 0;
 assign m_axi_awlock = 0;
 assign m_axi_arlock = 0;
+assign m_axi_awlen = 4'd0;
+assign m_axi_awsize = SIZE_8_BYTE;
+assign m_axi_awburst = BURST_INCR;
+assign m_axi_arlen = 0;
+assign m_axi_arburst = BURST_FIXED;
+assign m_axi_arsize = SIZE_4_BYTE;
 
 localparam SIZE_4_BYTE   = 3'b010; // 2^2
 localparam SIZE_8_BYTE   = 3'b011; // 2^3
@@ -173,18 +179,6 @@ always @(posedge aclk) begin
 					mathout <= A + B;
 					mathready <= 1;
 				end
-				/*`VCP_MUL: begin
-					mathout <= A * B;
-					mathready <= 1;
-				end
-				`VCP_DIV: begin
-					mathout <= A / B;
-					mathready <= 1;
-				end
-				`VCP_MOD: begin
-					mathout <= A % B;
-					mathready <= 1;
-				end*/
 				`VCP_AND: begin
 					mathout <= A & B;
 					mathready <= 1;
@@ -210,6 +204,7 @@ always @(posedge aclk) begin
 					mathready <= 1;
 				end
 				default: begin
+					// Illegal math ops return zero
 					mathout <= 24'd0;
 					mathready <= 1;
 				end
@@ -219,25 +214,20 @@ always @(posedge aclk) begin
 end
 
 wire isAcc = (vcpdout[7:0] == `VCP_SETACC);
+logic execlatch;
 
 always @(posedge aclk) begin
 	if(~aresetn) begin
 		m_axi_arvalid <= 0;
 		m_axi_rready <= 0;
 		m_axi_araddr <= 32'd0;
-		m_axi_awlen <= 4'd0;
-		m_axi_awsize <= SIZE_8_BYTE;
-		m_axi_awburst <= BURST_INCR;
-		m_axi_awvalid <= 0;
 		m_axi_awaddr <= 'd0;
 		m_axi_wvalid <= 0;
-		m_axi_wstrb <= 16'h0000;
+		m_axi_wstrb <= 8'h00;
 		m_axi_wlast <= 0;
-		m_axi_wdata <= 'd0;
+		m_axi_wdata <= 64'd0;
 		m_axi_bready <= 0;
-		m_axi_arlen <= 0;
-		m_axi_arburst <= BURST_FIXED;
-		m_axi_arsize <= SIZE_4_BYTE;
+		m_axi_awvalid <= 0;
 
 		vcpre_r <= 1'b0;
 		vcpwe_r <= 4'd0;
@@ -257,20 +247,31 @@ always @(posedge aclk) begin
 		vpudin <= 24'd0;
 		vpurwe <= 1'b0;
 		mathena <= 1'b0;
+		execlatch <= 1'b0;
 	end else begin
 		vpurwe <= 1'b0;
 		vcpre_r <= 1'b0;
 		vcpwe_r <= 4'd0;
 		mathena <= 1'b0;
 
-		case ({execena, vpuprgstate})
-			{1'b1, FETCH}: begin
+		// Allow execution to be started
+		if (execena)
+			execlatch <= 1'b1;
+
+		unique case (vpuprgstate)
+			VIDLE: begin
+				vpuprgstate <= execlatch ? FETCH : VIDLE;
+				// Idle/unknown/execoff modes reset PC to zero
+				vcpaddr_r <= 12'd0;
+			end
+
+			FETCH: begin
 				// Trigger instruction read
 				vcpre_r <= 1'b1;
 				vpuprgstate <= DECODE;
 			end
 
-			{1'b1, DECODE}: begin
+			DECODE: begin
 				// Decode the instruction that was already selected with previous vcpaddr_r
 				vpuconst24 <= vcpdout[31:8];						// 24-bit constant
 				vpuconst8 <= vcpdout[31:24];						// write strobe
@@ -279,22 +280,23 @@ always @(posedge aclk) begin
 				dest <= isAcc ? 4'd0 : vcpdout[11:8];				// setacc always aims 24 bit immed at R0 (ACC register)
 				src1 <= vcpdout[11:8];								// same as dest
 				vpuinstr <= vcpdout[7:0];							// instruction opcode
-				vpuprgstate <= vcpdout[4] ? MATHEXEC : EXEC;
+				vpuprgstate <= vcpdout[4] ? MATHEXEC : EXEC;		// bit 4 indicates math instruction
 			end
 
-			{1'b1, EXEC}: begin
+			EXEC: begin
 				// Ideally we resume at next instruction
 				// unless it's a branch instruction
-				vcpaddr_r <= vcpaddr_r + 'd4;
+				vcpaddr_r <= vcpaddr_r + 12'd4;
 
 				case (vpuinstr)
 					`VCP_HALT: begin
-						// TODO: Stop PC increment
+						// Stop execution
+						execlatch <= 1'b0;
 						vpuprgstate <= VIDLE;
 					end
 					`VCP_NOOP: begin
 						// Waste one clock
-						vpuprgstate <= VIDLE;
+						vpuprgstate <= FETCH;
 					end
 					`VCP_WAITLINE: begin
 						vpuwaitpixel <= 2;
@@ -365,26 +367,28 @@ always @(posedge aclk) begin
 						vpuprgstate <= STOREPRE;
 					end
 					default: begin
-						vpuprgstate <= FETCH;
+						// Illegal instruction - stop execution
+						execlatch <= 1'b0;
+						vpuprgstate <= VIDLE;
 					end
 				endcase
 			end
 
-			{1'b1, MATHEXEC}: begin
+			MATHEXEC: begin
 				A <= vpudout2;
 				B <= vpudout;
 				mathena <= 1'b1;
 				vpuprgstate <= MATHWAIT;
 			end
 
-			{1'b1, MATHWAIT}: begin
+			MATHWAIT: begin
 				if (mathready) begin
 					vpudin <= mathout;
 					vpuprgstate <= WRITEREG;
 				end
 			end
 
-			{1'b1, LOADFINALIZE}: begin
+			LOADFINALIZE: begin
 				if (m_axi_rvalid) begin
 					m_axi_arvalid <= 1'b0;
 					m_axi_rready <= 1'b0;
@@ -393,7 +397,7 @@ always @(posedge aclk) begin
 				end
 			end
 
-			{1'b1, STOREPRE}: begin
+			STOREPRE: begin
 				if (m_axi_awready) begin // && m_axi.awvalid
 					m_axi_awvalid <= 1'b0;
 					m_axi_wvalid <= 1'b1;
@@ -404,7 +408,7 @@ always @(posedge aclk) begin
 				end
 			end
 
-			{1'b1, STOREWREADY}: begin
+			STOREWREADY: begin
 				if (m_axi_wready) begin // && m_axi.wvalid
 					m_axi_wvalid <= 1'b0;
 					m_axi_wstrb <= 8'h00;
@@ -414,38 +418,24 @@ always @(posedge aclk) begin
 				end
 			end
 
-			{1'b1, STOREFINALIZE}: begin
+			STOREFINALIZE: begin
 				if (m_axi_bvalid) begin
 					m_axi_bready <= 1'b0;
 					vpuprgstate <= FETCH;
 				end
 			end
 
-			{1'b1, WRITEREG}: begin
+			WRITEREG: begin
 				vpurwe <= 1'b1;
 				vpuprgstate <= FETCH;
 			end
 
-			{1'b1, WAITH}: begin
+			WAITH: begin
 				vpuprgstate <= scanpixel == vpuwaitpixel ? FETCH : WAITH;
 			end
-			
-			{1'b1, WAITV}: begin
+
+			WAITV: begin
 				vpuprgstate <= scanline == vpuwaitline ? FETCH : WAITV;
-			end
-			
-			// Idle, unknown, or exec mode off
-			default: begin
-				vpuprgstate <= execena ? FETCH : VIDLE;
-				// Idle/unknown/execoff modes reset PC to zero
-				vcpaddr_r <= 12'd0;
-				// Ensure AXI control signals are quiet
-				if (!execena) begin
-                    m_axi_awvalid <= 1'b0;
-                    m_axi_wvalid  <= 1'b0;
-                    m_axi_bready  <= 1'b0;
-                    m_axi_wstrb   <= 8'h00;
-                end
 			end
 		endcase
 	end
