@@ -471,3 +471,20 @@ echo "|___/\__,_|_| |_|\__,_| .__/|_| .__/ \___|_|   "
 echo "                      |_|     |_|              "
 echo " sandpiper v0.1     Running Ubuntu 20.04.6 LTS "
 echo -e "\033[0m"
+
+
+--- Fixed for errors encountered when running on WSL2 (Windows subsystem for Linux - 2)
+
+// Locale error:
+sudo nano /etc/locale.gen and uncomment es_US.UTF-8 UTF-8
+sudo local-gen
+sudo dpkg-reconfigure locales
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+// You'll also want this for petalinux-config --get-hw-description=.:
+sudo apt install bind9-dnsutils
+
+// And these to be able to build petalinux (symlink libtinfo6 as 5):
+ls /usr/lib/x86_64-linux-gnu/libtinfo.so.6
+sudo ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5
