@@ -21,6 +21,9 @@ petalinux-build
 cd images/linux
 petalinux-package boot --format BIN --fsbl zynq_fsbl.elf --u-boot u-boot.elf --fpga system.bit --force
 
+// Optional: run this to get a cross compiler toolchain generated:
+petalinux-build --sdk
+
 To make things from scratch, either of:
 petalinux-build -x distclean
 petalinux-build -x mrproper
