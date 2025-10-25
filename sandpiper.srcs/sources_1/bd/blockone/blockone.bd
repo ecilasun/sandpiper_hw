@@ -23,8 +23,12 @@
         "s00_couplers": {
           "auto_us": ""
         },
-        "m00_couplers": {},
-        "m01_couplers": {},
+        "m00_couplers": {
+          "auto_pc": ""
+        },
+        "m01_couplers": {
+          "auto_pc": ""
+        },
         "m02_couplers": {},
         "m03_couplers": {}
       },
@@ -726,7 +730,7 @@
                 "value_src": "constant"
               },
               "PROTOCOL": {
-                "value": "AXI3",
+                "value": "AXI4LITE",
                 "value_src": "constant"
               },
               "FREQ_HZ": {
@@ -766,7 +770,7 @@
                 "value_src": "constant"
               },
               "HAS_BURST": {
-                "value": "1",
+                "value": "0",
                 "value_src": "constant"
               },
               "HAS_LOCK": {
@@ -802,19 +806,19 @@
                 "value_src": "constant"
               },
               "SUPPORTS_NARROW_BURST": {
-                "value": "1",
+                "value": "0",
                 "value_src": "auto"
               },
               "NUM_READ_OUTSTANDING": {
-                "value": "2",
+                "value": "1",
                 "value_src": "auto"
               },
               "NUM_WRITE_OUTSTANDING": {
-                "value": "2",
+                "value": "1",
                 "value_src": "auto"
               },
               "MAX_BURST_LENGTH": {
-                "value": "16",
+                "value": "1",
                 "value_src": "auto"
               },
               "CLK_DOMAIN": {
@@ -834,24 +838,6 @@
                 "physical_name": "s_axi_awaddr",
                 "direction": "I",
                 "left": "31",
-                "right": "0"
-              },
-              "AWLEN": {
-                "physical_name": "s_axi_awlen",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "AWSIZE": {
-                "physical_name": "s_axi_awsize",
-                "direction": "I",
-                "left": "2",
-                "right": "0"
-              },
-              "AWBURST": {
-                "physical_name": "s_axi_awburst",
-                "direction": "I",
-                "left": "1",
                 "right": "0"
               },
               "AWLOCK": {
@@ -904,10 +890,6 @@
                 "left": "7",
                 "right": "0"
               },
-              "WLAST": {
-                "physical_name": "s_axi_wlast",
-                "direction": "I"
-              },
               "WVALID": {
                 "physical_name": "s_axi_wvalid",
                 "direction": "I"
@@ -946,24 +928,6 @@
                 "physical_name": "s_axi_araddr",
                 "direction": "I",
                 "left": "31",
-                "right": "0"
-              },
-              "ARLEN": {
-                "physical_name": "s_axi_arlen",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "ARSIZE": {
-                "physical_name": "s_axi_arsize",
-                "direction": "I",
-                "left": "2",
-                "right": "0"
-              },
-              "ARBURST": {
-                "physical_name": "s_axi_arburst",
-                "direction": "I",
-                "left": "1",
                 "right": "0"
               },
               "ARLOCK": {
@@ -1015,10 +979,6 @@
                 "direction": "O",
                 "left": "1",
                 "right": "0"
-              },
-              "RLAST": {
-                "physical_name": "s_axi_rlast",
-                "direction": "O"
               },
               "RVALID": {
                 "physical_name": "s_axi_rvalid",
@@ -1082,21 +1042,7 @@
             }
           },
           "audiosampleclk": {
-            "direction": "O",
-            "parameters": {
-              "FREQ_HZ": {
-                "value": "44100",
-                "value_src": "const_prop"
-              },
-              "PHASE": {
-                "value": "0.0",
-                "value_src": "default_prop"
-              },
-              "CLK_DOMAIN": {
-                "value": "blockone_audiomodule_0_0_audiosampleclk",
-                "value_src": "default_prop"
-              }
-            }
+            "direction": "O"
           },
           "audioSampleOutputLR": {
             "direction": "O",
@@ -1461,7 +1407,7 @@
                 "value_src": "constant"
               },
               "PROTOCOL": {
-                "value": "AXI3",
+                "value": "AXI4LITE",
                 "value_src": "constant"
               },
               "FREQ_HZ": {
@@ -1501,7 +1447,7 @@
                 "value_src": "constant"
               },
               "HAS_BURST": {
-                "value": "1",
+                "value": "0",
                 "value_src": "constant"
               },
               "HAS_LOCK": {
@@ -1537,19 +1483,19 @@
                 "value_src": "constant"
               },
               "SUPPORTS_NARROW_BURST": {
-                "value": "1",
+                "value": "0",
                 "value_src": "auto"
               },
               "NUM_READ_OUTSTANDING": {
-                "value": "2",
+                "value": "1",
                 "value_src": "auto"
               },
               "NUM_WRITE_OUTSTANDING": {
-                "value": "2",
+                "value": "1",
                 "value_src": "auto"
               },
               "MAX_BURST_LENGTH": {
-                "value": "16",
+                "value": "1",
                 "value_src": "auto"
               },
               "CLK_DOMAIN": {
@@ -1569,24 +1515,6 @@
                 "physical_name": "s_axi_awaddr",
                 "direction": "I",
                 "left": "31",
-                "right": "0"
-              },
-              "AWLEN": {
-                "physical_name": "s_axi_awlen",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "AWSIZE": {
-                "physical_name": "s_axi_awsize",
-                "direction": "I",
-                "left": "2",
-                "right": "0"
-              },
-              "AWBURST": {
-                "physical_name": "s_axi_awburst",
-                "direction": "I",
-                "left": "1",
                 "right": "0"
               },
               "AWLOCK": {
@@ -1639,10 +1567,6 @@
                 "left": "7",
                 "right": "0"
               },
-              "WLAST": {
-                "physical_name": "s_axi_wlast",
-                "direction": "I"
-              },
               "WVALID": {
                 "physical_name": "s_axi_wvalid",
                 "direction": "I"
@@ -1681,24 +1605,6 @@
                 "physical_name": "s_axi_araddr",
                 "direction": "I",
                 "left": "31",
-                "right": "0"
-              },
-              "ARLEN": {
-                "physical_name": "s_axi_arlen",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "ARSIZE": {
-                "physical_name": "s_axi_arsize",
-                "direction": "I",
-                "left": "2",
-                "right": "0"
-              },
-              "ARBURST": {
-                "physical_name": "s_axi_arburst",
-                "direction": "I",
-                "left": "1",
                 "right": "0"
               },
               "ARLOCK": {
@@ -1750,10 +1656,6 @@
                 "direction": "O",
                 "left": "1",
                 "right": "0"
-              },
-              "RLAST": {
-                "physical_name": "s_axi_rlast",
-                "direction": "O"
               },
               "RVALID": {
                 "physical_name": "s_axi_rvalid",
@@ -1820,21 +1722,7 @@
             }
           },
           "audiosampleclk": {
-            "direction": "I",
-            "parameters": {
-              "FREQ_HZ": {
-                "value": "44100",
-                "value_src": "const_prop"
-              },
-              "PHASE": {
-                "value": "0.0",
-                "value_src": "default_prop"
-              },
-              "CLK_DOMAIN": {
-                "value": "blockone_audiomodule_0_0_audiosampleclk",
-                "value_src": "default_prop"
-              }
-            }
+            "direction": "I"
           },
           "aresetn": {
             "type": "rst",
@@ -4263,11 +4151,76 @@
                 "direction": "I"
               }
             },
+            "components": {
+              "auto_pc": {
+                "vlnv": "xilinx.com:ip:axi_protocol_converter:2.1",
+                "ip_revision": "36",
+                "xci_name": "blockone_axi_interconnect_0_imp_auto_pc_0",
+                "xci_path": "ip\\blockone_axi_interconnect_0_imp_auto_pc_0\\blockone_axi_interconnect_0_imp_auto_pc_0.xci",
+                "inst_hier_path": "axi_interconnect_0/m00_couplers/auto_pc",
+                "has_run_ip_tcl": "true",
+                "parameters": {
+                  "MI_PROTOCOL": {
+                    "value": "AXI4LITE"
+                  },
+                  "SI_PROTOCOL": {
+                    "value": "AXI3"
+                  }
+                },
+                "interface_ports": {
+                  "S_AXI": {
+                    "bd_attributes": {
+                      "BRIDGES": {
+                        "value": "M_AXI",
+                        "value_src": "auto"
+                      },
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    },
+                    "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+                    "mode": "Slave",
+                    "bridges": [
+                      "M_AXI"
+                    ]
+                  },
+                  "M_AXI": {
+                    "bd_attributes": {
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "interface_nets": {
-              "m00_couplers_to_m00_couplers": {
+              "auto_pc_to_m00_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_pc/M_AXI"
+                ]
+              },
+              "m00_couplers_to_auto_pc": {
                 "interface_ports": [
                   "S_AXI",
-                  "M_AXI"
+                  "auto_pc/S_AXI"
+                ]
+              }
+            },
+            "nets": {
+              "S_ACLK_1": {
+                "ports": [
+                  "S_ACLK",
+                  "auto_pc/aclk"
+                ]
+              },
+              "S_ARESETN_1": {
+                "ports": [
+                  "S_ARESETN",
+                  "auto_pc/aresetn"
                 ]
               }
             }
@@ -4319,11 +4272,76 @@
                 "direction": "I"
               }
             },
+            "components": {
+              "auto_pc": {
+                "vlnv": "xilinx.com:ip:axi_protocol_converter:2.1",
+                "ip_revision": "36",
+                "xci_name": "blockone_axi_interconnect_0_imp_auto_pc_1",
+                "xci_path": "ip\\blockone_axi_interconnect_0_imp_auto_pc_1\\blockone_axi_interconnect_0_imp_auto_pc_1.xci",
+                "inst_hier_path": "axi_interconnect_0/m01_couplers/auto_pc",
+                "has_run_ip_tcl": "true",
+                "parameters": {
+                  "MI_PROTOCOL": {
+                    "value": "AXI4LITE"
+                  },
+                  "SI_PROTOCOL": {
+                    "value": "AXI3"
+                  }
+                },
+                "interface_ports": {
+                  "S_AXI": {
+                    "bd_attributes": {
+                      "BRIDGES": {
+                        "value": "M_AXI",
+                        "value_src": "auto"
+                      },
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    },
+                    "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+                    "mode": "Slave",
+                    "bridges": [
+                      "M_AXI"
+                    ]
+                  },
+                  "M_AXI": {
+                    "bd_attributes": {
+                      "TYPE": {
+                        "value": "interior",
+                        "value_src": "default"
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "interface_nets": {
-              "m01_couplers_to_m01_couplers": {
+              "auto_pc_to_m01_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_pc/M_AXI"
+                ]
+              },
+              "m01_couplers_to_auto_pc": {
                 "interface_ports": [
                   "S_AXI",
-                  "M_AXI"
+                  "auto_pc/S_AXI"
+                ]
+              }
+            },
+            "nets": {
+              "S_ACLK_1": {
+                "ports": [
+                  "S_ACLK",
+                  "auto_pc/aclk"
+                ]
+              },
+              "S_ARESETN_1": {
+                "ports": [
+                  "S_ARESETN",
+                  "auto_pc/aresetn"
                 ]
               }
             }
@@ -5779,7 +5797,6 @@
       "Net": {
         "ports": [
           "processing_system7_0/FCLK_CLK0",
-          "audiomodule_0/aclk",
           "axi_interconnect_0/ACLK",
           "axi_interconnect_0/S00_ACLK",
           "axi_interconnect_0/M00_ACLK",
@@ -5791,9 +5808,10 @@
           "axi_interconnect_0/M02_ACLK",
           "processing_system7_0/S_AXI_HP2_ACLK",
           "axi_interconnect_0/M03_ACLK",
-          "videomodule_0/aclk",
           "colorpalettemodule_0/aclk",
-          "vcpmodule_0/aclk"
+          "vcpmodule_0/aclk",
+          "audiomodule_0/aclk",
+          "videomodule_0/aclk"
         ]
       },
       "Net1": {
@@ -5829,8 +5847,8 @@
       "clk_wiz_0_pixelclk": {
         "ports": [
           "clk_wiz_0/pixelclk",
-          "videomodule_0/pixelClock",
-          "colorpalettemodule_0/clk25"
+          "colorpalettemodule_0/clk25",
+          "videomodule_0/pixelClock"
         ]
       },
       "clk_wiz_0_serdesclk": {
@@ -5859,10 +5877,10 @@
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
-          "audiomodule_0/aresetn",
-          "videomodule_0/aresetn",
           "colorpalettemodule_0/aresetn",
-          "vcpmodule_0/aresetn"
+          "vcpmodule_0/aresetn",
+          "audiomodule_0/aresetn",
+          "videomodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
