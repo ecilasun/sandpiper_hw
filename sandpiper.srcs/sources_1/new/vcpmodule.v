@@ -91,201 +91,67 @@ module vcpmodule(
 	output wire [63:0] m_axi_wdata,
 	output wire [7:0] m_axi_wstrb);
 
-assign s_axi_bresp = 2'b00;
-assign s_axi_rresp = 2'b00;
-assign s_axi_bid = 6'd0;
-assign s_axi_rid = 6'd0;
-
-reg [3:0] cpuwe;
-reg cpure;
-reg [11:0] cpuraddr;
-reg [11:0] cpuwaddr;
-reg [31:0] cpudin;
-wire [31:0] cpudout;
-
-// Program memory
-
-wire vcpre;
-wire [3:0] vcpwe;
-wire [11:0] vcpaddr;
-wire [31:0] vcpdin;
-wire [31:0] vcpdout;
-
-vcpmemory vcpInstruction (
-  .clka(aclk),
-  // CPU side - write only
-  .ena(cpure),
-  .wea(cpuwe),
-  .addra(cpure ? cpuraddr : cpuwaddr),
-  .dina(cpudin),
-  .douta(cpudout),
-  // VCP side - read / write
-  .clkb(aclk),
-  .enb(vcpre),
-  .web(vcpwe),
-  .addrb(vcpaddr),
-  .dinb(vcpdin),
-  .doutb(vcpdout) );
-
-// CPU side control
-
-// AXI
-reg [1:0] waddrstate;
-reg [1:0] writestate;
-reg [1:0] raddrstate;
-
-// AXI write - CPU
-always @(posedge aclk) begin
-	if (~aresetn) begin
-		waddrstate <= 2'b00;
-		cpuwaddr <= 12'd0;
-	end else begin
-		case (waddrstate)
-			2'b00: begin
-				s_axi_awready <= 1'b0;
-				waddrstate <= 2'b01;
-			end
-			2'b01: begin
-				if (s_axi_awvalid) begin
-					// TODO: Check address to see if we're writing to control registers or program memory
-					cpuwaddr <= s_axi_awaddr[13:2];
-					s_axi_awready <= 1'b1;
-					waddrstate <= 2'b10;
-				end
-			end
-			2'b10: begin
-				s_axi_awready <= 1'b0;
-				waddrstate <= 2'b01;
-			end
-		endcase
-	end
-end
-
-always @(posedge aclk) begin
-	if (~aresetn) begin
-		writestate <= 2'b00;
-		cpuwe <= 4'd0;
-		cpudin <= 32'd0;
-	end else begin
-		cpuwe <= 4'd0;
-		s_axi_wready <= 1'b0;
-		s_axi_bvalid <= 1'b0;
-
-		case (writestate)
-			2'b00: begin
-				s_axi_bvalid <= 1'b0;
-				s_axi_wready <= 1'b0;
-				writestate <= 2'b01;
-			end
-			2'b01: begin
-				if (s_axi_wvalid) begin
-					cpuwe <= 4'hf;
-					cpudin <= s_axi_wdata[31:0];
-					writestate <= 2'b10;
-					s_axi_wready <= 1'b1;
-				end
-			end
-			2'b10: begin
-				if (s_axi_bready) begin
-					s_axi_bvalid <= 1'b1;
-					writestate <= 2'b01;
-				end
-			end
-		endcase
-	end
-end
-
-// AXI read - CPU
-always @(posedge aclk) begin
-	if (~aresetn) begin
-		raddrstate <= 2'b00;
-		s_axi_rlast <= 1'b0;
-		cpuraddr <= 32'd0;
-		cpure <= 1'b0;
-	end else begin
-		s_axi_rvalid <= 1'b0;
-		s_axi_arready <= 1'b0;
-		s_axi_rlast <= 1'b0;
-		cpure <= 1'b0;
-
-		case (raddrstate)
-			2'b00: begin
-				s_axi_arready <= 1'b0;
-				s_axi_rvalid <= 1'b0;
-				raddrstate <= 2'b01;
-			end
-			2'b01: begin
-				if (s_axi_arvalid) begin
-					cpuraddr <= s_axi_araddr[13:2];
-					cpure <= 1'b1;
-					s_axi_arready <= 1'b1;
-					raddrstate <=  2'b10;
-				end
-			end
-			2'b10: begin
-				if (s_axi_rready) begin
-					s_axi_rdata <= {32'd0, cpudout};
-					s_axi_rvalid <= 1'b1;
-					s_axi_rlast <= 1'b1;
-					raddrstate <= 2'b01;
-				end
-			end
-		endcase
-	end
-end
-
 // VCP core
-vcpcore VCP(
+vcpcore videocoprocessorInst(
 	.aclk(aclk),
 	.aresetn(aresetn),
 	.execena(execena),
 	.scanline(scanline),
 	.scanpixel(scanpixel),
-	.vcpre(vcpre),
-	.vcpwe(vcpwe),
-	.vcpaddr(vcpaddr),
-	.vcpdin(vcpdin),
-	.vcpdout(vcpdout),
 	.paladdr(paladdr),
 	.paldout(paldout),
 	.palwe(palwe),
-	.m_axi_arready(m_axi_arready),
-	.m_axi_awready(m_axi_awready),
-	.m_axi_bvalid(m_axi_bvalid),
-	.m_axi_rlast(m_axi_rlast),
-	.m_axi_rvalid(m_axi_rvalid),
-	.m_axi_wready(m_axi_wready),
-	.m_axi_bresp(m_axi_bresp),
-	.m_axi_rresp(m_axi_rresp),
-	.m_axi_bid(m_axi_bid),
-	.m_axi_rid(m_axi_rid),
-	.m_axi_rdata(m_axi_rdata),
-	.m_axi_arvalid(m_axi_arvalid),
-	.m_axi_awvalid(m_axi_awvalid),
-	.m_axi_bready(m_axi_bready),
-	.m_axi_rready(m_axi_rready),
-	.m_axi_wlast(m_axi_wlast),
-	.m_axi_wvalid(m_axi_wvalid),
-	.m_axi_arburst(m_axi_arburst),
-	.m_axi_arlock(m_axi_arlock),
-	.m_axi_arsize(m_axi_arsize),
-	.m_axi_awburst(m_axi_awburst),
-	.m_axi_awlock(m_axi_awlock),
-	.m_axi_awsize(m_axi_awsize),
-	.m_axi_arprot(m_axi_arprot),
-	.m_axi_awprot(m_axi_awprot),
-	.m_axi_araddr(m_axi_araddr),
-	.m_axi_awaddr(m_axi_awaddr),
-	.m_axi_arcache(m_axi_arcache),
-	.m_axi_arlen(m_axi_arlen),
-	.m_axi_arqos(m_axi_arqos),
-	.m_axi_awcache(m_axi_awcache),
-	.m_axi_awlen(m_axi_awlen),
-	.m_axi_awqos(m_axi_awqos),
-	.m_axi_arid(m_axi_arid),
-	.m_axi_awid(m_axi_awid),
-	.m_axi_wid(m_axi_wid),
-	.m_axi_wdata(m_axi_wdata),
-	.m_axi_wstrb(m_axi_wstrb));
+	// Command FIFO
+	.m_axi_araddr(s_axi_araddr),
+	.m_axi_arvalid(s_axi_arvalid),
+	.m_axi_arready(s_axi_arready),
+	.m_axi_arlen(s_axi_arlen),
+	.m_axi_arsize(s_axi_arsize),
+	.m_axi_arburst(s_axi_arburst),
+	.m_axi_rdata(s_axi_rdata),
+	.m_axi_rresp(s_axi_rresp),
+	.m_axi_rvalid(s_axi_rvalid),
+	.m_axi_rready(s_axi_rready),
+	.m_axi_rlast(s_axi_rlast),
+	.m_axi_awaddr(s_axi_awaddr),
+	.m_axi_awvalid(s_axi_awvalid),
+	.m_axi_awready(s_axi_awready),
+	.m_axi_awlen(s_axi_awlen),
+	.m_axi_awsize(s_axi_awsize),
+	.m_axi_awburst(s_axi_awburst),
+	.m_axi_wdata(s_axi_wdata),
+	.m_axi_wstrb(s_axi_wstrb),
+	.m_axi_wvalid(s_axi_wvalid),
+	.m_axi_wready(s_axi_wready),
+	.m_axi_wlast(s_axi_wlast),
+	.m_axi_bresp(s_axi_bresp),
+	.m_axi_bvalid(s_axi_bvalid),
+	.m_axi_bready(s_axi_bready),
+	// DDR
+	.s_axi_araddr(m_axi_araddr),
+	.s_axi_arvalid(m_axi_arvalid),
+	.s_axi_arready(m_axi_arready),
+	.s_axi_arlen(m_axi_arlen),
+	.s_axi_arsize(m_axi_arsize),
+	.s_axi_arburst(m_axi_arburst),
+	.s_axi_rdata(m_axi_rdata),
+	.s_axi_rresp(m_axi_rresp),
+	.s_axi_rvalid(m_axi_rvalid),
+	.s_axi_rready(m_axi_rready),
+	.s_axi_rlast(m_axi_rlast),
+	.s_axi_awaddr(m_axi_awaddr),
+	.s_axi_awvalid(m_axi_awvalid),
+	.s_axi_awready(m_axi_awready),
+	.s_axi_awlen(m_axi_awlen),
+	.s_axi_awsize(m_axi_awsize),
+	.s_axi_awburst(m_axi_awburst),
+	.s_axi_wdata(m_axi_wdata),
+	.s_axi_wstrb(m_axi_wstrb),
+	.s_axi_wvalid(m_axi_wvalid),
+	.s_axi_wready(m_axi_wready),
+	.s_axi_wlast(m_axi_wlast),
+	.s_axi_bresp(m_axi_bresp),
+	.s_axi_bvalid(m_axi_bvalid),
+	.s_axi_bready(m_axi_bready)	);
 
 endmodule

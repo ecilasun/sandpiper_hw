@@ -278,7 +278,7 @@ always_ff @(posedge aclk) begin
 		apuwordcount <= 10'd0;
 		apucmd <= 4'd0;
 		burstmask <= 32'h00000000;
-		burststate <= 16'h0000;
+		burststate <= 32'd0;
 		counterenabled <= 1'b0;
 		s_axi_arvalid <= 0;
 		s_axi_rready <= 0;
