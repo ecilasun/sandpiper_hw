@@ -7,7 +7,6 @@ module audiomodule(
 	output wire audiosampleclk, // Audio clock (44.1KHz)
     output wire [31:0] audioSampleOutputLR,	// Stream out
 
-	// AXI4 wires for command interface to the CPU
 	output wire s_axi_arready,
 	output wire s_axi_awready,
 	output wire s_axi_bvalid,
@@ -15,17 +14,29 @@ module audiomodule(
 	output wire s_axi_wready,
 	output wire [1:0] s_axi_bresp,
 	output wire [1:0] s_axi_rresp,
-	output wire [31:0] s_axi_rdata,
+	output wire [5:0] s_axi_bid,
+	output wire [5:0] s_axi_rid,
+	output wire [63:0] s_axi_rdata,
 	input wire s_axi_arvalid,
 	input wire s_axi_awvalid,
 	input wire s_axi_bready,
 	input wire s_axi_rready,
 	input wire s_axi_wvalid,
+	input wire [1:0] s_axi_arlock,
+	input wire [1:0] s_axi_awlock,
+	input wire [2:0] s_axi_arprot,
+	input wire [2:0] s_axi_awprot,
 	input wire [31:0] s_axi_araddr,
 	input wire [31:0] s_axi_awaddr,
-	input wire [31:0] s_axi_wdata,
+	input wire [3:0] s_axi_arcache,
+	input wire [3:0] s_axi_arqos,
+	input wire [3:0] s_axi_awcache,
+	input wire [3:0] s_axi_awqos,
+	input wire [5:0] s_axi_arid,
+	input wire [5:0] s_axi_awid,
+	input wire [5:0] s_axi_wid,
+	input wire [63:0] s_axi_wdata,
 	input wire [7:0] s_axi_wstrb,
-
 	// AXI4 wires for memory access
 	input wire m_axi_arready,
 	input wire m_axi_awready,
