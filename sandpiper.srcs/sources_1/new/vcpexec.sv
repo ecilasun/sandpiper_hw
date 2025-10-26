@@ -43,9 +43,10 @@ vcpregisterfile vcpregisterInst(
 // Program memory
 // --------------------------------------------------
 
-reg [10:0] PC;
-reg [10:0] nextPC;
+reg [12:0] PC;
+reg [12:0] nextPC;
 reg [3:0] memwe;
+reg [31:0] memdin;
 wire [31:0] instruction;
 
 blk_mem_gen_0 vcpprogrammemory (
@@ -60,9 +61,9 @@ blk_mem_gen_0 vcpprogrammemory (
   .clkb(aclk),
   .enb(1'b1),
   .web(memwe),
-  .addrb(PC),
-  .dinb(), // unused
-  .doutb(instruction));
+  .addrb(PC[12:2]), // use word aligned address
+  .dinb(memdin), // unused
+  .doutb(instruction) );
 
 // --------------------------------------------------
 // Execution unit
@@ -85,6 +86,7 @@ typedef enum bit [2:0] {
 	FETCH,
 	DECODE,
 	EXEC,
+	FINALIZE_READ,
 	HALT} execmodetyper;
 execmodetyper execmode = INIT;
 
@@ -100,18 +102,20 @@ always @(posedge aclk) begin
 		palwe_reg <= 1'b0;
 		paladdr_reg <= 8'd0;
 		paldout_reg <= 24'd0;
-        PC <= 11'd0;
-		nextPC <= 11'd0;
+        PC <= 13'd0;
+		nextPC <= 13'd0;
+		memdin <= 32'd0;
         memwe <= 4'd0;
     end else begin
 
 		palwe_reg <= 1'b0;
 		rwren <= 1'b0;
+		memwe <= 4'd0;
 
 		case (execmode)
 			INIT: begin
-				PC <= 11'd0;
-				nextPC <= 11'd0;
+				PC <= 13'd0;
+				nextPC <= 13'd0;
 				execmode <= FETCH;
 			end
 
@@ -130,9 +134,10 @@ always @(posedge aclk) begin
 			end
 
 			EXEC: begin
+				execmode <= FETCH;
 
 				// Addresses are in bytes, so increment PC by 4 for next word
-				nextPC <= PC + 11'd4;
+				nextPC <= PC + 13'd4;
 
 				case (opcode)
 					4'h0: begin // NOP
@@ -179,8 +184,8 @@ always @(posedge aclk) begin
 					end
 
 					4'h6: begin // JMP
-						// Jump to address in rs1
-						nextPC <= rval1[10:0];
+						// Jump to 13 bit address in rs1
+						nextPC <= rval1[12:0];
 					end
 
 					/*4'h7: begin // CMP
@@ -191,18 +196,38 @@ always @(posedge aclk) begin
 						// Branch to address in rs1 if condition in rd is met
 					end*/
 
+					4'h9: begin // MEM_WRITE
+						// Write rs2 to program memory at address in rs1
+						memwe <= 4'b1111; // Enable all byte lanes for write
+						memdin <= {8'd9, rval2[23:0]};
+						// NOTE: We hijack the PC here to perform the write which will be overwritten with nextPC during fetch
+						PC <= rval1[12:0];
+					end
+
+					4'd10: begin // MEM_READ
+						// Read from program memory at address in rs1 into rd
+						// NOTE: We hijack the PC here to perform the read which will be overwritten with nextPC during fetch
+						PC <= rval1[12:0];
+						execmode <= FINALIZE_READ;
+					end
+
 					default: begin
 						// Unknown opcode - treat as NOP so we don't hang
 					end
 				endcase
+			end
 
+			FINALIZE_READ: begin
+				// Complete the MEM_READ operation
+				rwren <= 1'b1;
+				rdin <= instruction[23:0];
 				execmode <= FETCH;
 			end
 
 			HALT: begin
 				// Do nothing, reset PC to start address and wait for execena to go high
-				PC <= 11'd0;
-				nextPC <= 11'd0;
+				PC <= 13'd0;
+				nextPC <= 13'd0;
 				execmode <= execena ? FETCH : HALT;
 			end
 		endcase
