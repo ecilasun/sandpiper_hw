@@ -100,31 +100,31 @@ wire [31:0] vcpstate;
 commandqueue vcpcommandinterface(
 	.aclk(aclk),
 	.aresetn(aresetn),
-	.m_axi_araddr(m_axi_araddr),
-	.m_axi_arvalid(m_axi_arvalid),
-	.m_axi_arready(m_axi_arready),
-	.m_axi_arlen(m_axi_arlen),
-	.m_axi_arsize(m_axi_arsize),
-	.m_axi_arburst(m_axi_arburst),
-	.m_axi_rdata(m_axi_rdata),
-	.m_axi_rresp(m_axi_rresp),
-	.m_axi_rvalid(m_axi_rvalid),
-	.m_axi_rready(m_axi_rready),
-	.m_axi_rlast(m_axi_rlast),
-	.m_axi_awaddr(m_axi_awaddr),
-	.m_axi_awvalid(m_axi_awvalid),
-	.m_axi_awready(m_axi_awready),
-	.m_axi_awlen(m_axi_awlen),
-	.m_axi_awsize(m_axi_awsize),
-	.m_axi_awburst(m_axi_awburst),
-	.m_axi_wdata(m_axi_wdata),
-	.m_axi_wstrb(m_axi_wstrb),
-	.m_axi_wvalid(m_axi_wvalid),
-	.m_axi_wready(m_axi_wready),
-	.m_axi_wlast(m_axi_wlast),
-	.m_axi_bresp(m_axi_bresp),
-	.m_axi_bvalid(m_axi_bvalid),
-	.m_axi_bready(m_axi_bready),
+	.s_axi_araddr(m_axi_araddr),
+	.s_axi_arvalid(m_axi_arvalid),
+	.s_axi_arready(m_axi_arready),
+	.s_axi_arlen(m_axi_arlen),
+	.s_axi_arsize(m_axi_arsize),
+	.s_axi_arburst(m_axi_arburst),
+	.s_axi_rdata(m_axi_rdata),
+	.s_axi_rresp(m_axi_rresp),
+	.s_axi_rvalid(m_axi_rvalid),
+	.s_axi_rready(m_axi_rready),
+	.s_axi_rlast(m_axi_rlast),
+	.s_axi_awaddr(m_axi_awaddr),
+	.s_axi_awvalid(m_axi_awvalid),
+	.s_axi_awready(m_axi_awready),
+	.s_axi_awlen(m_axi_awlen),
+	.s_axi_awsize(m_axi_awsize),
+	.s_axi_awburst(m_axi_awburst),
+	.s_axi_wdata(m_axi_wdata),
+	.s_axi_wstrb(m_axi_wstrb),
+	.s_axi_wvalid(m_axi_wvalid),
+	.s_axi_wready(m_axi_wready),
+	.s_axi_wlast(m_axi_wlast),
+	.s_axi_bresp(m_axi_bresp),
+	.s_axi_bvalid(m_axi_bvalid),
+	.s_axi_bready(m_axi_bready),
 	.fifoempty(vcpfifoempty),
 	.fifodout(vcpfifodout),
 	.fifore(vcpfifore),
@@ -234,12 +234,12 @@ always_ff @(posedge aclk) begin
 
 					// Set number of 16byte bursts for each word count (each word is a single stereo pair)
 					unique case (vcpfifodout[2:0])
-						3'b000: begin burstmask <= 32'b00000000000000000000000000000011; vcpwordcount <= 10'h03F;	end	//  x2,   64 words (256 bytes)
-						3'b001: begin burstmask <= 32'b00000000000000000000000000001111; vcpwordcount <= 10'h07F;	end	//  x4,  128 words (512 bytes)
-						3'b010: begin burstmask <= 32'b00000000000000000000000011111111; vcpwordcount <= 10'h0FF;	end	//  x8,  256 words (1 Kbyte)
-						3'b011: begin burstmask <= 32'b00000000000000001111111111111111; vcpwordcount <= 10'h1FF;	end	// x16,  512 words (2 Kbytes)
-						3'b100: begin burstmask <= 32'b11111111111111111111111111111111; vcpwordcount <= 10'h3FF;	end	// x32, 1024 words (4 Kbytes)
-						3'b101: begin burstmask <= 32'b00000000000000000000000000000001; vcpwordcount <= 10'h001;   end //  x1,   32 words (128 bytes
+						3'b000: begin burstmask <= 32'b00000000000000000000000000000001; vcpwordcount <= 10'h01F;   end //  x1,   32 words (128 bytes
+						3'b001: begin burstmask <= 32'b00000000000000000000000000000011; vcpwordcount <= 10'h03F;	end	//  x2,   64 words (256 bytes)
+						3'b010: begin burstmask <= 32'b00000000000000000000000000001111; vcpwordcount <= 10'h07F;	end	//  x4,  128 words (512 bytes)
+						3'b011: begin burstmask <= 32'b00000000000000000000000011111111; vcpwordcount <= 10'h0FF;	end	//  x8,  256 words (1 Kbyte)
+						3'b100: begin burstmask <= 32'b00000000000000001111111111111111; vcpwordcount <= 10'h1FF;	end	// x16,  512 words (2 Kbytes)
+						3'b101: begin burstmask <= 32'b11111111111111111111111111111111; vcpwordcount <= 10'h3FF;	end	// x32, 1024 words (4 Kbytes)
 						default begin burstmask <= 32'b00000000000000000000000000000000; vcpwordcount <= 0;			end // nothing
 					endcase
 
@@ -328,5 +328,11 @@ vcpexec vcpexecInst(
 	.paladdr(paladdr),
 	.paldout(paldout),
 	.palwe(palwe));
+
+// --------------------------------------------------
+// VCP state output
+// --------------------------------------------------
+
+assign vcpstate = {27'd0, execstate, ~vcpfifoempty};
 
 endmodule
