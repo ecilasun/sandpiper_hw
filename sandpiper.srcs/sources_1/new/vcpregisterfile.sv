@@ -22,7 +22,7 @@ initial begin
 end
 
 always @(posedge clock) begin
-	if (wren)
+	if (wren && (rd != 4'd0)) // R0 is hardwired to zero so ignore writes to it
 		registers[rd] <= din;
 end
 

@@ -147,6 +147,7 @@ typedef enum bit [3:0] {
 apucmdmodetype cmdmode = INIT;
 
 bit [3:0] vcpcmd;			// Command code
+bit [3:0] vcpflags;         // Command flags
 bit [9:0] vcpwordcount;     // Program word count
 bit [31:0] vcpsourceaddr;	// Memory address to DMA the VCP program from
 bit re;
@@ -163,11 +164,17 @@ localparam BURST_FIXED = 2'b00;
 localparam BURST_INCR  = 2'b01;
 localparam BURST_WRAP  = 2'b10;
 
+logic programwe;
+logic [9:0] writeCursor;
+logic [63:0] programDataIn;
+logic [3:0] execstate;
+
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		re <= 1'b0;
 		vcpsourceaddr <= 32'd0;
 		vcpcmd <= 4'd0;
+		vcpflags <= 4'd0;
 		burstmask <= 32'h00000000;
 		burststate <= 32'd0;
 		s_axi_arvalid <= 0;
@@ -186,9 +193,14 @@ always_ff @(posedge aclk) begin
 		s_axi_arlen <= 0;
 		s_axi_arburst <= BURST_INCR;
 		s_axi_arsize <= SIZE_8_BYTE; // 64bit read bus
+		programDataIn <= 64'd0;
+		writeCursor <= 10'd0;
+		programwe <= 1'b0;
+		execstate <= 4'd0;
 		cmdmode <= INIT;
 	end else begin
 		re <= 1'b0;
+		programwe <= 1'b0;
 
 		case (cmdmode)
 			INIT: begin
@@ -200,6 +212,7 @@ always_ff @(posedge aclk) begin
 			WCMD: begin
 				if (vcpfifovalid && ~vcpfifoempty) begin
 					vcpcmd <= vcpfifodout[3:0];
+					vcpflags <= vcpfifodout[7:4];
 					// Advance FIFO
 					re <= 1'b1;
 					// Dispatch cmd
@@ -241,10 +254,15 @@ always_ff @(posedge aclk) begin
 					vcpsourceaddr <= vcpfifodout;
 					// Advance FIFO
 					re <= 1'b1;
-					//writeCursor <= 9'h1FF;
+					writeCursor <= 9'h1FF;
 					burststate <= burstmask;
 					cmdmode <= STARTDMA;
 				end
+			end
+			
+			VCPEXEC: begin
+                // Control flags
+                execstate <= vcpflags;
 			end
 
 			STARTDMA: begin
@@ -266,9 +284,9 @@ always_ff @(posedge aclk) begin
 
 			READLOOP: begin
 				if (s_axi_rvalid) begin
-					//programwe <= 1'b1;
-					//programDataIn <= s_axi_rdata; // 64 bits at a time
-					//writeCursor <= writeCursor + 9'd1;
+					programwe <= 1'b1;
+					programDataIn <= s_axi_rdata; // 64 bits at a time
+					writeCursor <= writeCursor + 9'd1;
 					s_axi_rready <= ~s_axi_rlast;
 					cmdmode <= s_axi_rlast ? ADVANCEADDRESS : READLOOP;
 				end
@@ -297,6 +315,18 @@ end
 // VCP core logic
 // --------------------------------------------------
 
-// TODO: Execute program memory contents
+vcpexec vcpexecInst(
+    .aclk(aclk),
+    .arstn(aresetn),
+    .execena(execena),
+    .execstate(execstate),
+    .prgaddr(writeCursor),
+    .prgdin(programDataIn),
+    .prgwe(programwe),
+	.scanline(scanline),
+	.scanpixel(scanpixel),
+	.paladdr(paladdr),
+	.paldout(paldout),
+	.palwe(palwe));
 
 endmodule
