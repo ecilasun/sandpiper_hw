@@ -51,7 +51,7 @@ wire [31:0] instruction;
 
 blk_mem_gen_0 vcpprogrammemory (
   .clka(aclk),
-  .ena(1'b0),
+  .ena(1'b1),
   // Program upload bus
   .wea(prgwe),
   .addra(prgaddr),
