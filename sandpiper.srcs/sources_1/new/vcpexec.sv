@@ -92,6 +92,7 @@ execmodetyper execmode = INIT;
 
 always @(posedge aclk) begin
     if (!arstn) begin
+		opcode <= 4'd0;
         rs1 <= 4'd0;
         rs2 <= 4'd0;
         rd <= 4'd0;

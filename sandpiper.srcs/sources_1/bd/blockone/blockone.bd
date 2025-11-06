@@ -374,7 +374,7 @@
         "vlnv": "xilinx.com:ip:proc_sys_reset:5.0",
         "ip_revision": "17",
         "xci_name": "blockone_proc_sys_reset_0_1",
-        "xci_path": "ip\\blockone_proc_sys_reset_0_1\\blockone_proc_sys_reset_0_1.xci",
+        "xci_path": "ip/blockone_proc_sys_reset_0_1/blockone_proc_sys_reset_0_1.xci",
         "inst_hier_path": "proc_sys_reset_0",
         "has_run_ip_tcl": "true"
       },
@@ -382,7 +382,7 @@
         "vlnv": "xilinx.com:module_ref:audiomodule:1.0",
         "ip_revision": "1",
         "xci_name": "blockone_audiomodule_0_0",
-        "xci_path": "ip\\blockone_audiomodule_0_0\\blockone_audiomodule_0_0.xci",
+        "xci_path": "ip/blockone_audiomodule_0_0/blockone_audiomodule_0_0.xci",
         "inst_hier_path": "audiomodule_0",
         "has_run_ip_tcl": "true",
         "reference_info": {
@@ -1103,7 +1103,7 @@
         "vlnv": "xilinx.com:module_ref:videomodule:1.0",
         "ip_revision": "1",
         "xci_name": "blockone_videomodule_0_0",
-        "xci_path": "ip\\blockone_videomodule_0_0\\blockone_videomodule_0_0.xci",
+        "xci_path": "ip/blockone_videomodule_0_0/blockone_videomodule_0_0.xci",
         "inst_hier_path": "videomodule_0",
         "has_run_ip_tcl": "true",
         "reference_info": {
@@ -1903,7 +1903,7 @@
         "vlnv": "xilinx.com:ip:clk_wiz:6.0",
         "ip_revision": "16",
         "xci_name": "blockone_clk_wiz_0_0",
-        "xci_path": "ip\\blockone_clk_wiz_0_0\\blockone_clk_wiz_0_0.xci",
+        "xci_path": "ip/blockone_clk_wiz_0_0/blockone_clk_wiz_0_0.xci",
         "inst_hier_path": "clk_wiz_0",
         "has_run_ip_tcl": "true",
         "parameters": {
@@ -1985,7 +1985,7 @@
         "vlnv": "xilinx.com:ip:gmii_to_rgmii:4.1",
         "ip_revision": "19",
         "xci_name": "blockone_gmii_to_rgmii_0_1",
-        "xci_path": "ip\\blockone_gmii_to_rgmii_0_1\\blockone_gmii_to_rgmii_0_1.xci",
+        "xci_path": "ip/blockone_gmii_to_rgmii_0_1/blockone_gmii_to_rgmii_0_1.xci",
         "inst_hier_path": "gmii_to_rgmii_0",
         "has_run_ip_tcl": "true",
         "parameters": {
@@ -2007,7 +2007,7 @@
         "vlnv": "xilinx.com:ip:processing_system7:5.5",
         "ip_revision": "7",
         "xci_name": "blockone_processing_system7_0_1",
-        "xci_path": "ip\\blockone_processing_system7_0_1\\blockone_processing_system7_0_1.xci",
+        "xci_path": "ip/blockone_processing_system7_0_1/blockone_processing_system7_0_1.xci",
         "inst_hier_path": "processing_system7_0",
         "has_run_ip_tcl": "true",
         "parameters": {
@@ -3837,7 +3837,7 @@
         "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
         "ip_revision": "5",
         "xci_name": "blockone_util_vector_logic_0_0",
-        "xci_path": "ip\\blockone_util_vector_logic_0_0\\blockone_util_vector_logic_0_0.xci",
+        "xci_path": "ip/blockone_util_vector_logic_0_0/blockone_util_vector_logic_0_0.xci",
         "inst_hier_path": "util_vector_logic_0",
         "has_run_ip_tcl": "true",
         "parameters": {
@@ -3851,7 +3851,7 @@
       },
       "axi_interconnect_0": {
         "vlnv": "xilinx.com:ip:axi_interconnect:2.1",
-        "xci_path": "ip\\blockone_axi_interconnect_0_0\\blockone_axi_interconnect_0_0.xci",
+        "xci_path": "ip/blockone_axi_interconnect_0_0/blockone_axi_interconnect_0_0.xci",
         "inst_hier_path": "axi_interconnect_0",
         "xci_name": "blockone_axi_interconnect_0_0",
         "parameters": {
@@ -4004,7 +4004,7 @@
             "vlnv": "xilinx.com:ip:axi_crossbar:2.1",
             "ip_revision": "37",
             "xci_name": "blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0",
-            "xci_path": "ip\\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0\\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0.xci",
+            "xci_path": "ip/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0.xci",
             "inst_hier_path": "axi_interconnect_0/xbar",
             "has_run_ip_tcl": "true",
             "parameters": {
@@ -4125,7 +4125,7 @@
                 "vlnv": "xilinx.com:ip:axi_dwidth_converter:2.1",
                 "ip_revision": "36",
                 "xci_name": "blockone_axi_interconnect_0_imp_auto_us_0",
-                "xci_path": "ip\\blockone_axi_interconnect_0_imp_auto_us_0\\blockone_axi_interconnect_0_imp_auto_us_0.xci",
+                "xci_path": "ip/blockone_axi_interconnect_0_imp_auto_us_0/blockone_axi_interconnect_0_imp_auto_us_0.xci",
                 "inst_hier_path": "axi_interconnect_0/s00_couplers/auto_us",
                 "has_run_ip_tcl": "true",
                 "parameters": {
@@ -4520,7 +4520,7 @@
         "vlnv": "xilinx.com:module_ref:colorpalettemodule:1.0",
         "ip_revision": "1",
         "xci_name": "blockone_colorpalettemodule_0_0",
-        "xci_path": "ip\\blockone_colorpalettemodule_0_0\\blockone_colorpalettemodule_0_0.xci",
+        "xci_path": "ip/blockone_colorpalettemodule_0_0/blockone_colorpalettemodule_0_0.xci",
         "inst_hier_path": "colorpalettemodule_0",
         "has_run_ip_tcl": "true",
         "reference_info": {
@@ -4936,7 +4936,7 @@
         "vlnv": "xilinx.com:module_ref:vcpmodule:1.0",
         "ip_revision": "1",
         "xci_name": "blockone_vcpmodule_0_0",
-        "xci_path": "ip\\blockone_vcpmodule_0_0\\blockone_vcpmodule_0_0.xci",
+        "xci_path": "ip/blockone_vcpmodule_0_0/blockone_vcpmodule_0_0.xci",
         "inst_hier_path": "vcpmodule_0",
         "has_run_ip_tcl": "true",
         "reference_info": {
