@@ -3,7 +3,6 @@
 module vcpexec(
     input wire aclk,
     input wire arstn,
-    input wire execena,         // Execution enable (from VPU side)
     input wire [3:0] execstate, // Execution flags (from VCP side)
     // Program memory write bus
     input wire [9:0] prgaddr,
@@ -122,8 +121,8 @@ always @(posedge aclk) begin
 
 			FETCH: begin
 				PC <= nextPC;
-				// Next clock will have the instruction fetched or we'll halt if execena is low
-				execmode <= execena ? DECODE : HALT;
+				// Next clock will have the instruction fetched or we'll halt if execstate[0] is low
+				execmode <= execstate[0] ? DECODE : HALT;
 			end
 
 			DECODE: begin
@@ -213,7 +212,8 @@ always @(posedge aclk) begin
 					end
 
 					default: begin
-						// Unknown opcode - treat as NOP so we don't hang
+						// Unknown opcode - break the program
+						execmode <= HALT;
 					end
 				endcase
 			end
@@ -226,10 +226,10 @@ always @(posedge aclk) begin
 			end
 
 			HALT: begin
-				// Do nothing, reset PC to start address and wait for execena to go high
+				// Do nothing, reset PC to start address and wait for execstate[0] (RUN) to go high
 				PC <= 13'd0;
 				nextPC <= 13'd0;
-				execmode <= execena ? FETCH : HALT;
+				execmode <= execstate[0] ? FETCH : HALT;
 			end
 		endcase
     end

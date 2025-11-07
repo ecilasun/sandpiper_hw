@@ -15,8 +15,6 @@ module videocore(
 	output wire [9:0] scanline_o,
 	output wire [9:0] scanpixel_o,
 
-	output wire execena,
-
 	// Command fifo
 	output wire m_axi_arready,
 	output wire m_axi_awready,
@@ -356,8 +354,6 @@ vpucmdmodetype cmdmode = WCMD;
 logic [31:0] vpucmd;
 logic [7:0] vpuctl;
 logic blankt;
-
-assign execena = vpuctl[0]; // VRUN
 
 logic blanktracker;
 logic blanktrigger;

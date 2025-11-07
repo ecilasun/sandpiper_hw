@@ -1,7 +1,6 @@
 module vcpcore(
 	input wire aclk,
 	input wire aresetn,
-	input wire execena,
 	input wire [9:0] scanline,
 	input wire [9:0] scanpixel,
 	// Palette RAM direct access
@@ -318,7 +317,6 @@ end
 vcpexec vcpexecInst(
     .aclk(aclk),
     .arstn(aresetn),
-    .execena(execena),
     .execstate(execstate),
     .prgaddr(writeCursor),
     .prgdin(programDataIn),

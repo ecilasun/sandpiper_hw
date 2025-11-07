@@ -1851,9 +1851,6 @@
             "left": "9",
             "right": "0"
           },
-          "execena": {
-            "direction": "O"
-          },
           "HDMI_CLK_p": {
             "type": "clk",
             "direction": "O",
@@ -5628,9 +5625,6 @@
             "left": "9",
             "right": "0"
           },
-          "execena": {
-            "direction": "I"
-          },
           "paladdr": {
             "direction": "O",
             "left": "7",
@@ -5769,9 +5763,9 @@
           "processing_system7_0/S_AXI_HP2_ACLK",
           "axi_interconnect_0/M03_ACLK",
           "colorpalettemodule_0/aclk",
-          "videomodule_0/aclk",
+          "audiomodule_0/aclk",
           "vcpmodule_0/aclk",
-          "audiomodule_0/aclk"
+          "videomodule_0/aclk"
         ]
       },
       "Net1": {
@@ -5838,9 +5832,9 @@
         "ports": [
           "proc_sys_reset_0/peripheral_aresetn",
           "colorpalettemodule_0/aresetn",
-          "videomodule_0/aresetn",
+          "audiomodule_0/aresetn",
           "vcpmodule_0/aresetn",
-          "audiomodule_0/aresetn"
+          "videomodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
@@ -5915,12 +5909,6 @@
         "ports": [
           "videomodule_0/HDMI_TMDS_p",
           "HDMI_TMDS_p_0"
-        ]
-      },
-      "videomodule_0_execena": {
-        "ports": [
-          "videomodule_0/execena",
-          "vcpmodule_0/execena"
         ]
       },
       "videomodule_0_rst25n_o": {

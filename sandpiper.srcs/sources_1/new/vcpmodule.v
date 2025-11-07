@@ -7,7 +7,6 @@ module vcpmodule(
 	input wire aresetn,
 	input wire [9:0] scanline,
 	input wire [9:0] scanpixel,
-	input wire execena,
 	// Palette RAM direct access
 	output wire [7:0] paladdr,
 	output wire [23:0] paldout,
@@ -95,7 +94,6 @@ module vcpmodule(
 vcpcore videocoprocessorInst(
 	.aclk(aclk),
 	.aresetn(aresetn),
-	.execena(execena),
 	.scanline(scanline),
 	.scanpixel(scanpixel),
 	.paladdr(paladdr),
