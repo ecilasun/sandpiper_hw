@@ -167,6 +167,7 @@ logic programwe;
 logic [9:0] writeCursor;
 logic [63:0] programDataIn;
 logic [3:0] execstate;
+logic copystate;
 
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
@@ -196,6 +197,7 @@ always_ff @(posedge aclk) begin
 		writeCursor <= 10'd0;
 		programwe <= 1'b0;
 		execstate <= 4'd0;
+		copystate <= 1'b0;
 		cmdmode <= INIT;
 	end else begin
 		re <= 1'b0;
@@ -254,6 +256,7 @@ always_ff @(posedge aclk) begin
 					// Advance FIFO
 					re <= 1'b1;
 					writeCursor <= 9'h1FF;
+					copystate <= 1'b1;
 					burststate <= burstmask;
 					cmdmode <= STARTDMA;
 				end
@@ -262,6 +265,7 @@ always_ff @(posedge aclk) begin
 			VCPEXEC: begin
                 // Control flags
                 execstate <= vcpflags;
+				cmdmode <= FINALIZE;
 			end
 
 			STARTDMA: begin
@@ -294,6 +298,7 @@ always_ff @(posedge aclk) begin
 			ADVANCEADDRESS: begin
 				// Are we done?
 				if (burststate[0] == 1'b0) begin
+					copystate <= 1'b0;
 					cmdmode <= FINALIZE;
 				end else begin
 					// Next burst
@@ -331,6 +336,9 @@ vcpexec vcpexecInst(
 // VCP state output
 // --------------------------------------------------
 
-assign vcpstate = {27'd0, execstate, ~vcpfifoempty};
+// vcpstate[5]		copystate
+// vcpstate[4:1]	execstate
+// vcpstate[0]		FIFO not empty
+assign vcpstate = {26'd0, copystate, execstate, ~vcpfifoempty};
 
 endmodule
