@@ -319,6 +319,8 @@ end
 // VCP core logic
 // --------------------------------------------------
 
+wire [2:0] runstate;
+wire [12:0] debug_pc;
 vcpexec vcpexecInst(
     .aclk(aclk),
     .arstn(aresetn),
@@ -330,15 +332,33 @@ vcpexec vcpexecInst(
 	.scanpixel(scanpixel),
 	.paladdr(paladdr),
 	.paldout(paldout),
-	.palwe(palwe));
+	.palwe(palwe),
+	.runstate(runstate),
+	.debug_pc(debug_pc));
 
 // --------------------------------------------------
 // VCP state output
 // --------------------------------------------------
 
-// vcpstate[5]		copystate
-// vcpstate[4:1]	execstate
-// vcpstate[0]		FIFO not empty
-assign vcpstate = {26'd0, copystate, execstate, ~vcpfifoempty};
+// vcpstate[21:9]	P debug_pc
+// vcpstate[8:6]	R runstate
+// vcpstate[5]		C copystate
+// vcpstate[4:1]	E execstate
+// vcpstate[0]		F FIFO not empty
+
+// INIT				3'b000
+// FETCH			3'b001
+// DECODE			3'b010
+// EXEC				3'b011
+// FINALIZE_READ	3'b100
+// HALT				3'b101
+
+// Some examples
+// FEDCBA9876543210FEDCBA9876543210
+// ----------PP PPPP PPPP PPPR RRCE EEEF
+//           00 0000 0000 0001 0100 0000 == 0x140 (HALT)
+//		     00 0000 1001 1000 0100 0010 == 0x29842 (FETCH at PC 0x4C)
+//		     00 0000 0011 0000 1100 0010 == 0x3030C2 (EXEC at PC 0x18)
+assign vcpstate = {10'd0, debug_pc, runstate, copystate, execstate, ~vcpfifoempty};
 
 endmodule

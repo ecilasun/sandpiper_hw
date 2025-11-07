@@ -7,14 +7,17 @@ module vcpexec(
     // Program memory write bus
     input wire [9:0] prgaddr,
     input wire [63:0] prgdin,
-    input wire [7:0] prgwe,
+    input wire prgwe,
     // Scanline access for waits
 	input wire [9:0] scanline,
 	input wire [9:0] scanpixel,
 	// Palette write access
 	output wire [7:0] paladdr,
 	output wire [23:0] paldout,
-	output wire palwe);
+	output wire palwe,
+	// Debug outputs
+	output wire [2:0] runstate,
+	output wire [12:0] debug_pc);
 
 // --------------------------------------------------
 // Register file
@@ -48,11 +51,14 @@ reg [3:0] memwe;
 reg [31:0] memdin;
 wire [31:0] instruction;
 
+wire [7:0] writeEnable;
+assign writeEnable = prgwe ? 8'hFF : 8'h00;
+
 blk_mem_gen_0 vcpprogrammemory (
   .clka(aclk),
   .ena(1'b1),
   // Program upload bus
-  .wea(prgwe),
+  .wea(writeEnable),
   .addra(prgaddr),
   .dina(prgdin),
   .douta(), // unused
@@ -61,7 +67,7 @@ blk_mem_gen_0 vcpprogrammemory (
   .enb(1'b1),
   .web(memwe),
   .addrb(PC[12:2]), // use word aligned address
-  .dinb(memdin), // unused
+  .dinb(memdin),
   .doutb(instruction) );
 
 // --------------------------------------------------
@@ -88,6 +94,9 @@ typedef enum bit [2:0] {
 	FINALIZE_READ,
 	HALT} execmodetyper;
 execmodetyper execmode = INIT;
+
+assign runstate = execmode;
+assign debug_pc = PC;
 
 always @(posedge aclk) begin
     if (!arstn) begin
