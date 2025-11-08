@@ -261,7 +261,7 @@ always_ff @(posedge aclk) begin
 					cmdmode <= STARTDMA;
 				end
 			end
-			
+
 			VCPEXEC: begin
                 // Control flags
                 execstate <= vcpflags;

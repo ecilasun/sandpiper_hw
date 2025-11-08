@@ -180,9 +180,8 @@ always @(posedge aclk) begin
 					end
 
 					4'h3: begin // SCANLINE_WAIT
-						// Wait until scanline matches rs1 and scanpixel matches rs2
-						// If rs2 == 0 then this will always be zero i.e. top of the scanline
-						if ((scanline == rval1[9:0]) && (scanpixel == rval2[9:0])) begin
+						// Wait until scanline matches rs1
+						if (scanline == rval1[9:0]) begin
 							// Condition met, proceed
 						end else begin
 							// Condition not met, stay in EXEC state
@@ -219,9 +218,8 @@ always @(posedge aclk) begin
 					end
 
 					4'h8: begin // BRANCH
-						// Branch to address in rs1 if condition in rd is met
-						// imm8 contains a mask of which conditions to and against, and one more bit to invert the test
-						if (rval2[0])
+						// If any of the enabled tests pass (via CMP instruction), branch to address in rs1
+						if (rval2[2] | rval2[1] | rval2[0])
 							nextPC <= rval1[12:0]; // LSB of rs2 indicates whether to take the branch
 					end
 
@@ -240,7 +238,7 @@ always @(posedge aclk) begin
 						execmode <= FINALIZE_READ;
 					end
 
-					default: begin
+					default: begin // ILLEGAL OPCODE
 						// Unknown opcode - break the program
 						execmode <= HALT;
 					end
@@ -256,7 +254,8 @@ always @(posedge aclk) begin
 
 			FINALIZE_COMPARE: begin
 				rwren <= 1'b1;
-				rdin <= {21'd0, (EQ & imm8[2]) ^ imm8[3], (LT & imm8[1]) ^ imm8[3], (LE & imm8[0]) ^ imm8[3]};
+				// First negate the test result then AND with the mask in imm8 to produce the final result
+				rdin <= {21'd0, (EQ ^ imm8[3]) & imm8[2], (LT ^ imm8[3]) & imm8[1], (LE ^ imm8[3]) & imm8[0]};
 				execmode <= FETCH;
 			end
 
