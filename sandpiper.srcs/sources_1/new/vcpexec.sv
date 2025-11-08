@@ -90,11 +90,13 @@ assign paladdr = paladdr_reg;
 assign paldout = paldout_reg;
 assign palwe = palwe_reg;
 
-typedef enum bit [2:0] {
+typedef enum bit [3:0] {
 	INIT,
 	FETCH,
+	WAIT_FETCH,
 	DECODE,
 	EXEC,
+	WAIT_READ,
 	FINALIZE_READ,
 	FINALIZE_COMPARE,
 	HALT} execmodetyper;
@@ -142,7 +144,11 @@ always @(posedge aclk) begin
 			FETCH: begin
 				PC <= nextPC;
 				// Next clock will have the instruction fetched or we'll halt if execstate[0] is low
-				execmode <= execstate[0] ? DECODE : HALT;
+				execmode <= execstate[0] ? WAIT_FETCH : HALT;
+			end
+
+			WAIT_FETCH: begin
+				execmode <= DECODE;
 			end
 
 			DECODE: begin
@@ -235,7 +241,7 @@ always @(posedge aclk) begin
 						// Read from program memory at address in rs1 into rd
 						// NOTE: We hijack the PC here to perform the read which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
-						execmode <= FINALIZE_READ;
+						execmode <= WAIT_READ;
 					end
 
 					default: begin // ILLEGAL OPCODE
@@ -243,6 +249,11 @@ always @(posedge aclk) begin
 						execmode <= HALT;
 					end
 				endcase
+			end
+
+			WAIT_READ: begin
+				// Wait one cycle for memory read to complete
+				execmode <= FINALIZE_READ;
 			end
 
 			FINALIZE_READ: begin
