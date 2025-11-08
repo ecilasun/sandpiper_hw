@@ -1,14 +1,15 @@
 `timescale 1ns / 1ps
 
 module vcpexec(
-    input wire aclk,
-    input wire arstn,
-    input wire [3:0] execstate, // Execution flags (from VCP side)
-    // Program memory write bus
-    input wire [9:0] prgaddr,
-    input wire [63:0] prgdin,
-    input wire prgwe,
-    // Scanline access for waits
+	input wire aclk,
+	input wire arstn,
+	// Execution flags (from VCP side)
+	input wire [3:0] execstate,
+	// Program memory write bus
+	input wire [9:0] prgaddr,
+	input wire [63:0] prgdin,
+	input wire prgwe,
+	// Scanline access for waits
 	input wire [9:0] scanline,
 	input wire [9:0] scanpixel,
 	// Palette write access
@@ -28,6 +29,8 @@ reg [3:0] rs2;
 reg [3:0] rd;
 reg rwren;
 reg [23:0] rdin;
+reg [7:0] imm8;
+reg [23:0] imm24;
 wire [23:0] rval1;
 wire [23:0] rval2;
 
@@ -47,28 +50,25 @@ vcpregisterfile vcpregisterInst(
 
 reg [12:0] PC;
 reg [12:0] nextPC;
-reg [3:0] memwe;
+reg memwe;
 reg [31:0] memdin;
 wire [31:0] instruction;
 
-wire [7:0] writeEnable;
-assign writeEnable = prgwe ? 8'hFF : 8'h00;
-
 blk_mem_gen_0 vcpprogrammemory (
-  .clka(aclk),
-  .ena(1'b1),
-  // Program upload bus
-  .wea(writeEnable),
-  .addra(prgaddr),
-  .dina(prgdin),
-  .douta(), // unused
-  // Program execute bus
-  .clkb(aclk),
-  .enb(1'b1),
-  .web(memwe),
-  .addrb(PC[12:2]), // use word aligned address
-  .dinb(memdin),
-  .doutb(instruction) );
+	.clka(aclk),
+	.ena(1'b1),
+	// Program upload bus
+	.wea(prgwe),
+	.addra(prgaddr),
+	.dina(prgdin),
+	.douta(), // unused
+	// Program execute bus
+	.clkb(aclk),
+	.enb(1'b1),
+	.web(memwe),
+	.addrb(PC[12:2]), // use word aligned address
+	.dinb(memdin),
+	.doutb(instruction) );
 
 // --------------------------------------------------
 // Execution unit
@@ -78,6 +78,10 @@ reg [9:0] scanlinecmp;
 reg [9:0] scanpixelcmp;
 
 reg [3:0] opcode;
+
+reg EQ;
+reg LT;
+reg LE;
 
 reg palwe_reg;
 reg [7:0] paladdr_reg;
@@ -92,8 +96,9 @@ typedef enum bit [2:0] {
 	DECODE,
 	EXEC,
 	FINALIZE_READ,
+	FINALIZE_COMPARE,
 	HALT} execmodetyper;
-execmodetyper execmode = INIT;
+execmodetyper execmode;
 
 assign runstate = execmode;
 assign debug_pc = PC;
@@ -104,6 +109,9 @@ always @(posedge aclk) begin
         rs1 <= 4'd0;
         rs2 <= 4'd0;
         rd <= 4'd0;
+		imm8 <= 8'd0;
+		imm24 <= 24'd0;
+		execmode <= INIT;
         rwren <= 1'b0;
         rdin <= 24'd0;
         scanlinecmp <= 10'd0;
@@ -114,12 +122,15 @@ always @(posedge aclk) begin
         PC <= 13'd0;
 		nextPC <= 13'd0;
 		memdin <= 32'd0;
-        memwe <= 4'd0;
+        memwe <= 1'd0;
+		EQ <= 1'b0;
+		LT <= 1'b0;
+		LE <= 1'b0;
     end else begin
 
 		palwe_reg <= 1'b0;
 		rwren <= 1'b0;
-		memwe <= 4'd0;
+		memwe <= 1'd0;
 
 		case (execmode)
 			INIT: begin
@@ -139,6 +150,8 @@ always @(posedge aclk) begin
 				rd <= instruction[7:4];
 				rs1 <= instruction[11:8];
 				rs2 <= instruction[15:12];
+				imm8 <= instruction[31:24];
+				imm24 <= instruction[31:8];
 				execmode <= EXEC;
 			end
 
@@ -155,7 +168,7 @@ always @(posedge aclk) begin
 
 					4'h1: begin // LOAD_IMM
 						rwren <= 1'b1;
-						rdin <= instruction[31:8]; // Load 24 bit immediate value into rd
+						rdin <= imm24; // Load 24 bit immediate value into rd
 					end
 
 					4'h2: begin // PAL_WRITE
@@ -197,23 +210,30 @@ always @(posedge aclk) begin
 						nextPC <= rval1[12:0];
 					end
 
-					/*4'h7: begin // CMP
-						// Compare rs1 and rs2 and write flag to rd
+					4'h7: begin // CMP
+						// Compare rs1 and rs2 and write flags to rd
+						EQ <= (rval1 == rval2) ? 1'b1 : 1'b0;
+						LT <= (rval1 < rval2) ? 1'b1 : 1'b0;
+						LE <= (rval1 <= rval2) ? 1'b1 : 1'b0;
+						execmode <= FINALIZE_COMPARE;
 					end
 
 					4'h8: begin // BRANCH
 						// Branch to address in rs1 if condition in rd is met
-					end*/
+						// imm8 contains a mask of which conditions to and against, and one more bit to invert the test
+						if (rval2[0])
+							nextPC <= rval1[12:0]; // LSB of rs2 indicates whether to take the branch
+					end
 
 					4'h9: begin // MEM_WRITE
 						// Write rs2 to program memory at address in rs1
-						memwe <= 4'b1111; // Enable all byte lanes for write
+						memwe <= 1'b1;
 						memdin <= {8'd9, rval2[23:0]};
 						// NOTE: We hijack the PC here to perform the write which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
 					end
 
-					4'd10: begin // MEM_READ
+					4'hA: begin // MEM_READ
 						// Read from program memory at address in rs1 into rd
 						// NOTE: We hijack the PC here to perform the read which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
@@ -231,6 +251,12 @@ always @(posedge aclk) begin
 				// Complete the MEM_READ operation
 				rwren <= 1'b1;
 				rdin <= instruction[23:0];
+				execmode <= FETCH;
+			end
+
+			FINALIZE_COMPARE: begin
+				rwren <= 1'b1;
+				rdin <= {21'd0, (EQ & imm8[2]) ^ imm8[3], (LT & imm8[1]) ^ imm8[3], (LE & imm8[0]) ^ imm8[3]};
 				execmode <= FETCH;
 			end
 
