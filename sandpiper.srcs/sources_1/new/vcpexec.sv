@@ -17,8 +17,9 @@ module vcpexec(
 	output wire [23:0] paldout,
 	output wire palwe,
 	// Debug outputs
-	output wire [2:0] runstate,
-	output wire [12:0] debug_pc);
+	output wire [3:0] runstate,
+	output wire [12:0] debug_pc,
+	output wire [3:0] debugopcode);
 
 // --------------------------------------------------
 // Register file
@@ -56,7 +57,6 @@ wire [31:0] instruction;
 
 blk_mem_gen_0 vcpprogrammemory (
 	.clka(aclk),
-	.ena(1'b1),
 	// Program upload bus
 	.wea(prgwe),
 	.addra(prgaddr),
@@ -104,6 +104,7 @@ execmodetyper execmode;
 
 assign runstate = execmode;
 assign debug_pc = PC;
+assign debugopcode = opcode;
 
 always @(posedge aclk) begin
     if (!arstn) begin
@@ -168,7 +169,7 @@ always @(posedge aclk) begin
 				// Addresses are in bytes, so increment PC by 4 for next word
 				nextPC <= PC + 13'd4;
 
-				case (opcode)
+				unique case (opcode)
 					4'h0: begin // NOP
 						// Do nothing
 					end

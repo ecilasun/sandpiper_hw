@@ -319,8 +319,9 @@ end
 // VCP core logic
 // --------------------------------------------------
 
-wire [2:0] runstate;
+wire [3:0] runstate;
 wire [12:0] debug_pc;
+wire [3:0] debugopcode;
 vcpexec vcpexecInst(
     .aclk(aclk),
     .arstn(aresetn),
@@ -334,32 +335,25 @@ vcpexec vcpexecInst(
 	.paldout(paldout),
 	.palwe(palwe),
 	.runstate(runstate),
-	.debug_pc(debug_pc));
+	.debug_pc(debug_pc),
+	.debugopcode(debugopcode));
 
 // --------------------------------------------------
 // VCP state output
 // --------------------------------------------------
 
-// vcpstate[21:9]	P debug_pc
-// vcpstate[8:6]	R runstate
-// vcpstate[5]		C copystate
-// vcpstate[4:1]	E execstate
-// vcpstate[0]		F FIFO not empty
-
 // Exec states
-// INIT				3'b000
-// FETCH			3'b001
-// DECODE			3'b010
-// EXEC				3'b011
-// FINALIZE_READ	3'b100
-// HALT				3'b101
-
-// Some examples
-// FEDCBA9876543210FEDCBA9876543210
-// ----------PP PPPP PPPP PPPR RRCE EEEF
-//           00 0000 0000 0001 0100 0000 == 0x140 (HALT)
-//		     00 0000 1001 1000 0100 0010 == 0x29842 (FETCH at PC 0x4C)
-//		     00 0000 0011 0000 1100 0010 == 0x3030C2 (EXEC at PC 0x18)
-assign vcpstate = {10'd0, debug_pc, runstate, copystate, execstate, ~vcpfifoempty};
+// INIT				4'b0000
+// FETCH			4'b0001
+// WAIT_FETCH       4'b0010
+// DECODE			4'b0011
+// EXEC				4'b0100
+// FINALIZE_READ	4'b0101
+// FINALIZE_COMPARE 4'b0110
+// HALT				4'b0111
+	
+// FEDC BA98 7654 3210 FEDC BA98 7654 3210
+// ---- OOOO -CFP PPPP PPPP PPPP RRRR EEEE
+assign vcpstate = {4'd0, debugopcode, 1'b0, copystate, ~vcpfifoempty, debug_pc, runstate, execstate};
 
 endmodule

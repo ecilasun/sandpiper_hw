@@ -16,7 +16,7 @@ logic [23:0] registers[0:15];
 // The whole register file is zero at boot
 initial begin
 	int ri;
-	for (ri=0; ri<32; ri=ri+1) begin
+	for (ri=0; ri<16; ri=ri+1) begin
 		registers[ri]  = 24'h000000;
 	end
 end
