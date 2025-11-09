@@ -346,6 +346,7 @@ vcpexec vcpexecInst(
 // vcpstate[4:1]	E execstate
 // vcpstate[0]		F FIFO not empty
 
+// Exec states
 // INIT				3'b000
 // FETCH			3'b001
 // DECODE			3'b010

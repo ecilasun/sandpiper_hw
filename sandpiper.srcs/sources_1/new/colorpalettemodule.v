@@ -67,6 +67,9 @@ initial begin
 	$readmemh("colorpalette.mem", paletteentries);
 end
 
+reg [7:0] palwaddr;
+reg [7:0] palraddr;
+
 // Dual-port RAM style access for palette entries
 always @(posedge aclk) begin
 	if (~aresetn) begin
@@ -74,11 +77,11 @@ always @(posedge aclk) begin
 	end else begin
 		// Handle both AXI and direct writes from VCP core
 		// Priority to AXI writes if both happen in same cycle
-		case ({s_axi_wvalid, palwe})
-			2'b10: paletteentries[palwaddr] <= s_axi_wdata[23:0];
-			2'b01: paletteentries[paladdr] <= paldout;
-			default: ;
-		endcase
+		if (s_axi_wvalid) begin
+			paletteentries[palwaddr] <= s_axi_wdata[23:0];
+		end else if (palwe) begin
+			paletteentries[paladdr] <= paldout;
+		end
 	end
 end
 
@@ -103,8 +106,6 @@ assign colordata = paletteout;
 reg [1:0] waddrstate;
 reg [1:0] writestate;
 reg [1:0] raddrstate;
-reg [7:0] palwaddr;
-reg [7:0] palraddr;
 
 // AXI write
 always @(posedge aclk) begin

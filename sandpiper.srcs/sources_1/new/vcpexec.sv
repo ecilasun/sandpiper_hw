@@ -148,6 +148,7 @@ always @(posedge aclk) begin
 			end
 
 			WAIT_FETCH: begin
+				// Wait one cycle for memory fetch to complete
 				execmode <= DECODE;
 			end
 
@@ -226,13 +227,13 @@ always @(posedge aclk) begin
 					4'h8: begin // BRANCH
 						// If any of the enabled tests pass (via CMP instruction), branch to address in rs1
 						if (rval2[2] | rval2[1] | rval2[0])
-							nextPC <= rval1[12:0]; // LSB of rs2 indicates whether to take the branch
+							nextPC <= rval1[12:0]; // rval2 contains the boolean results of the tests. If any are true, take the branch.
 					end
 
 					4'h9: begin // MEM_WRITE
 						// Write rs2 to program memory at address in rs1
 						memwe <= 1'b1;
-						memdin <= {8'd9, rval2[23:0]};
+						memdin <= {8'd0, rval2[23:0]};
 						// NOTE: We hijack the PC here to perform the write which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
 					end
