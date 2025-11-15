@@ -382,8 +382,8 @@ always_ff @(posedge aclk) begin
 		cmdre <= 1'b0;
 
 		// Latch vblank entry until it's handled
-		if (blanktracker != blankt) begin
-			blanktracker <= blankt;
+		if (blanktracker != blanktoggle) begin
+			blanktracker <= blanktoggle;
 			blanktrigger <= 1'b1;
 		end
 
