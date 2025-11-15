@@ -74,9 +74,6 @@ blk_mem_gen_0 vcpprogrammemory (
 // Execution unit
 // --------------------------------------------------
 
-reg [9:0] scanlinecmp;
-reg [9:0] scanpixelcmp;
-
 reg [3:0] opcode;
 
 reg EQ;
@@ -117,8 +114,6 @@ always @(posedge aclk) begin
 		execmode <= INIT;
         rwren <= 1'b0;
         rdin <= 24'd0;
-        scanlinecmp <= 10'd0;
-        scanpixelcmp <= 10'd0;
 		palwe_reg <= 1'b0;
 		paladdr_reg <= 8'd0;
 		paldout_reg <= 24'd0;
@@ -192,7 +187,8 @@ always @(posedge aclk) begin
 						if (scanline == rval1[9:0]) begin
 							// Condition met, proceed
 						end else begin
-							// Condition not met, stay in EXEC state
+							// Condition not met, stay in EXEC state and on same instruction
+							execmode <= EXEC;
 							nextPC <= PC; // Keep PC the same to re-execute this instruction
 						end
 					end
@@ -202,7 +198,8 @@ always @(posedge aclk) begin
 						if (scanpixel == rval1[9:0]) begin
 							// Condition met, proceed
 						end else begin
-							// Condition not met, stay in EXEC state
+							// Condition not met, stay in EXEC state and on same instruction
+							execmode <= EXEC;
 							nextPC <= PC; // Keep PC the same to re-execute this instruction
 						end
 					end

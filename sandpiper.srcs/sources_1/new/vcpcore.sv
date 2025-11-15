@@ -255,7 +255,7 @@ always_ff @(posedge aclk) begin
 					vcpsourceaddr <= vcpfifodout;
 					// Advance FIFO
 					re <= 1'b1;
-					writeCursor <= 9'h1FF;
+					writeCursor <= 10'h3FF;
 					copystate <= 1'b1;
 					burststate <= burstmask;
 					cmdmode <= STARTDMA;
@@ -289,7 +289,7 @@ always_ff @(posedge aclk) begin
 				if (s_axi_rvalid) begin
 					programwe <= 1'b1;
 					programDataIn <= s_axi_rdata; // 64 bits at a time
-					writeCursor <= writeCursor + 9'd1;
+					writeCursor <= writeCursor + 10'd1;
 					s_axi_rready <= ~s_axi_rlast;
 					cmdmode <= s_axi_rlast ? ADVANCEADDRESS : READLOOP;
 				end
