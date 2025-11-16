@@ -103,6 +103,15 @@ assign runstate = execmode;
 assign debug_pc = PC;
 assign debugopcode = opcode;
 
+reg [23:0] regand;
+reg [23:0] regor;
+reg [23:0] regxor;
+always @(rval1, rval2) begin
+	regand = rval1 & rval2;
+	regor = rval1 | rval2;
+	regxor = rval1 ^ rval2;
+end
+
 always @(posedge aclk) begin
     if (!arstn) begin
 		opcode <= 4'd0;
@@ -241,6 +250,33 @@ always @(posedge aclk) begin
 						// NOTE: We hijack the PC here to perform the read which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
 						execmode <= WAIT_READ;
+					end
+
+					4'hB: begin // SCANLINE_READ
+						// Read current scanline into rd
+						rwren <= 1'b1;
+						rdin <= {14'd0, scanline};
+					end
+
+					4'hC: begin // SCANPIXEL_READ
+						// Read current scanpixel into rd
+						rwren <= 1'b1;
+						rdin <= {14'd0, scanpixel};
+					end
+
+					4'hD: begin // AND
+						rwren <= 1'b1;
+						rdin <= regand;
+					end
+
+					4'hE: begin // OR
+						rwren <= 1'b1;
+						rdin <= regor;
+					end
+
+					4'hF: begin // XOR
+						rwren <= 1'b1;
+						rdin <= regxor;
 					end
 
 					default: begin // ILLEGAL OPCODE

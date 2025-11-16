@@ -1,7 +1,3 @@
-## Audio clock @44.100KHz (/512 of clkaudio at 22591KHz)
-## create_generated_clock -name audiosampleclock -source [get_pins blockone_i/audiomodule_0/inst/audiocoreInst/audiosampleclk] -divide_by 512 -add -master_clock [get_clocks -of_objects [get_pins blockone_i/clk_wiz_0/inst/mmcm_adv_inst/CLKOUT0]]
-create_generated_clock -name audiosampleclk -source [get_pins audiocoreInst/BUFG_inst/I] -divide_by 512 [get_pins audiocoreInst/BUFG_inst/O]
-
 set_property -dict {PACKAGE_PIN N22 IOSTANDARD TMDS_33} [get_ports HDMI_CLK_p_0]
 set_property -dict {PACKAGE_PIN P22 IOSTANDARD TMDS_33} [get_ports HDMI_CLK_n_0]
 set_property -dict {PACKAGE_PIN M21 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_p_0[0]}]
@@ -12,6 +8,13 @@ set_property -dict {PACKAGE_PIN J21 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_p_
 set_property -dict {PACKAGE_PIN J22 IOSTANDARD TMDS_33} [get_ports {HDMI_TMDS_n_0[2]}]
 set_property -dict {PACKAGE_PIN M17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_rxd]
 set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33} [get_ports UART_0_0_txd]
+set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
+set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
+set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
+set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[3]}]
+## Audio clock @44.100KHz (/512 of clkaudio at 22591KHz)
+## create_generated_clock -name audiosampleclock -source [get_pins blockone_i/audiomodule_0/inst/audiocoreInst/audiosampleclk] -divide_by 512 -add -master_clock [get_clocks -of_objects [get_pins blockone_i/clk_wiz_0/inst/mmcm_adv_inst/CLKOUT0]]
+
 # Clock: 50MHz external crystal for PL clock
 # set_property -dict {PACKAGE_PIN M19 IOSTANDARD LVCMOS33} [get_ports clk_50_MHz]
 
@@ -126,16 +129,12 @@ set_clock_groups -logically_exclusive -group [get_clocks -include_generated_cloc
 ## set_property -dict {PACKAGE_PIN T16 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
 
 # LEDs
-set_property -dict {PACKAGE_PIN P20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[0]}]
-set_property -dict {PACKAGE_PIN P21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[1]}]
 set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[0]}]
 set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[1]}]
 set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[0]}]
 set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[1]}]
 
 # Buttons
-set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[2]}]
-set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tri_io[3]}]
 set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[2]}]
 set_property SLEW SLOW [get_ports {GPIO_0_0_tri_io[3]}]
 set_property DRIVE 4 [get_ports {GPIO_0_0_tri_io[2]}]
@@ -211,3 +210,7 @@ set_clock_groups -name grpF -asynchronous -group [get_clocks clk_fpga_0] -group 
 
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
+
+create_pblock pblock_videomodule_0
+add_cells_to_pblock [get_pblocks pblock_videomodule_0] [get_cells -quiet [list blockone_i/videomodule_0]]
+resize_pblock [get_pblocks pblock_videomodule_0] -add {CLOCKREGION_X1Y1:CLOCKREGION_X1Y1}
