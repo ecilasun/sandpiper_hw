@@ -13,6 +13,9 @@ Sandpiper is an interesting machine. It is a linux based small computer based ar
 An SDK is provided alongside the PCB for the keyboard module and enclosure files for 3D printing, as well as the build files for Linux kernel and drivers in the following repositories:
 
 https://github.com/ecilasun/sandpiper_hw/
+
 https://github.com/ecilasun/sandpiper_petalinux/
+
 https://github.com/ecilasun/sandpiper_pcb/
+
 https://github.com/ecilasun/sandpiper_sdk/
