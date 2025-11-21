@@ -23,6 +23,12 @@ petalinux-package boot --format BIN --fsbl zynq_fsbl.elf --u-boot u-boot.elf --f
 
 // Optional: run this to get a cross compiler toolchain generated:
 petalinux-build --sdk
+Then use the following command to install the SDK on your Linux machine
+./images/linux/sdk.sh
+To use the SDK:
+source /opt/petalinux/2025.1/environment-setup-cortexa9t2hf-neon-amd-linux-gnueabi
+This will set paths to the compilers which all have the following prefix (gcc 13.3.0):
+arm-amd-linux-gnueabi-*
 
 To make things from scratch, either of:
 petalinux-build -x distclean
