@@ -126,8 +126,8 @@ NOTE#4:
 Git will give you trouble due to missing certificate authority. To work around, use these to set up git for use:
 git config --global http.sslVerify false
 git config --global credential.helper store
-git config --global user.name "Engin Cilasun"
-git config --global user.email "ecilasun@me.com"
+git config --global user.name "Someone Important"
+git config --global user.email "itsmyemail@domain.com"
 
 --------------------------------------------------------------------
 NOTE#5:
@@ -172,6 +172,8 @@ Feed these or others to metal_device_open as device path:
 
 audio device: "platform", "40000000.audiomodule"
 video device: "platform", "40001000.videomodule"
+video device: "platform", "40002000.colorpalettemodule"
+video device: "platform", "40003000.vcpmodule"
 
 --------------------------------------------------------------------
 NOTE#8:
@@ -193,7 +195,7 @@ NOTE#10:
 --------------------------------------------------------------------
 NOTE#11:
 --------------------------------------------------------------------
-By default eth0 gets renamed to enx000a35001e53
+By default eth0 gets renamed to enx000a35001e53 on petalinux
 To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
 (In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
 
