@@ -396,7 +396,7 @@
         "PCW_P2F_UART1_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "PCW_P2F_CAN1_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "PCW_IRQ_F2P_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
-        "PCW_IRQ_F2P_MODE": [ { "value": "DIRECT", "resolve_type": "user", "usage": "all" } ],
+        "PCW_IRQ_F2P_MODE": [ { "value": "DIRECT", "resolve_type": "user", "enabled": false, "usage": "all" } ],
         "PCW_CORE0_FIQ_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "PCW_CORE0_IRQ_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
         "PCW_CORE1_FIQ_INTR": [ { "value": "0", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ],
@@ -1895,5 +1895,5 @@
       }
     }
   },
-  "checksum": "6160715d"
+  "checksum": "67633a42"
 }
