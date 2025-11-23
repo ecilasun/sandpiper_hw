@@ -15,7 +15,7 @@ petalinux-config -> make sure to enter this under u-boot Configuration/uboot Scr
 	and make sure to copy the splash.bin file from this project's root folder into the BOOT folder of your mmc (mmc0 partition1)
 	(NOTE: This only adds about 40ms to startup)
 petalinux-config -c kernel (see NOTE#3)
-petalinux-config -c u-boot (set autoboot delay from 2 to -2, set loglevel to 1, support silent console, also optionally enable boot options and type quiet)
+petalinux-config -c u-boot (see NOTE#3A)
 petalinux-config -c rootfs (don't forget to pick dev tools (especially libmetal) and set username/pwd, also set autoboot, add: sudo, busybox, tar, usbutils, git, grep, vim, minicom, wget, autoconf, automake, binutils, bison, flex, make, kexec-tools, libmetal, libpng, libusb1, libstdc++, gdb, gdbserver, gcc sanitizers, glib-2.0, glibc, ldd, iotop, packagegroup-code-sdk, packagegroup-self-hosted, python3, netcat, empty-root-password, serial-autologin-root, see https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management for package management info)
 petalinux-build
 cd images/linux
@@ -31,8 +31,8 @@ This will set paths to the compilers which all have the following prefix (gcc 13
 arm-amd-linux-gnueabi-*
 
 To make things from scratch, either of:
-petalinux-build -x distclean
-petalinux-build -x mrproper
+petalinux-build -x distclean <- probably good enough to rebuid
+petalinux-build -x mrproper  <- this will destroy pretty much everything
 petalinux-build -x clean
 
 # preparing the boot media (sdcard)
@@ -109,16 +109,26 @@ This way the software won't need to know about raw memory addresses of device re
 --------------------------------------------------------------------
 NOTE#2:
 --------------------------------------------------------------------
-* Image Packaging Configuration -> Root Filesystem Type -> EXT4                         
-* Image Packaging Configuration -> Device node of SD device -> mmcblk0p2                
-* Subsystem Hardware Settings -> SD/SDIO Settings -> Primary SD/SDIO -> ps7_sd_0     
+* Image Packaging Configuration -> Root Filesystem Type -> EXT4
+* Image Packaging Configuration -> Device node of SD device -> mmcblk0p2
+* Subsystem Hardware Settings -> SD/SDIO Settings -> Primary SD/SDIO -> ps7_sd_0
 * Not necessary: DTG Settings -> Kernel Bootargs -> manual bootargs -> console=ttyPS0,115200 earlycon quiet root=/dev/mmcblk0p2 rw rootwait
 
 --------------------------------------------------------------------
 NOTE#3:
 --------------------------------------------------------------------
 * Device Drivers -> Network Device Support -> PHY Device Support and Infrastructure -> Xilinx GMII2RGMII Converter Driver
+* Device Drivers -> Graphics Support -> Frame buffer Devices -> Support for frame buffer device drivers + Provide legacy dev/fb* device
+* Also Framebuffer Console support (was this needed?)
+* Optionally select bootup logo from the graphics section
 * TODO: USB etc
+
+--------------------------------------------------------------------
+NOTE#3A
+--------------------------------------------------------------------
+* Boot Options -> Autoboot options -> set 2 second delay to -2
+* -> Boot Arguments -> quiet
+* Console -> set loglevel to 1 and enable Silent Console
 
 --------------------------------------------------------------------
 NOTE#4:
