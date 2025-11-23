@@ -40,6 +40,10 @@ petalinux-build -x clean
 # copy boot.scr, BOOT.bin, image.ub to root folder of first partition (/media/uname/boot)
 sudo dd if=rootfs.ext4 of=/dev/sdb2 # sdb2 is the second partition of the sdcard
 
+P.S. to add sandpiper driver project from scratch, use:
+petalinux-create -t modules --name sandpiper --enable
+then copy over the .c code for sandpiper driver onto the new source under project-spec/meta-user/recipies-modules/sandpiper
+
 --------------------------------------------------------------------
 NOTE#1:
 --------------------------------------------------------------------
@@ -112,13 +116,13 @@ NOTE#2:
 * Image Packaging Configuration -> Root Filesystem Type -> EXT4
 * Image Packaging Configuration -> Device node of SD device -> mmcblk0p2
 * Subsystem Hardware Settings -> SD/SDIO Settings -> Primary SD/SDIO -> ps7_sd_0
-* Not necessary: DTG Settings -> Kernel Bootargs -> manual bootargs -> console=ttyPS0,115200 earlycon quiet root=/dev/mmcblk0p2 rw rootwait
+* DT Settings -> Kernel Bootargs -> add extra bootargs -> [console=ttyPS0,115200 earlycon] quiet root=/dev/mmcblk0p2 rw rootwait
 
 --------------------------------------------------------------------
 NOTE#3:
 --------------------------------------------------------------------
 * Device Drivers -> Network Device Support -> PHY Device Support and Infrastructure -> Xilinx GMII2RGMII Converter Driver
-* Device Drivers -> Graphics Support -> Frame buffer Devices -> Support for frame buffer device drivers + Provide legacy dev/fb* device
+* Device Drivers -> Graphics Support -> Frame buffer Devices -> Support for frame buffer device drivers + Provide legacy dev/fb* device + Simple framebuffer support
 * Also Framebuffer Console support (was this needed?)
 * Optionally select bootup logo from the graphics section
 * TODO: USB etc
@@ -127,7 +131,7 @@ NOTE#3:
 NOTE#3A
 --------------------------------------------------------------------
 * Boot Options -> Autoboot options -> set 2 second delay to -2
-* -> Boot Arguments -> quiet
+* Boot Options -> Enable Boot Arguments -> Boot Arguments -> quiet
 * Console -> set loglevel to 1 and enable Silent Console
 
 --------------------------------------------------------------------
@@ -253,14 +257,14 @@ https://rcn-ee.com/rootfs/eewiki/minfs/ubuntu-20.04.6-minimal-armhf-2023-08-22.t
 tar xf ubuntu-20.04.6-minimal-armhf-2023–08–22.tar.xz
 
 Copy the prebuilt Ubuntu .tar to sdcard:
-sudo tar xfvp $ZC706_UBUNTU_DIR/armhf-rootfs-ubuntu-focal.tar -C /media/ecilasun/rootfs
+sudo tar xfvp $ZC706_UBUNTU_DIR/armhf-rootfs-ubuntu-focal.tar -C /media/username/rootfs
 
 Now we need to copy all drivers to lib/modules/6.***-xilinx-**** folder from petalinux build rootfs.tar file from lib/modules (images/Linux)
 Might need to use tar -xzf rootfs.tar.gz if the file system doesn't have built in tar decompression.
 
 Next, we set up the rights
-sudo chown root:root /media/ecilasun/rootfs
-sudo chmod 755 /media/ecilasun/rootfs
+sudo chown root:root /media/username/rootfs
+sudo chmod 755 /media/username/rootfs
 
 And we flush everything to disk
 sync
@@ -395,8 +399,8 @@ Recommended install path is C:\gccarmlinux\ for easy access from vscode
 
 git config --global http.sslVerify false
 git config --global credential.helper store
-git config --global user.name "Engin Cilasun"
-git config --global user.email "ecilasun@me.com"
+git config --global user.name "User Name"
+git config --global user.email "username@somewhere.com"
 
 /////// Development tools - gcc 14.3.0
 
