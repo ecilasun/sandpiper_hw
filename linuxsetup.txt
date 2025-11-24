@@ -207,13 +207,6 @@ NOTE#10:
 --------------------------------------------------------------------
 
 --------------------------------------------------------------------
-NOTE#11:
---------------------------------------------------------------------
-By default eth0 gets renamed to enx000a35001e53 on petalinux
-To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
-(In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
-
---------------------------------------------------------------------
 CMAKE:
 --------------------------------------------------------------------
 Build cmake from source
@@ -249,7 +242,10 @@ see this for package management:
 https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management
 (dnf is the tool to use for package download / removal)
 
+
+////////////////////////////
 //////// PETALINUX /////////
+////////////////////////////
 
 First thing is to give everyone access to our platform driver /dev/sandpiper
 We have to make a new device rule for it. First, start the default editor:
@@ -258,9 +254,22 @@ INS, Add the following, then ESC, :wq and reboot:
 # Sandpiper device access rules
 KERNEL=="sandpiper", SUBSYSTEM="sandpiper", GROUP=="users", MODE="0666"
 
-////////// UBUNTU //////////
+By default eth0 gets renamed to enx000a35001e53 on petalinux
+To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
+(In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
 
-download
+Some routers have weird DHCP addresses by default (such as 192.168.1.1)
+To cope with that, run the following to add this to your config:
+sudo /etc/init.d/networking restart
+To make it permanent (if gateway is at 192.168.1.1):
+sudo ip route add default via 192.168.1.1 dev enx000a35001e53
+
+
+////////////////////////////
+////////// UBUNTU //////////
+////////////////////////////
+
+Download
 https://rcn-ee.com/rootfs/eewiki/minfs/ubuntu-20.04.6-minimal-armhf-2023-08-22.tar.xz
 tar xf ubuntu-20.04.6-minimal-armhf-2023–08–22.tar.xz
 
