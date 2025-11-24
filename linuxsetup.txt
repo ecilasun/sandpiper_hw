@@ -16,7 +16,7 @@ petalinux-config -> make sure to enter this under u-boot Configuration/uboot Scr
 	(NOTE: This only adds about 40ms to startup)
 petalinux-config -c kernel (see NOTE#3)
 petalinux-config -c u-boot (see NOTE#3A)
-petalinux-config -c rootfs (don't forget to pick dev tools (especially libmetal) and set username/pwd, also set autoboot, add: sudo, busybox, tar, usbutils, git, grep, vim, minicom, wget, autoconf, automake, binutils, bison, flex, make, kexec-tools, libmetal, libpng, libusb1, libstdc++, gdb, gdbserver, gcc sanitizers, glib-2.0, glibc, ldd, iotop, packagegroup-code-sdk, packagegroup-self-hosted, python3, netcat, empty-root-password, serial-autologin-root, see https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management for package management info)
+petalinux-config -c rootfs (don't forget to pick dev tools and set username/pwd to peta:peta;, also set autoboot, and add these packages: ntp, sudo, busybox, tar, usbutils, git, grep, vim, minicom, wget, autoconf, automake, binutils, bison, flex, make, kexec-tools, libmetal, libpng, libusb1, libstdc++, gdb, gdbserver, gcc sanitizers, glib-2.0, glibc, ldd, iotop, packagegroup-code-sdk, packagegroup-self-hosted, python3, netcat, empty-root-password, serial-autologin-root, see https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Management for package management info)
 petalinux-build
 cd images/linux
 petalinux-package boot --format BIN --fsbl zynq_fsbl.elf --u-boot u-boot.elf --fpga system.bit --force
@@ -249,7 +249,13 @@ https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Mana
 
 MAKE SURE TO ENABLE FRAMEBUFFER CONSOLE IN KERNEL CONFIG STEP!
 
-First thing is to give everyone access to our platform driver /dev/sandpiper
+The default username/password for this one is: peta / peta
+
+By default eth0 gets renamed to enx000a35001e53 on petalinux
+To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
+(In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
+
+Next thing is to give everyone access to our platform driver /dev/sandpiper
 We have to make a new device rule for it. First, start the default editor:
 
 sudo vi /etc/udev/rules.d/30-sandpiper-device.rules
@@ -263,16 +269,6 @@ You may then want to do the following or run a sudo reboot
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
-By default eth0 gets renamed to enx000a35001e53 on petalinux
-To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
-(In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
-
-Some routers have weird DHCP addresses by default (such as 192.168.1.1)
-To cope with that, run the following to add this to your config:
-sudo /etc/init.d/networking restart
-To make it permanent (if gateway is at 192.168.1.1):
-sudo ip route add default via 192.168.1.1 dev enx000a35001e53
-
 Now to remove the annoying login and sudo messages, do the following:
 sudo mv /etc/issue /etc/issue.orig
 
@@ -282,6 +278,8 @@ sudo mv /etc/issue /etc/issue.orig
 ////////////////////////////
 
 MAKE SURE TO DISABLE FRAMEBUFFER CONSOLE IN KERNEL CONFIG STEP!
+
+The default username/password for this one is: ubuntu / ubuntu
 
 Download
 https://rcn-ee.com/rootfs/eewiki/minfs/ubuntu-20.04.6-minimal-armhf-2023-08-22.tar.xz
