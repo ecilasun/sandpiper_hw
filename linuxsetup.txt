@@ -272,6 +272,9 @@ sudo udevadm trigger
 Now to remove the annoying login and sudo messages, do the following:
 sudo mv /etc/issue /etc/issue.orig
 
+To replace the 'Please wait: booting...' message, check the /etc/init.d/banner.sh file
+
+
 
 ////////////////////////////
 ////////// UBUNTU //////////
