@@ -257,7 +257,7 @@ sudo vi /etc/udev/rules.d/30-sandpiper-device.rules
 INS, Add the following, then ESC, :wq and reboot:
 
 # Sandpiper device access rules
-KERNEL=="sandpiper", SUBSYSTEM="sandpiper", GROUP=="users", MODE="0666"
+KERNEL=="sandpiper", SUBSYSTEM=="sandpiper", GROUP=="users", MODE="0666"
 
 You may then want to do the following or run a sudo reboot
 sudo udevadm control --reload-rules
