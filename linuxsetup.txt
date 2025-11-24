@@ -247,12 +247,21 @@ https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Package-Mana
 //////// PETALINUX /////////
 ////////////////////////////
 
+MAKE SURE TO ENABLE FRAMEBUFFER CONSOLE IN KERNEL CONFIG STEP!
+
 First thing is to give everyone access to our platform driver /dev/sandpiper
 We have to make a new device rule for it. First, start the default editor:
+
 sudo vi /etc/udev/rules.d/30-sandpiper-device.rules
+
 INS, Add the following, then ESC, :wq and reboot:
+
 # Sandpiper device access rules
 KERNEL=="sandpiper", SUBSYSTEM="sandpiper", GROUP=="users", MODE="0666"
+
+You may then want to do the following or run a sudo reboot
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 
 By default eth0 gets renamed to enx000a35001e53 on petalinux
 To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
@@ -264,10 +273,15 @@ sudo /etc/init.d/networking restart
 To make it permanent (if gateway is at 192.168.1.1):
 sudo ip route add default via 192.168.1.1 dev enx000a35001e53
 
+Now to remove the annoying login and sudo messages, do the following:
+sudo mv /etc/issue /etc/issue.orig
+
 
 ////////////////////////////
 ////////// UBUNTU //////////
 ////////////////////////////
+
+MAKE SURE TO DISABLE FRAMEBUFFER CONSOLE IN KERNEL CONFIG STEP!
 
 Download
 https://rcn-ee.com/rootfs/eewiki/minfs/ubuntu-20.04.6-minimal-armhf-2023-08-22.tar.xz
@@ -353,10 +367,10 @@ sudo mv /etc/issue /etc/issue.orig
 
 To give access to current user (which must be added to 'video' group) for the sandpiper platform driver:
 
-sudo nano /etc/udev/rules.d/99-sandpiper.rules
+sudo nano /etc/udev/rules.d/30-sandpiper-device.rules
 
 add the following and save the file:
-KERNEL=="sandpiper", GROUP="video", MODE="0666"
+KERNEL=="sandpiper", SUBSYSTEM="sandpiper", GROUP=="users", MODE="0666"
 
 then run:
 
@@ -515,6 +529,9 @@ echo "|___/\__,_|_| |_|\__,_| .__/|_| .__/ \___|_|   "
 echo "                      |_|     |_|              "
 echo " sandpiper v0.1     Running Ubuntu 20.04.6 LTS "
 echo -e "\033[0m"
+
+for Petalinux, change the last line to:
+echo " sandpiper v0.1     Running Petalinux          "
 
 
 --- Fixed for errors encountered when running on WSL2 (Windows subsystem for Linux - 2)
