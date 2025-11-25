@@ -274,7 +274,8 @@ sudo mv /etc/issue /etc/issue.orig
 
 To replace the 'Please wait: booting...' message, check the /etc/init.d/banner.sh file
 
-
+DNF package manager is set up by default. To initialize it, run:
+sudo dnf update
 
 ////////////////////////////
 ////////// UBUNTU //////////
