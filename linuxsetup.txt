@@ -319,6 +319,8 @@ and also make sure the .bashrc file has ls alias enabled, and there is no call t
 export LS_OPTIONS='--color=auto'
 alias ls='ls $LS_OPTIONS'
 
+NOTE: fonts go into /usr/share/fonts/ttf folder on petalinux
+
 See NOTE#5 for instructions on building nano editor.
 
 NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
