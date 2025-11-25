@@ -276,6 +276,9 @@ To replace the 'Please wait: booting...' message, check the /etc/init.d/banner.s
 
 To make the console a bit more colorful, sudo vi ~/.bashrc and uncomment the --color line. Loggin out & back in will activate it.
 
+To build CMake (if you need it), first clone it from https://github.com/Kitware/CMake
+Then follow the instructions (./bootstrap -- -DCMAKE_USE_OPENSSL=OFF, make, sudo make install)
+
 NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
 sudo dnf update
 
