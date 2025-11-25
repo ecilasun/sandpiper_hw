@@ -279,6 +279,10 @@ To make the console a bit more colorful, sudo vi ~/.bashrc and uncomment the --c
 To build CMake (if you need it), first clone it from https://github.com/Kitware/CMake
 Then follow the instructions (./bootstrap -- -DCMAKE_USE_OPENSSL=OFF, make, sudo make install)
 
+Then we need need to build freetype2 (https://github.com/freetype/freetype) followed by fbterm, if it is desired (tbf it looks much better than stock framebuffer terminal).
+
+See NOTE#5 for instructions on building nano editor.
+
 NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
 sudo dnf update
 
