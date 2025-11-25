@@ -274,7 +274,9 @@ sudo mv /etc/issue /etc/issue.orig
 
 To replace the 'Please wait: booting...' message, check the /etc/init.d/banner.sh file
 
-DNF package manager is set up by default. To initialize it, run:
+To make the console a bit more colorful, sudo vi ~/.bashrc and uncomment the --color line. Loggin out & back in will activate it.
+
+NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
 sudo dnf update
 
 ////////////////////////////
