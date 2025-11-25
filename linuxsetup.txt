@@ -309,8 +309,15 @@ if [ "$TERM" = "linux" ]; then
     echo -en "\e]P7ffffff" #lightgrey
     echo -en "\e]PFdedede" #white
 
-    FBTERM=1 exec fbterm
+    eval `dircolors`
+	export FBTERM=1
+	exec fbterm -- bash -login
 fi
+
+and also make sure the .bashrc file has ls alias enabled, and there is no call to dircolors:
+
+export LS_OPTIONS='--color=auto'
+alias ls='ls $LS_OPTIONS'
 
 See NOTE#5 for instructions on building nano editor.
 
