@@ -407,7 +407,7 @@ always_ff @(posedge aclk) begin
 					8'h04:		cmdmode <= SHIFTSCANOUT;	// Offset for scanline cache reads
 					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
 					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
-					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and spawn buffers on the hardware side
+					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and swap buffers on the hardware side
 					8'h08:		cmdmode <= WCONTROLREG;		// Control register write
 					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
@@ -434,10 +434,10 @@ always_ff @(posedge aclk) begin
 					// Upper 4 bits contain whole burst count (i.e. N * 4'hF)
 					// Lower 4 bits contain partial burst length
 					unique case (vpufifodout[2:1])
-						2'b00: burstmask <= 10'b0000000111; // 320*240 8bpp, 3*128
-						2'b01: burstmask <= 10'b0000011111; // 640*480 8bpp, 5*128
-						2'b10: burstmask <= 10'b0000011111; // 320*240 16bpp, 5*128
-						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 10*128
+						2'b00: burstmask <= 10'b0000000111; // 320*240 8bpp, 3*128 (384 bytes)
+						2'b01: burstmask <= 10'b0000011111; // 640*480 8bpp, 5*128 (640 bytes)
+						2'b10: burstmask <= 10'b0000011111; // 320*240 16bpp, 5*128 (640 bytes)
+						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 10*128 (1280 bytes)
 					endcase
 
 					// Advance FIFO
@@ -560,7 +560,8 @@ always_ff @(posedge aclk) begin
 end
 
 wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
-wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
+wire [9:0] endcheck = scanwidth ? 10'd480 : 10'd479;
+wire endofframe = (scanline == endcheck) ? 1'b1 : 1'b0;
 
 assign scanline_o = scanline;
 assign scanpixel_o = scanpixel;
