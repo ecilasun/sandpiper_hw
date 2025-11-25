@@ -286,6 +286,7 @@ wget -O config.sub https://git.savannah.gnu.org/cgit/config.git/plain/config.sub
 wget -O config.guess https://git.savannah.gnu.org/cgit/config.git/plain/config.guess
 Make sure to chmod +x on both config.* files
 Then follow the usual ./configure then make to get the fbterm executable built.
+P.S: fbterm still refuses to run at login somehow, working on it...
 
 See NOTE#5 for instructions on building nano editor.
 
@@ -403,7 +404,7 @@ edit getty service:
 sudo nano /lib/systemd/system/getty@.service
 change matching line to these, including the empty execstart:
 ExecStart=
-ExecStart=-/sbin/agetty -n -l /usr/bin/fbterm -o /bin/login %I $TERM
+ExecStart=-/sbin/agetty --noclear -n -l /usr/bin/fbterm -o /bin/login %I $TERM
 
 NOTE: the font setup is in the /root user's directory since fbterm starts as root.
 
