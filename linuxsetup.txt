@@ -289,8 +289,6 @@ Then follow the usual ./configure then make to get the fbterm executable built.
 
 To get fbterm to start after login, add this to the end of your ~/.profile file:
 
-# hack for 256 color depth with fbterm
-
 if [ "$TERM" = "linux" ]; then
     echo -en "\e]P0222222" #black
     echo -en "\e]P8222222" #darkgrey
@@ -326,9 +324,24 @@ and also make sure the .bashrc file has ls alias enabled, and there is no call t
 export LS_OPTIONS='--color=auto'
 alias ls='ls $LS_OPTIONS'
 
-NOTE: fonts go into /usr/share/fonts/ttf folder on petalinux
+NOTE: fonts go into /usr/share/fonts/ttf folder on petalinux. To show a list of available fonts, use:
+fc-list
+and then type the name into your ~/.fbtermrc file _exactly_ as it appears on the right hand side, for example:
+font-names=Hack:style=Bold
 
 See NOTE#5 for instructions on building nano editor.
+
+For a fancy multi-color bash prompt, add the following to the top of the .bashrc file. It will show an ASCII version over ssh and a more graphical version on local console.
+Take care to not erase the leading \[ and the trailing \] if you modify this, as bash counts all characters as visible otherwise and will wrap input around too soon.
+
+# Larger right triangle
+TRICODE=$'\uE0B0'
+
+if [ -n "$SSH_CLIENT" ]; then
+    export PS1='\[\e[44m\e[37m\u>\e[43m\e[37m\h>\e[46m\e[30m\W>\e[0m\] '
+else
+    export PS1='\[\e[44m\e[37m\u\e[43m\e[34m'$TRICODE'\e[43m\e[37m\h\e[46m\e[33m'$TRICODE'\e[46m\e[30m\W\e[40m\e[36m'$TRICODE'\e[0m\] '
+fi
 
 NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
 sudo dnf update
