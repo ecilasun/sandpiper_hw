@@ -311,6 +311,13 @@ if [ "$TERM" = "linux" ]; then
 
     eval `dircolors`
 	export FBTERM=1
+	# Enable these lines if you have a background image copied to /usr/share/misc
+	# Sample image is provided in the misc folder of the petalinux repo
+	# If you wish to make your own, paste an 640x480 image into https://longfangsong.github.io/en/image-to-rgb565/
+	# The resulting bin file can then be directly copied onto framebuffer device as shown below.
+	# The fbterm_background_image value tells fbterm to directly copy what it sees in the framebuffer and use as background
+	# cat /usr/share/misc/termbgnd.bin > /dev/fb0
+	# export FBTERM_BACKGROUND_IMAGE=1
 	exec fbterm -- bash -login
 fi
 
