@@ -103,37 +103,29 @@ assign runstate = execmode;
 assign debug_pc = PC;
 assign debugopcode = opcode;
 
-reg [23:0] regand;
-reg [23:0] regor;
-reg [23:0] regxor;
-reg [23:0] regasr;
-reg [23:0] regshr;
-reg [23:0] regshl;
-reg [23:0] regneg;
-
-reg [23:0] aluadd;
-reg [23:0] alusub;
-//reg [23:0] alumul;
-//reg [23:0] aludiv;
-
-always @(rval1, rval2) begin
-	regand = rval1 & rval2;
-	regor = rval1 | rval2;
-	regxor = rval1 ^ rval2;
+reg [23:0] logicout;
+always @(imm8, rval1, rval2) begin
+    case (imm8)
+        8'h00: logicout = rval1 & rval2;        // AND
+        8'h01: logicout = rval1 | rval2;        // OR
+        8'h02: logicout = rval1 ^ rval2;        // XOR
+        8'h03: logicout = rval1 >>> rval2[4:0]; // ASR
+        8'h04: logicout = rval1 >> rval2[4:0];  // SHR
+        8'h05: logicout = rval1 << rval2[4:0];  // SHL
+        8'h06: logicout = ~rval1;               // NEG
+        default: logicout = 24'd0;
+    endcase
 end
 
-always @(rval1, rval2) begin
-	regasr = rval1 >>> rval2[4:0];
-	regshr = rval1 >> rval2[4:0];
-	regshl = rval1 << rval2[4:0];
-	regneg = ~rval1;
-end
-
-always @(rval1, rval2) begin
-    aluadd = rval1 + rval2;
-    alusub = rval1 - rval2;
-    //alumul = rval1 * rval2;
-    //aludiv = rval1 / rval2;
+reg [23:0] aluout;
+always @(imm8, rval1, rval2) begin
+    case (imm8)
+        8'd00: aluout = rval1 + rval2;       // ADD
+        8'd01: aluout = rval1 - rval2;       // SUB
+        //8'd02: aluout = rval1 * rval2;     // MUL
+        //8'd03: aluout = rval1 / rval2;     // DIV
+        default: aluout = 24'd0;
+    endcase
 end
 
 always @(posedge aclk) begin
@@ -239,13 +231,7 @@ always @(posedge aclk) begin
 
 					4'h5: begin // MATHOP
 						rwren <= 1'b1;
-						case (imm8)
-                            8'd00: rdin <= aluadd;       // ADD
-                            8'd01: rdin <= alusub;       // SUB
-                            //8'd02: rdin <= alumul;     // MUL
-                            //8'd03: rdin <= aludiv;     // DIV
-                            default: rdin <= 24'd0;
-						endcase
+						rdin <= aluout;
 					end
 
 					4'h6: begin // JMP
@@ -296,16 +282,7 @@ always @(posedge aclk) begin
 
 					4'hD: begin // LOGICOP
 						rwren <= 1'b1;
-						case (imm8)
-                            8'h00: rdin <= regand;      // AND
-                            8'h01: rdin <= regor;       // OR
-                            8'h02: rdin <= regxor;      // XOR
-                            8'h03: rdin <= regasr;      // ASR
-                            8'h04: rdin <= regshr;      // SHR
-                            8'h05: rdin <= regshl;      // SHL
-                            8'h06: rdin <= regneg;      // NEG
-                            default: rdin <= 24'd0;
-						endcase
+						rdin <= logicout;
 					end
 
 					4'hE: begin // UNUSED0
