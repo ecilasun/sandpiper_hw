@@ -214,3 +214,11 @@ set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
 create_pblock pblock_videomodule_0
 add_cells_to_pblock [get_pblocks pblock_videomodule_0] [get_cells -quiet [list blockone_i/videomodule_0]]
 resize_pblock [get_pblocks pblock_videomodule_0] -add {CLOCKREGION_X1Y1:CLOCKREGION_X1Y1}
+
+create_pblock pblock_vcpmodule_0
+add_cells_to_pblock [get_pblocks pblock_vcpmodule_0] [get_cells -quiet [list blockone_i/vcpmodule_0]]
+resize_pblock [get_pblocks pblock_vcpmodule_0] -add {SLICE_X20Y0:SLICE_X49Y49 \
+                                                     DSP48_X2Y0:DSP48_X2Y19 \
+                                                     RAMB18_X1Y0:RAMB18_X2Y19 \
+                                                     RAMB36_X1Y0:RAMB36_X2Y9 \
+}

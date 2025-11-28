@@ -106,10 +106,34 @@ assign debugopcode = opcode;
 reg [23:0] regand;
 reg [23:0] regor;
 reg [23:0] regxor;
+reg [23:0] regasr;
+reg [23:0] regshr;
+reg [23:0] regshl;
+reg [23:0] regneg;
+
+reg [23:0] aluadd;
+reg [23:0] alusub;
+//reg [23:0] alumul;
+//reg [23:0] aludiv;
+
 always @(rval1, rval2) begin
 	regand = rval1 & rval2;
 	regor = rval1 | rval2;
 	regxor = rval1 ^ rval2;
+end
+
+always @(rval1, rval2) begin
+	regasr = rval1 >>> rval2[4:0];
+	regshr = rval1 >> rval2[4:0];
+	regshl = rval1 << rval2[4:0];
+	regneg = ~rval1;
+end
+
+always @(rval1, rval2) begin
+    aluadd = rval1 + rval2;
+    alusub = rval1 - rval2;
+    //alumul = rval1 * rval2;
+    //aludiv = rval1 / rval2;
 end
 
 always @(posedge aclk) begin
@@ -213,9 +237,15 @@ always @(posedge aclk) begin
 						end
 					end
 
-					4'h5: begin // ADD
+					4'h5: begin // MATHOP
 						rwren <= 1'b1;
-						rdin <= rval1 + rval2;
+						case (imm8)
+                            8'd00: rdin <= aluadd;       // ADD
+                            8'd01: rdin <= alusub;       // SUB
+                            //8'd02: rdin <= alumul;     // MUL
+                            //8'd03: rdin <= aludiv;     // DIV
+                            default: rdin <= 24'd0;
+						endcase
 					end
 
 					4'h6: begin // JMP
@@ -264,19 +294,24 @@ always @(posedge aclk) begin
 						rdin <= {14'd0, scanpixel};
 					end
 
-					4'hD: begin // AND
+					4'hD: begin // LOGICOP
 						rwren <= 1'b1;
-						rdin <= regand;
+						case (imm8)
+                            8'h00: rdin <= regand;      // AND
+                            8'h01: rdin <= regor;       // OR
+                            8'h02: rdin <= regxor;      // XOR
+                            8'h03: rdin <= regasr;      // ASR
+                            8'h04: rdin <= regshr;      // SHR
+                            8'h05: rdin <= regshl;      // SHL
+                            8'h06: rdin <= regneg;      // NEG
+                            default: rdin <= 24'd0;
+						endcase
 					end
 
-					4'hE: begin // OR
-						rwren <= 1'b1;
-						rdin <= regor;
+					4'hE: begin // UNUSED0
 					end
 
-					4'hF: begin // XOR
-						rwren <= 1'b1;
-						rdin <= regxor;
+					4'hF: begin // UNUSED1
 					end
 
 					default: begin // ILLEGAL OPCODE
