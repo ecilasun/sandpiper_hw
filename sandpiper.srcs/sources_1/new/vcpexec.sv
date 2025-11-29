@@ -87,8 +87,7 @@ assign paladdr = paladdr_reg;
 assign paldout = paldout_reg;
 assign palwe = palwe_reg;
 
-typedef enum bit [3:0] {
-	INIT,
+typedef enum bit [2:0] {
 	FETCH,
 	WAIT_FETCH,
 	DECODE,
@@ -136,7 +135,7 @@ always @(posedge aclk) begin
         rd <= 4'd0;
 		imm8 <= 8'd0;
 		imm24 <= 24'd0;
-		execmode <= INIT;
+		execmode <= FETCH;
         rwren <= 1'b0;
         rdin <= 24'd0;
 		palwe_reg <= 1'b0;
@@ -150,18 +149,11 @@ always @(posedge aclk) begin
 		LT <= 1'b0;
 		LE <= 1'b0;
     end else begin
-
 		palwe_reg <= 1'b0;
 		rwren <= 1'b0;
 		memwe <= 1'd0;
 
 		case (execmode)
-			INIT: begin
-				PC <= 13'd0;
-				nextPC <= 13'd0;
-				execmode <= FETCH;
-			end
-
 			FETCH: begin
 				PC <= nextPC;
 				// Next clock will have the instruction fetched or we'll halt if execstate[0] is low
