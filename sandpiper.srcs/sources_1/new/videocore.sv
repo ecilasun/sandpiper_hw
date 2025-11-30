@@ -560,8 +560,7 @@ always_ff @(posedge aclk) begin
 end
 
 wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
-wire [9:0] endcheck = scanwidth ? 10'd480 : 10'd479;
-wire endofframe = (scanline == endcheck) ? 1'b1 : 1'b0;
+wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
 
 assign scanline_o = scanline;
 assign scanpixel_o = scanpixel;
