@@ -8,7 +8,7 @@ module videocore(
 	input wire aresetn,
 
 	output wire rst25n_o,
-	output wire [2:0] scanmode, // {displaying, scanenable, colormode}
+	output wire [3:0] scanmode, // {scandouble, displaying, scanenable, colormode}
 	output wire [15:0] passthroughrgb,
 	output wire [7:0] paletteindex_o,
 	input wire [23:0] colordata,
@@ -105,6 +105,19 @@ module videocore(
 	//input wire HDMI_HPD,
 	input wire audiosampleclk,
 	input wire [31:0] audiosampleLR);
+
+// ------------------------------------------------------------------------------------
+// List of videomodes supported:
+// ------------------------------------------------------------------------------------
+
+// 320x240x8bpp
+// 320x240x16bpp
+// 320x480x8bpp
+// 320x480x16bpp
+// 640x240x8bpp
+// 640x240x16bpp
+// 640x480x8bpp
+// 640x480x16bpp
 
 // ------------------------------------------------------------------------------------
 // Reset CDC
@@ -243,7 +256,7 @@ logic [9:0] lastscanline;
 logic [9:0] burstmask;
 logic scanwidth;			// 0:320 pixel wide, 1:640 pixel wide
 logic colormode;			// 0:indexed color, 1:16bit color
-
+logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
 
 // --------------------------------------------------
 // Scanline cache
@@ -323,7 +336,7 @@ always_comb begin
 	endcase
 end
 
-assign scanmode = {displaying, scanenable, colormode};
+assign scanmode = {scandouble, displaying, scanenable, colormode};
 assign passthroughrgb = rgbcolor;
 assign paletteindex_o = paletteindex;
 
@@ -374,6 +387,7 @@ always_ff @(posedge aclk) begin
 		cmdre <= 1'b0;
 		scanwidth <= 1'b1;					// 640-wide by default
 		colormode <= 1'b1;					// 16 bit color by default
+		scandouble <= 1'b0;					// No scanline doubling by default
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
 		pixel_offset <= 4'd0;
@@ -431,6 +445,7 @@ always_ff @(posedge aclk) begin
 					scanenable <= vpufifodout[0];	// 0:video output disabled, 1:video output enabled
 					scanwidth <= vpufifodout[1];	// 0:320-wide, 1:640-wide
 					colormode <= vpufifodout[2];	// 0:8bit indexed, 1:16bit rgb
+					scandouble <= vpufifodout[3];	// 0:no scanline doubling 1:scanline doubling 
 					lastscanline <= vpufifodout[1] ? 10'd524 : 10'd523;
 					// ? <= vpufifodout[31:3] unused for now
 
@@ -533,7 +548,6 @@ end
 wire startofrowp = video_x == 10'd0;
 wire endofcolumnp = video_y == 10'd480;
 wire endoflinep = video_x == 10'd640;
-wire endofframep = video_y == 10'd479;
 
 wire vsyncnow = startofrowp && endofcolumnp;
 
@@ -571,7 +585,7 @@ always_ff @(posedge aclk) begin
 		displaying <= displayingpre;
 		endoflinepre <= endoflinep;
 		endofline <= endoflinepre;
-		endofframepre <= endofframep;
+		endofframepre <= endofcolumnp;
 		endofframe <= endofframepre;
 	end
 end
@@ -625,13 +639,18 @@ always_ff @(posedge aclk) begin
 			end
 
 			STARTLOAD: begin
-				// Only read on odd lines in 320-wide, or every other line in 640-wide mode
-				// The trick here: we'll initially hit odd-even-even-odd sequence which means
-				// the cache line we loaded on line 523 will only reload on line 1 after it's been displayed twice in 320 mode
-				if (endofline && (scanline[0] || scanwidth)) begin
-					rdata_cnt <= 8'd0;
-					burststate <= burstmask;
-					scanstate <= endofframe ? DETECTFRAMESTART : STARTSCANOUT;
+				rdata_cnt <= 8'd0;
+				burststate <= burstmask;
+				// Start loading next scanline based on scanline doubling and end of frame
+				if (endofline) begin
+					if (endofframe)
+						scanstate <= DETECTFRAMESTART; // All done for this frame, wait for next frame
+					else if (scandouble && scanline[0])
+						scanstate <= STARTSCANOUT; // Scanline doubling, only start loading on odd lines (first load on 523)
+					else if (scanwidth)
+						scanstate <= STARTSCANOUT; // No scanline doubling and wide mode, load every line (first load on 524)
+					else
+						scanstate <= STARTLOAD; // Other cases, wait for next scanline
 				end else begin
 					scanstate <= STARTLOAD;
 				end

@@ -49,7 +49,7 @@ module colorpalettemodule(
 	// Internal bus for video output reads
 	input wire clk25,
 	input wire rst25n,
-	input wire [2:0] scanmode, // {displaying, scanenable, colormode}
+	input wire [3:0] scanmode, // {scandouble, displaying, scanenable, colormode}
 	input wire [15:0] passthroughrgb,
 	input wire [7:0] paletteindex,
 	output wire [23:0] colordata);
@@ -90,7 +90,7 @@ always @(posedge clk25) begin
 	if (~rst25n) begin
 		paletteout <= 24'd0;
 	end else begin
-		case (scanmode)
+		case (scanmode[2:0]) // NOTE: we do not use scandouble here yet
 			3'b110: paletteout <= paletteentries[paletteindex];
 			3'b111: paletteout <= {passthroughrgb[15:11], 3'b0, passthroughrgb[10:5], 2'b0, passthroughrgb[4:0], 3'b0}; // Expand from 16 to 24 bits
 			3'b100,

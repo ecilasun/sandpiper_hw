@@ -12,7 +12,7 @@ module videomodule(
 	input wire aresetn,
 
 	output wire rst25n_o,
-	output wire [2:0] scanmode, // {displaying, scanenable, colormode}
+	output wire [3:0] scanmode, // {scandouble, displaying, scanenable, colormode}
 	output wire [15:0] passthroughrgb,
 	output wire [7:0] paletteindex_o,
 	input wire [23:0] colordata,

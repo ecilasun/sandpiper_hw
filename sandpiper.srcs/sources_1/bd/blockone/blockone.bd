@@ -1823,7 +1823,7 @@
           },
           "scanmode": {
             "direction": "O",
-            "left": "2",
+            "left": "3",
             "right": "0"
           },
           "passthroughrgb": {
@@ -4999,7 +4999,7 @@
           },
           "scanmode": {
             "direction": "I",
-            "left": "2",
+            "left": "3",
             "right": "0"
           },
           "passthroughrgb": {
@@ -5844,8 +5844,6 @@
           "proc_sys_reset_0/slowest_sync_clk",
           "audiomodule_0/aclk",
           "vcpmodule_0/aclk",
-          "videomodule_0/aclk",
-          "colorpalettemodule_0/aclk",
           "axi_interconnect_0/ACLK",
           "axi_interconnect_0/S00_ACLK",
           "axi_interconnect_0/M00_ACLK",
@@ -5855,7 +5853,9 @@
           "processing_system7_0/M_AXI_GP0_ACLK",
           "processing_system7_0/S_AXI_HP0_ACLK",
           "processing_system7_0/S_AXI_HP1_ACLK",
-          "processing_system7_0/S_AXI_HP2_ACLK"
+          "processing_system7_0/S_AXI_HP2_ACLK",
+          "colorpalettemodule_0/aclk",
+          "videomodule_0/aclk"
         ]
       },
       "Net1": {
@@ -5891,8 +5891,8 @@
       "clk_wiz_0_pixelclk": {
         "ports": [
           "clk_wiz_0/pixelclk",
-          "videomodule_0/pixelClock",
-          "colorpalettemodule_0/clk25"
+          "colorpalettemodule_0/clk25",
+          "videomodule_0/pixelClock"
         ]
       },
       "clk_wiz_0_serdesclk": {
@@ -5923,8 +5923,8 @@
           "proc_sys_reset_0/peripheral_aresetn",
           "audiomodule_0/aresetn",
           "vcpmodule_0/aresetn",
-          "videomodule_0/aresetn",
-          "colorpalettemodule_0/aresetn"
+          "colorpalettemodule_0/aresetn",
+          "videomodule_0/aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_reset": {
