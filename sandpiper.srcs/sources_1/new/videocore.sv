@@ -230,6 +230,10 @@ assign vpufifore = cmdre;
 (* async_reg = "true" *) logic blanktoggle;
 (* async_reg = "true" *) logic displayingpre;
 (* async_reg = "true" *) logic displaying;
+(* async_reg = "true" *) logic endoflinepre;
+(* async_reg = "true" *) logic endofline;
+(* async_reg = "true" *) logic endofframepre;
+(* async_reg = "true" *) logic endofframe;
 
 // --------------------------------------------------
 // Setup
@@ -528,6 +532,9 @@ end
 
 wire startofrowp = video_x == 10'd0;
 wire endofcolumnp = video_y == 10'd480;
+wire endoflinep = video_x == 10'd640;
+wire endofframep = video_y == 10'd479;
+
 wire vsyncnow = startofrowp && endofcolumnp;
 
 always_ff @(posedge clk25) begin
@@ -541,12 +548,18 @@ end
 // Vertical blanking and pixel tracking
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
-		scanline <= 10'd0;
 		scanlinepre <= 10'd0;
+		scanline <= 10'd0;
 		scanpixelpre <= 10'd0;
 		scanpixel <= 10'd0;
 		blanktogglepre <= 1'b0;
 		blanktoggle <= 1'b0;
+		displayingpre <= 1'b0;
+		displaying <= 1'b0;
+		endoflinepre <= 1'b0;
+		endofline <= 1'b0;
+		endofframepre <= 1'b0;
+		endofframe <= 1'b0;
 	end else begin
 		scanlinepre <= video_y;
 		scanline <= scanlinepre;
@@ -556,11 +569,12 @@ always_ff @(posedge aclk) begin
 		blanktoggle <= blanktogglepre;
 		displayingpre <= notblank;
 		displaying <= displayingpre;
+		endoflinepre <= endoflinep;
+		endofline <= endoflinepre;
+		endofframepre <= endofframep;
+		endofframe <= endofframepre;
 	end
 end
-
-wire endofline = (scanpixel == 10'd640) ? 1'b1 : 1'b0;
-wire endofframe = (scanline == 10'd479) ? 1'b1 : 1'b0;
 
 assign scanline_o = scanline;
 assign scanpixel_o = scanpixel;
