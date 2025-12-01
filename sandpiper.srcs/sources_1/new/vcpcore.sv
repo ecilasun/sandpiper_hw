@@ -342,16 +342,6 @@ vcpexec vcpexecInst(
 // VCP state output
 // --------------------------------------------------
 
-// Exec states
-// INIT				4'b0000
-// FETCH			4'b0001
-// WAIT_FETCH       4'b0010
-// DECODE			4'b0011
-// EXEC				4'b0100
-// FINALIZE_READ	4'b0101
-// FINALIZE_COMPARE 4'b0110
-// HALT				4'b0111
-	
 // FEDC BA98 7654 3210 FEDC BA98 7654 3210
 // ---- OOOO -CFP PPPP PPPP PPPP RRRR EEEE
 assign vcpstate = {4'd0, debugopcode, 1'b0, copystate, ~vcpfifoempty, debug_pc, runstate, execstate};

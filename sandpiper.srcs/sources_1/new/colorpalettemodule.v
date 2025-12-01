@@ -69,6 +69,7 @@ end
 
 reg [7:0] palwaddr;
 reg [7:0] palraddr;
+wire [23:0] palread;
 
 // Dual-port RAM style access for palette entries
 always @(posedge aclk) begin
@@ -84,6 +85,8 @@ always @(posedge aclk) begin
 		end
 	end
 end
+
+assign palread = paletteentries[palraddr];
 
 // Read port for VPU
 always @(posedge clk25) begin
@@ -148,8 +151,8 @@ always @(posedge aclk) begin
 			end
 			2'b01: begin
 				if (s_axi_wvalid) begin
-					writestate <= 2'b10;
 					s_axi_wready <= 1'b1;
+					writestate <= 2'b10;
 				end
 			end
 			2'b10: begin
@@ -183,12 +186,12 @@ always @(posedge aclk) begin
 				if (s_axi_arvalid) begin
 					s_axi_arready <= 1'b1;
 					palraddr <= s_axi_araddr[9:2];
-					raddrstate <=  2'b10; // =0x_0 low device state
+					raddrstate <=  2'b10;
 				end
 			end
 			2'b10: begin
 				if (s_axi_rready) begin
-					s_axi_rdata <= {40'd0, paletteentries[palraddr]};
+					s_axi_rdata <= {8'd0, palread, 8'd0, palread};
 					s_axi_rvalid <= 1'b1;
 					s_axi_rlast <= 1'b1;
 					raddrstate <= 2'b01;

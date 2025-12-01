@@ -252,7 +252,6 @@ assign vpufifore = cmdre;
 // Setup
 // --------------------------------------------------
 
-logic [9:0] lastscanline;
 logic [9:0] burstmask;
 logic scanwidth;			// 0:320 pixel wide, 1:640 pixel wide
 logic colormode;			// 0:indexed color, 1:16bit color
@@ -382,7 +381,6 @@ always_ff @(posedge aclk) begin
 		scanaddr <= 32'h18000000;			// Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
 		scanaddrsecondary <= 32'h18000000;	// Secondary buffer to use for swap
 		burstmask <= 10'b1111111111;		// 640x2 bytes
-		lastscanline <= 10'd523;
 		scanenable <= 1'b1;					// Video output is enabled by default
 		cmdre <= 1'b0;
 		scanwidth <= 1'b1;					// 640-wide by default
@@ -446,7 +444,6 @@ always_ff @(posedge aclk) begin
 					scanwidth <= vpufifodout[1];	// 0:320-wide, 1:640-wide
 					colormode <= vpufifodout[2];	// 0:8bit indexed, 1:16bit rgb
 					scandouble <= vpufifodout[3];	// 0:no scanline doubling 1:scanline doubling 
-					lastscanline <= vpufifodout[1] ? 10'd524 : 10'd523;
 					// ? <= vpufifodout[31:3] unused for now
 
 					// Set up burst count depending on video width and bit depth
@@ -628,9 +625,11 @@ always_ff @(posedge aclk) begin
 		scanlinewe <= 1'b0;
 		case (scanstate)
 			DETECTFRAMESTART: begin
-				// When we reach the last odd scanline, start loading the cache
-				if (scanenable && (scanline == lastscanline)) begin
-					// Video width and framebuffer address can only be changed on last scanline
+				// We will be hitting visible portion of the frame on next line
+				// Video width and framebuffer address can only be changed at this point
+				if (scanenable && (scanline == 10'd524)) begin
+					// NOTE: VCP will be able to do this at per-scanline resolution
+					// so we can implement effects like split-screen / sliding screens etc.
 					scanoffset <= scanaddr;
 					scanstate <= STARTLOAD;
 				end else begin
