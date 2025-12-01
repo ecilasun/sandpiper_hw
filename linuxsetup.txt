@@ -287,7 +287,10 @@ wget -O config.guess https://git.savannah.gnu.org/cgit/config.git/plain/config.g
 Make sure to chmod +x on both config.* files
 Then follow the usual ./configure then make to get the fbterm executable built.
 
-To get fbterm to start after login, add this to the end of your ~/.profile file:
+As first step in using fbterm, we need to generate the .dircolors file:
+dircolors -p > ~/.dircolors
+
+Add this to the end of your ~/.profile file for 256 color support:
 
 if [ "$TERM" = "linux" ]; then
     echo -en "\e]P0222222" #black
@@ -306,24 +309,13 @@ if [ "$TERM" = "linux" ]; then
     echo -en "\e]PEa1cdcd" #cyan
     echo -en "\e]P7ffffff" #lightgrey
     echo -en "\e]PFdedede" #white
-
-    eval `dircolors`
-	export FBTERM=1
-	export LANG=en_US.UTF-8
-	#export LC_ALL=en_US.UTF-8
-	# Enable these lines if you have a background image copied to /usr/share/misc
-	# Sample image is provided in the misc folder of the petalinux repo
-	# If you wish to make your own, paste an 640x480 image into https://longfangsong.github.io/en/image-to-rgb565/
-	# The resulting bin file can then be directly copied onto framebuffer device as shown below.
-	# The fbterm_background_image value tells fbterm to directly copy what it sees in the framebuffer and use as background
-	# cat /usr/share/misc/termbgnd.bin > /dev/fb0
-	# export FBTERM_BACKGROUND_IMAGE=1
-	exec fbterm -- bash -login
 fi
 
-and also make sure the .bashrc file has ls alias enabled, and there is no call to dircolors:
+and also make sure the .bashrc file has these lines. Note that we're not telling the truth when we set TERM=linux but that's necessary to achieve terminal name matc for colors to work.
 
 export LS_OPTIONS='--color=auto'
+export TERM=linux
+eval "$(dircolors -b ~/.dircolors)"
 alias ls='ls $LS_OPTIONS'
 
 NOTE: fonts go into /usr/share/fonts/ttf folder on petalinux. To show a list of available fonts, use:
@@ -347,6 +339,23 @@ fi
 
 NOTE: DNF package manager is set up by default. It has problems connecting to repos but try to initialize it using:
 sudo dnf update
+
+NOTE: You can directly use fbterm instead of linux fbcon during login:
+
+sudo nano /usr/local/bin/fbterm-login
+add the following and save:
+#!/bin/sh
+export FBTERM=1
+export LANG=en_US.UTF-8
+cat /usr/share/misc/gray.bin > /dev/fb0
+export FBTERM_BACKGROUND_IMAGE=1
+exec /usr/local/bin/fbterm -- /bin/login
+
+Then edit the inittab and change the login method:
+sudo nano /etc/inittab
+replace the existing 1:12345:respawn:/sbin/getty at the bottom with:
+1:12345:respawn:/sbin/agetty --noclear -n -l /usr/local/bin/fbterm-login tty1 fbterm
+(please note that in this case fbterm is going to pull settings from root's .fbtermrc)
 
 ////////////////////////////
 ////////// UBUNTU //////////
