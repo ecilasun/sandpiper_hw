@@ -309,6 +309,8 @@ if [ "$TERM" = "linux" ]; then
 
     eval `dircolors`
 	export FBTERM=1
+	export LANG=en_US.UTF-8
+	#export LC_ALL=en_US.UTF-8
 	# Enable these lines if you have a background image copied to /usr/share/misc
 	# Sample image is provided in the misc folder of the petalinux repo
 	# If you wish to make your own, paste an 640x480 image into https://longfangsong.github.io/en/image-to-rgb565/
