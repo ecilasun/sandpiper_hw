@@ -317,6 +317,7 @@ export LS_OPTIONS='--color=auto'
 export TERM=linux
 eval "$(dircolors -b ~/.dircolors)"
 alias ls='ls $LS_OPTIONS'
+echo "Welcome to sandpiper"
 
 NOTE: fonts go into /usr/share/fonts/ttf folder on petalinux. To show a list of available fonts, use:
 fc-list
@@ -356,6 +357,11 @@ sudo nano /etc/inittab
 replace the existing 1:12345:respawn:/sbin/getty at the bottom with:
 1:12345:respawn:/sbin/agetty --noclear -n -l /usr/local/bin/fbterm-login tty1 fbterm
 (please note that in this case fbterm is going to pull settings from root's .fbtermrc)
+
+for fbterm to see .fbtermrc first copy it to a new folder named /root
+then set the access rights: chmod 644 /root/.fbtermrc
+and also make sure the root folder and rc file both are owned by root:
+chown root:root /root/.fbtermrc
 
 ////////////////////////////
 ////////// UBUNTU //////////
