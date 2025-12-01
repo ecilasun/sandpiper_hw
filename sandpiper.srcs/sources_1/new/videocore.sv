@@ -645,12 +645,10 @@ always_ff @(posedge aclk) begin
 				if (endofline) begin
 					if (endofframe)
 						scanstate <= DETECTFRAMESTART; // All done for this frame, wait for next frame
-					else if (scandouble && scanline[0])
-						scanstate <= STARTSCANOUT; // Scanline doubling, only start loading on odd lines (first load on 523)
-					else if (scanwidth)
-						scanstate <= STARTSCANOUT; // No scanline doubling and wide mode, load every line (first load on 524)
+					else if (scandouble)
+						scanstate <= scanline[0] ? STARTSCANOUT : STARTLOAD; // Scanline doubling, only start loading on odd lines (first load on 523)
 					else
-						scanstate <= STARTLOAD; // Other cases, wait for next scanline
+						scanstate <= STARTSCANOUT; // No scanline doubling and wide mode, load every line (first load on 524)
 				end else begin
 					scanstate <= STARTLOAD;
 				end
