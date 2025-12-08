@@ -245,8 +245,8 @@ assign vpufifore = cmdre;
 (* async_reg = "true" *) logic displaying;
 (* async_reg = "true" *) logic endoflinepre;
 (* async_reg = "true" *) logic endofline;
-(* async_reg = "true" *) logic endofframepre;
-(* async_reg = "true" *) logic endofframe;
+(* async_reg = "true" *) logic endofvisibleframepre;
+(* async_reg = "true" *) logic endofvisibleframe;
 
 // --------------------------------------------------
 // Setup
@@ -543,10 +543,10 @@ end
 // --------------------------------------------------
 
 wire startofrowp = video_x == 10'd0;
-wire endofcolumnp = video_y == 10'd480;
+wire endofvisibleframep = video_y == 10'd480;
 wire endoflinep = video_x == 10'd640;
 
-wire vsyncnow = startofrowp && endofcolumnp;
+wire vsyncnow = startofrowp && endofvisibleframep;
 
 always_ff @(posedge clk25) begin
 	if (~rst25n) begin
@@ -569,8 +569,8 @@ always_ff @(posedge aclk) begin
 		displaying <= 1'b0;
 		endoflinepre <= 1'b0;
 		endofline <= 1'b0;
-		endofframepre <= 1'b0;
-		endofframe <= 1'b0;
+		endofvisibleframepre <= 1'b0;
+		endofvisibleframe <= 1'b0;
 	end else begin
 		scanlinepre <= video_y;
 		scanline <= scanlinepre;
@@ -582,8 +582,8 @@ always_ff @(posedge aclk) begin
 		displaying <= displayingpre;
 		endoflinepre <= endoflinep;
 		endofline <= endoflinepre;
-		endofframepre <= endofcolumnp;
-		endofframe <= endofframepre;
+		endofvisibleframepre <= endofvisibleframep;
+		endofvisibleframe <= endofvisibleframepre;
 	end
 end
 
@@ -597,6 +597,7 @@ typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, D
 scanstatetype scanstate;
 
 logic [9:0] burststate;
+logic onFirstScanline;
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		scanlinewe <= 1'b0;
@@ -620,6 +621,7 @@ always_ff @(posedge aclk) begin
 		scanlinewa <= 8'd0;
 		rdata_cnt <= 8'd0;
 		burststate <= 10'd0;
+		onFirstScanline <= 1'b0;
 		scanstate <= DETECTFRAMESTART;
 	end else begin
 		scanlinewe <= 1'b0;
@@ -631,6 +633,7 @@ always_ff @(posedge aclk) begin
 					// NOTE: VCP will be able to do this at per-scanline resolution
 					// so we can implement effects like split-screen / sliding screens etc.
 					scanoffset <= scanaddr;
+					onFirstScanline <= 1'b1;
 					scanstate <= STARTLOAD;
 				end else begin
 					scanstate <= DETECTFRAMESTART;
@@ -642,10 +645,10 @@ always_ff @(posedge aclk) begin
 				burststate <= burstmask;
 				// Start loading next scanline based on scanline doubling and end of frame
 				if (endofline) begin
-					if (endofframe)
+					if (endofvisibleframe) // At line 480
 						scanstate <= DETECTFRAMESTART; // All done for this frame, wait for next frame
 					else if (scandouble)
-						scanstate <= scanline[0] ? STARTSCANOUT : STARTLOAD; // Scanline doubling, only start loading on odd lines (first load on 523)
+						scanstate <= (onFirstScanline || scanline[0]) ? STARTSCANOUT : STARTLOAD; // Scanline doubling, only start loading on odd lines or if we're working on the first scanline
 					else
 						scanstate <= STARTSCANOUT; // No scanline doubling and wide mode, load every line (first load on 524)
 				end else begin
@@ -654,6 +657,8 @@ always_ff @(posedge aclk) begin
 			end
 
 			STARTSCANOUT: begin
+				onFirstScanline <= 1'b0;
+				// Start read burst
 				s_axi_arvalid <= 1'b1;
 				s_axi_araddr <= scanoffset;
 				s_axi_arlen <= 4'hF;
