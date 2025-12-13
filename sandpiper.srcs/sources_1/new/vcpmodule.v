@@ -11,6 +11,7 @@ module vcpmodule(
 	output wire [7:0] paladdr,
 	output wire [23:0] paldout,
 	output wire palwe,
+	input wire [7:0] vpucontrolregister,
 	// AXI4 wires for command interface to the CPU
 	output reg s_axi_arready,
 	output reg s_axi_awready,
@@ -99,6 +100,7 @@ vcpcore videocoprocessorInst(
 	.paladdr(paladdr),
 	.paldout(paldout),
 	.palwe(palwe),
+	.vpucontrolregister(vpucontrolregister),
 	// Command FIFO
 	.m_axi_araddr(s_axi_araddr),
 	.m_axi_arvalid(s_axi_arvalid),

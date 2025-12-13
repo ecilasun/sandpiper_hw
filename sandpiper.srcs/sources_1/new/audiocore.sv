@@ -345,7 +345,7 @@ always_ff @(posedge aclk) begin
 
 					// Set number of 16byte bursts for each word count (each word is a single stereo pair)
 					unique case (apufifodout[2:0])
-						3'b000: begin burstmask <= 32'b00000000000000000000000000000001; apuwordcount <= 10'h01F;   end //  x1,   32 stereo samples (128 bytes
+						3'b000: begin burstmask <= 32'b00000000000000000000000000000001; apuwordcount <= 10'h01F;   end //  x1,   32 stereo samples (128 bytes)
 						3'b001: begin burstmask <= 32'b00000000000000000000000000000011; apuwordcount <= 10'h03F;	end	//  x2,   64 stereo samples (256 bytes)
 						3'b010: begin burstmask <= 32'b00000000000000000000000000001111; apuwordcount <= 10'h07F;	end	//  x4,  128 stereo samples (512 bytes)
 						3'b011: begin burstmask <= 32'b00000000000000000000000011111111; apuwordcount <= 10'h0FF;	end	//  x8,  256 stereo samples (1 Kbyte)

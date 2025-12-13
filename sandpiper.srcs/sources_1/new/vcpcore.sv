@@ -7,6 +7,7 @@ module vcpcore(
 	output wire [7:0] paladdr,
 	output wire [23:0] paldout,
 	output wire palwe,
+	input wire [7:0] vpucontrolregister,
 	// Command fifo
 	input wire m_axi_arready,
 	input wire m_axi_awready,
@@ -334,6 +335,7 @@ vcpexec vcpexecInst(
 	.paladdr(paladdr),
 	.paldout(paldout),
 	.palwe(palwe),
+	.vpucontrolregister(vpucontrolregister),
 	.runstate(runstate),
 	.debug_pc(debug_pc),
 	.debugopcode(debugopcode));

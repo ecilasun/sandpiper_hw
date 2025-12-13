@@ -15,6 +15,8 @@ module videocore(
 	output wire [9:0] scanline_o,
 	output wire [9:0] scanpixel_o,
 
+	output wire [7:0] vpucontrolregister, // For the vcpexec module
+
 	// Command fifo
 	output wire m_axi_arready,
 	output wire m_axi_awready,
@@ -373,6 +375,8 @@ logic blankt;
 
 logic blanktracker;
 logic blanktrigger;
+
+assign vpucontrolregister = vpuctl;
 
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin

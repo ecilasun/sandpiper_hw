@@ -16,6 +16,7 @@ module vcpexec(
 	output wire [7:0] paladdr,
 	output wire [23:0] paldout,
 	output wire palwe,
+	input wire [7:0] vpucontrolregister,
 	// Debug outputs
 	output wire [3:0] runstate,
 	output wire [12:0] debug_pc,
@@ -104,56 +105,57 @@ assign debugopcode = opcode;
 
 reg [23:0] logicout;
 always @(imm8, rval1, rval2) begin
-    case (imm8)
-        8'h00: logicout = rval1 & rval2;        // AND
-        8'h01: logicout = rval1 | rval2;        // OR
-        8'h02: logicout = rval1 ^ rval2;        // XOR
-        8'h03: logicout = rval1 >>> rval2[4:0]; // ASR
-        8'h04: logicout = rval1 >> rval2[4:0];  // SHR
-        8'h05: logicout = rval1 << rval2[4:0];  // SHL
-        8'h06: logicout = ~rval1;               // NEG
-        default: logicout = 24'd0;
-    endcase
+	unique case (imm8)
+		8'h00: logicout = rval1 & rval2;		// AND
+		8'h01: logicout = rval1 | rval2;		// OR
+		8'h02: logicout = rval1 ^ rval2;		// XOR
+		8'h03: logicout = rval1 >>> rval2[4:0];	// ASR
+		8'h04: logicout = rval1 >> rval2[4:0];	// SHR
+		8'h05: logicout = rval1 << rval2[4:0];	// SHL
+		8'h06: logicout = ~rval1;				// NEG
+		default: logicout = 24'd0;
+	endcase
 end
 
 reg [23:0] aluout;
 always @(imm8, rval1, rval2) begin
-    case (imm8)
-        8'd00: aluout = rval1 + rval2;       // ADD
-        8'd01: aluout = rval1 - rval2;       // SUB
-        //8'd02: aluout = rval1 * rval2;     // MUL
-        //8'd03: aluout = rval1 / rval2;     // DIV
-        default: aluout = 24'd0;
-    endcase
+	unique case (imm8)
+		8'd00: aluout = rval1 + rval2;		// ADD
+		8'd01: aluout = rval1 - rval2;		// SUB
+		//8'd02: aluout = ;					// MUL
+		//8'd03: aluout = ;					// DIV
+		//8'd04: aluout = ;					// MOD
+		default: aluout = 24'd0;			// = 0
+	endcase
 end
 
 always @(posedge aclk) begin
-    if (!arstn) begin
+	if (!arstn) begin
 		opcode <= 4'd0;
-        rs1 <= 4'd0;
-        rs2 <= 4'd0;
-        rd <= 4'd0;
+		rs1 <= 4'd0;
+		rs2 <= 4'd0;
+		rd <= 4'd0;
 		imm8 <= 8'd0;
 		imm24 <= 24'd0;
 		execmode <= FETCH;
-        rwren <= 1'b0;
-        rdin <= 24'd0;
+		rwren <= 1'b0;
+		rdin <= 24'd0;
 		palwe_reg <= 1'b0;
 		paladdr_reg <= 8'd0;
 		paldout_reg <= 24'd0;
-        PC <= 13'd0;
+		PC <= 13'd0;
 		nextPC <= 13'd0;
 		memdin <= 32'd0;
-        memwe <= 1'd0;
+		memwe <= 1'd0;
 		EQ <= 1'b0;
 		LT <= 1'b0;
 		LE <= 1'b0;
-    end else begin
+	end else begin
 		palwe_reg <= 1'b0;
 		rwren <= 1'b0;
 		memwe <= 1'd0;
 
-		case (execmode)
+		unique case (execmode)
 			FETCH: begin
 				PC <= nextPC;
 				// Next clock will have the instruction fetched or we'll halt if execstate[0] is low
@@ -277,7 +279,11 @@ always @(posedge aclk) begin
 						rdin <= logicout;
 					end
 
-					4'hE: begin // UNUSED0
+					4'hE: begin // LCTL
+						// Load VPU control register into rd
+						// This allows us to send data from the VPU to the VCP via CPU writes
+						rwren <= 1'b1;
+						rdin <= {16'd0, vpucontrolregister};
 					end
 
 					4'hF: begin // UNUSED1
@@ -316,7 +322,7 @@ always @(posedge aclk) begin
 				execmode <= execstate[0] ? FETCH : HALT;
 			end
 		endcase
-    end
+	end
 end
 
 endmodule
