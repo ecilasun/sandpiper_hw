@@ -26,12 +26,14 @@ module vcpexec(
 // Register file
 // --------------------------------------------------
 
+reg cmpreg; // Compare result register
 reg [3:0] rs1;
 reg [3:0] rs2;
 reg [3:0] rd;
 reg rwren;
 reg [23:0] rdin;
 reg [7:0] imm8;
+reg [15:0] imm16;
 reg [23:0] imm24;
 wire [23:0] rval1;
 wire [23:0] rval2;
@@ -106,13 +108,15 @@ assign debugopcode = opcode;
 reg [23:0] logicout;
 always @(imm8, rval1, rval2) begin
 	unique case (imm8)
-		8'h00: logicout = rval1 & rval2;		// AND
-		8'h01: logicout = rval1 | rval2;		// OR
-		8'h02: logicout = rval1 ^ rval2;		// XOR
-		8'h03: logicout = rval1 >>> rval2[4:0];	// ASR
-		8'h04: logicout = rval1 >> rval2[4:0];	// SHR
-		8'h05: logicout = rval1 << rval2[4:0];	// SHL
-		8'h06: logicout = ~rval1;				// NEG
+		8'h00: logicout = rval1 & rval2;		// AND  - bit AND
+		8'h01: logicout = rval1 | rval2;		// OR   - inclusive OR
+		8'h02: logicout = rval1 ^ rval2;		// XOR  - exclusive OR
+		8'h03: logicout = rval1 >>> rval2[4:0];	// ASR  - arithmetic shift right
+		8'h04: logicout = rval1 >> rval2[4:0];	// SHR  - bit shift right
+		8'h05: logicout = rval1 << rval2[4:0];	// SHL  - bit shift left
+		8'h06: logicout = ~rval1;				// NEG  - bit NOT
+		8'h07: logicout = {23'd0, cmpreg};		// RCMP - compare flag readout
+		// ...
 		default: logicout = 24'd0;
 	endcase
 end
@@ -122,20 +126,22 @@ always @(imm8, rval1, rval2) begin
 	unique case (imm8)
 		8'd00: aluout = rval1 + rval2;		// ADD
 		8'd01: aluout = rval1 - rval2;		// SUB
-		//8'd02: aluout = ;					// MUL
-		//8'd03: aluout = ;					// DIV
-		//8'd04: aluout = ;					// MOD
+		8'd02: aluout = rval1 + 24'd1;		// INC
+		8'd03: aluout = rval1 - 24'd1;		// DEC
+		// ...
 		default: aluout = 24'd0;			// = 0
 	endcase
 end
 
 always @(posedge aclk) begin
 	if (!arstn) begin
+		cmpreg <= 1'b0;
 		opcode <= 4'd0;
 		rs1 <= 4'd0;
 		rs2 <= 4'd0;
 		rd <= 4'd0;
 		imm8 <= 8'd0;
+		imm16 <= 16'd0;
 		imm24 <= 24'd0;
 		execmode <= FETCH;
 		rwren <= 1'b0;
@@ -173,6 +179,7 @@ always @(posedge aclk) begin
 				rs1 <= instruction[11:8];
 				rs2 <= instruction[15:12];
 				imm8 <= instruction[31:24];
+				imm16 <= instruction[31:16];
 				imm24 <= instruction[31:8];
 				execmode <= EXEC;
 			end
@@ -230,7 +237,10 @@ always @(posedge aclk) begin
 
 					4'h6: begin // JMP
 						// Jump to 13 bit address in rs1
-						nextPC <= rval1[12:0];
+						if (rd == 4'h0) // Normal jump
+							nextPC <= rval1[12:0];
+						else // Indirect jump via immediate offset (2's complement signed)
+							nextPC <= PC + signed'(imm16[12:0]);
 					end
 
 					4'h7: begin // CMP
@@ -242,9 +252,13 @@ always @(posedge aclk) begin
 					end
 
 					4'h8: begin // BRANCH
-						// If any of the enabled tests pass (via CMP instruction), branch to address in rs1
-						if (rval2[2] | rval2[1] | rval2[0])
-							nextPC <= rval1[12:0]; // rval2 contains the boolean results of the tests. If any are true, take the branch.
+						// Take branch to address in rs1 if cmpreg is true from previous CMP instruction
+						if (cmpreg) begin
+							if (rd == 4'h0) // Normal branch
+								nextPC <= rval1[12:0];
+							else // Indirect branch via immediate offset (2's complement signed)
+								nextPC <= PC + signed'(imm16[12:0]);
+						end
 					end
 
 					4'h9: begin // MEM_WRITE
@@ -309,9 +323,8 @@ always @(posedge aclk) begin
 			end
 
 			FINALIZE_COMPARE: begin
-				rwren <= 1'b1;
 				// First negate the test result then AND with the mask in imm8 to produce the final result
-				rdin <= {21'd0, (EQ ^ imm8[3]) & imm8[2], (LT ^ imm8[3]) & imm8[1], (LE ^ imm8[3]) & imm8[0]};
+				cmpreg <= ((EQ ^ imm8[3]) & imm8[2]) | ((LT ^ imm8[3]) & imm8[1]) | ((LE ^ imm8[3]) & imm8[0]);
 				execmode <= FETCH;
 			end
 
