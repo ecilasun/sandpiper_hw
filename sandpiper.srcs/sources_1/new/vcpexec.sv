@@ -108,16 +108,16 @@ assign debugopcode = opcode;
 reg [23:0] logicout;
 always @(imm8, rval1, rval2) begin
 	unique case (imm8)
-		8'h00: logicout = rval1 & rval2;		// AND  - bit AND
-		8'h01: logicout = rval1 | rval2;		// OR   - inclusive OR
-		8'h02: logicout = rval1 ^ rval2;		// XOR  - exclusive OR
-		8'h03: logicout = rval1 >>> rval2[4:0];	// ASR  - arithmetic shift right
-		8'h04: logicout = rval1 >> rval2[4:0];	// SHR  - bit shift right
-		8'h05: logicout = rval1 << rval2[4:0];	// SHL  - bit shift left
-		8'h06: logicout = ~rval1;				// NEG  - bit NOT
-		8'h07: logicout = {23'd0, cmpreg};		// RCMP - compare flag readout
-		// ...
-		default: logicout = 24'd0;
+		8'h00: logicout = rval1 & rval2;				// AND  - bit AND
+		8'h01: logicout = rval1 | rval2;				// OR   - inclusive OR
+		8'h02: logicout = rval1 ^ rval2;				// XOR  - exclusive OR
+		8'h03: logicout = rval1 >>> rval2[4:0];			// ASR  - arithmetic shift right
+		8'h04: logicout = rval1 >> rval2[4:0];			// SHR  - bit shift right
+		8'h05: logicout = rval1 << rval2[4:0];			// SHL  - bit shift left
+		8'h06: logicout = ~rval1;						// NEG  - bit NOT
+		8'h07: logicout = {23'd0, cmpreg};				// RCMP - compare flag readout
+		8'h08: logicout = {16'd0, vpucontrolregister};	// RCTL - VPU control register readout 
+		default: logicout = 24'd0;						// zero in all other cases
 	endcase
 end
 
@@ -128,8 +128,7 @@ always @(imm8, rval1, rval2) begin
 		8'd01: aluout = rval1 - rval2;		// SUB
 		8'd02: aluout = rval1 + 24'd1;		// INC
 		8'd03: aluout = rval1 - 24'd1;		// DEC
-		// ...
-		default: aluout = 24'd0;			// = 0
+		default: aluout = 24'd0;			// zero in all other cases
 	endcase
 end
 
@@ -237,7 +236,7 @@ always @(posedge aclk) begin
 
 					4'h6: begin // JMP
 						// Jump to 13 bit address in rs1
-						if (rd == 4'h0) // Normal jump
+						if (rd[0] == 1'b0) // Normal jump
 							nextPC <= rval1[12:0];
 						else // Indirect jump via immediate offset (2's complement signed)
 							nextPC <= PC + signed'(imm16[12:0]);
@@ -254,7 +253,7 @@ always @(posedge aclk) begin
 					4'h8: begin // BRANCH
 						// Take branch to address in rs1 if cmpreg is true from previous CMP instruction
 						if (cmpreg) begin
-							if (rd == 4'h0) // Normal branch
+							if (rd[0] == 1'b0) // Normal branch
 								nextPC <= rval1[12:0];
 							else // Indirect branch via immediate offset (2's complement signed)
 								nextPC <= PC + signed'(imm16[12:0]);
@@ -276,16 +275,16 @@ always @(posedge aclk) begin
 						execmode <= WAIT_READ;
 					end
 
-					4'hB: begin // SCANLINE_READ
-						// Read current scanline into rd
+					4'hB: begin // READ_SCANINFO
+						// Read current scanline or scan pixel into rd
 						rwren <= 1'b1;
-						rdin <= {14'd0, scanline};
+						if (rs1[0] == 1'b0)
+						  rdin <= {14'd0, scanline};
+						else
+						  rdin <= {14'd0, scanpixel};
 					end
 
-					4'hC: begin // SCANPIXEL_READ
-						// Read current scanpixel into rd
-						rwren <= 1'b1;
-						rdin <= {14'd0, scanpixel};
+					4'hC: begin // UNUSED0
 					end
 
 					4'hD: begin // LOGICOP
@@ -293,11 +292,7 @@ always @(posedge aclk) begin
 						rdin <= logicout;
 					end
 
-					4'hE: begin // LCTL
-						// Load VPU control register into rd
-						// This allows us to send data from the VPU to the VCP via CPU writes
-						rwren <= 1'b1;
-						rdin <= {16'd0, vpucontrolregister};
+					4'hE: begin // UNUSED2
 					end
 
 					4'hF: begin // UNUSED1

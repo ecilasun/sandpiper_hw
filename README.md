@@ -2,7 +2,7 @@
 
 This repo contains the SoC hardware design files for project sandpiper.
 
-Please check the individual license files in the source directory for any third party opensource library used.
+Please check the individual license files in the source directory for any third party opensource libraries used.
 
 Linux drivers, hardware design ideas and video/audio/vcp units (C)2025 Engin Cilasun
 
