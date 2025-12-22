@@ -116,7 +116,7 @@ NOTE#2:
 * Image Packaging Configuration -> Root Filesystem Type -> EXT4
 * Image Packaging Configuration -> Device node of SD device -> mmcblk0p2
 * Subsystem Hardware Settings -> SD/SDIO Settings -> Primary SD/SDIO -> ps7_sd_0
-* DT Settings -> Kernel Bootargs -> add extra bootargs -> [console=ttyPS0,115200 earlycon] quiet root=/dev/mmcblk0p2 rw rootwait
+* DT Settings -> Kernel Bootargs -> add extra bootargs -> [console=ttyPS0,115200 console=tty1 earlycon] quiet root=/dev/mmcblk0p2 rw rootwait
 
 --------------------------------------------------------------------
 NOTE#3:
@@ -351,11 +351,13 @@ export LANG=en_US.UTF-8
 cat /usr/share/misc/gray.bin > /dev/fb0
 export FBTERM_BACKGROUND_IMAGE=1
 exec /usr/local/bin/fbterm -- /bin/login
+IMPORTANT! DO NOT FORGET TO MAKE IT EXECUTABLE OR THERE WON'T BE A CONSOLE:
+sudo chmod +x /usr/local/bin/fbterm
 
 Then edit the inittab and change the login method:
 sudo nano /etc/inittab
 replace the existing 1:12345:respawn:/sbin/getty at the bottom with:
-1:12345:respawn:/sbin/agetty --noclear -n -l /usr/local/bin/fbterm-login tty1 fbterm
+1:12345:respawn:/sbin/agetty --noclear -n -l /usr/local/bin/fbterm-login tty1 linux
 (please note that in this case fbterm is going to pull settings from root's .fbtermrc)
 
 for fbterm to see .fbtermrc first copy it to a new folder named /root
