@@ -365,6 +365,11 @@ then set the access rights: chmod 644 /root/.fbtermrc
 and also make sure the root folder and rc file both are owned by root:
 chown root:root /root/.fbtermrc
 
+Finally, to add the shutdown image, first copy the poweroff.bin image to /usr/shared/misc/poweroff.bin.
+Then edit the /etc/rc0.d/S90halt file and add this right above the 'halt' line:
+cat /usr/share/misc/poweroff.bin > /dev/fb0
+This will show the 'safe to power off' image at the time of system halt (since sandpiper can't shutdown, we'll drop to halt)
+
 ////////////////////////////
 ////////// UBUNTU //////////
 ////////////////////////////
