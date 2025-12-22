@@ -352,7 +352,7 @@ cat /usr/share/misc/gray.bin > /dev/fb0
 export FBTERM_BACKGROUND_IMAGE=1
 exec /usr/local/bin/fbterm -- /bin/login
 IMPORTANT! DO NOT FORGET TO MAKE IT EXECUTABLE OR THERE WON'T BE A CONSOLE:
-sudo chmod +x /usr/local/bin/fbterm
+sudo chmod +x /usr/local/bin/fbterm-login
 
 Then edit the inittab and change the login method:
 sudo nano /etc/inittab
@@ -483,9 +483,9 @@ NOTE: the font setup is in the /root user's directory since fbterm starts as roo
 Edit this file and set font/size to your preferences:
 sudo nano /root/.fbtermrc
 
-AudioLinkConsole Demi is a nice font to use at 10 pts. Add / replace these lines:
-font-names=AudioLinkConsole Demi
-font-size=10
+AudioLinkConsole Bold is a nice font to use at 12 pts. Add / replace these lines:
+font-names=AudioLink Console Bold:style=Bold
+font-size=12
 
 see: https://read.yjmbo.net/yojimbo/fbterm-on-debian-12
 
