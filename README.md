@@ -6,9 +6,9 @@ Please check the individual license files in the source directory for any third 
 
 Linux drivers, hardware design ideas and video/audio/vcp units (C)2025 Engin Cilasun
 
-## Related repos
+## Documentation
 
-See the [Sandpiper project page](https://ecilasun.github.io/sandpiper/) for related repositories and documentation.
+See the [Sandpiper project page](https://ecilasun.github.io/sandpiper/) for links to all related repositories and SDK documentation.
 
 ## Development toolchains
 
