@@ -1,1 +1,5 @@
 pillow>=10.0.0
+
+To install or upgrade Pillow, run the following command:
+
+pip install pillow
