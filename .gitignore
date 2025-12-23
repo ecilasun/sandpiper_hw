@@ -3,3 +3,4 @@ sandpiper.runs/**
 sandpiper.gen/**
 sandpiper.ip_user_files/**
 sandpiper.sim/**
+tools/*.bin
