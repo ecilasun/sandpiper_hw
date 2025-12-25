@@ -54,7 +54,7 @@ preplace inst util_vector_logic_0 -pg 1 -lvl 4 -x 1660 -y 550 -defaultsOSRD
 preplace inst axi_interconnect_0 -pg 1 -lvl 2 -x 580 -y 230 -defaultsOSRD
 preplace inst colorpalettemodule_0 -pg 1 -lvl 3 -x 1110 -y 970 -defaultsOSRD
 preplace inst vcpmodule_0 -pg 1 -lvl 3 -x 1110 -y 310 -defaultsOSRD
-preplace netloc Net 1 0 5 20 230 400 50 780 200 1410 470 1910
+preplace netloc Net 1 0 5 30 230 410 50 780 200 1420 470 1900
 preplace netloc Net1 1 2 2 850 450 1320
 preplace netloc Net2 1 2 2 830 440 1340
 preplace netloc audiomodule_0_audioSampleOutputLR 1 2 2 800 190 1400
@@ -63,13 +63,13 @@ preplace netloc clk_wiz_0_audioclk 1 2 1 770 110n
 preplace netloc clk_wiz_0_pixelclk 1 2 1 730 520n
 preplace netloc clk_wiz_0_serdesclk 1 2 1 750 540n
 preplace netloc colorpalettemodule_0_colordata 1 2 2 900 1130 1320
-preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 410 150n
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 2 380 410 790
-preplace netloc proc_sys_reset_0_peripheral_reset 1 1 1 390 330n
+preplace netloc proc_sys_reset_0_interconnect_aresetn 1 1 1 420 150n
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 2 370 410 790
+preplace netloc proc_sys_reset_0_peripheral_reset 1 1 1 380 330n
 preplace netloc processing_system7_0_FCLK_CLK1 1 4 1 N 370
-preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 430 420 NJ 420 1430J 480 1900
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 20 430 NJ 430 NJ 430 1400 490 1890
-preplace netloc util_vector_logic_0_Res 1 4 1 1960 330n
+preplace netloc processing_system7_0_FCLK_CLK2 1 1 4 440 420 NJ 420 1440J 480 1890
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 5 30 430 NJ 430 NJ 430 1410 490 1880
+preplace netloc util_vector_logic_0_Res 1 4 1 1970 330n
 preplace netloc vcpmodule_0_paladdr 1 2 2 880 1140 1390
 preplace netloc vcpmodule_0_paldout 1 2 2 870 1150 1380
 preplace netloc vcpmodule_0_palwe 1 2 2 860 1160 1370
@@ -82,22 +82,22 @@ preplace netloc videomodule_0_scanline 1 2 2 890 800 1340
 preplace netloc videomodule_0_scanmode 1 2 2 820 1180 1350
 preplace netloc videomodule_0_scanpixel 1 2 2 880 810 1320
 preplace netloc videomodule_0_vpucontrolregister 1 2 2 810 1190 1330
-preplace netloc audiomodule_0_m_axi 1 3 1 1430 80n
+preplace netloc audiomodule_0_m_axi 1 3 1 1440 80n
 preplace netloc axi_interconnect_0_M00_AXI 1 2 1 740 200n
 preplace netloc axi_interconnect_0_M01_AXI 1 2 1 760 70n
 preplace netloc axi_interconnect_0_M02_AXI 1 2 1 760 240n
 preplace netloc axi_interconnect_0_M03_AXI 1 2 1 N 260
 preplace netloc gmii_to_rgmii_0_MDIO_PHY 1 5 1 NJ 230
-preplace netloc gmii_to_rgmii_0_RGMII 1 5 1 2240J 250n
-preplace netloc processing_system7_0_DDR 1 4 2 1960J 120 NJ
+preplace netloc gmii_to_rgmii_0_RGMII 1 5 1 2230J 250n
+preplace netloc processing_system7_0_DDR 1 4 2 1950J 120 NJ
 preplace netloc processing_system7_0_FIXED_IO 1 4 2 NJ 150 NJ
-preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1950 70n
-preplace netloc processing_system7_0_GPIO_0 1 4 2 1940J 90 NJ
-preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1930 90n
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 420 790 NJ 790 NJ 790 1920
-preplace netloc processing_system7_0_UART_0 1 4 2 NJ 170 2240J
+preplace netloc processing_system7_0_GMII_ETHERNET_0 1 4 1 1940 70n
+preplace netloc processing_system7_0_GPIO_0 1 4 2 1930J 90 NJ
+preplace netloc processing_system7_0_MDIO_ETHERNET_0 1 4 1 1920 90n
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 4 430 790 NJ 790 NJ 790 1910
+preplace netloc processing_system7_0_UART_0 1 4 2 NJ 170 2230J
 preplace netloc vcpmodule_0_m_axi 1 3 1 1400 240n
-preplace netloc videomodule_0_m_axi 1 3 1 1420 200n
+preplace netloc videomodule_0_m_axi 1 3 1 1430 200n
 levelinfo -pg 1 0 200 580 1110 1660 2100 2260
 pagesize -pg 1 -db -bbox -sgen 0 0 2460 1200
 "

@@ -284,7 +284,10 @@ always @(posedge aclk) begin
 						  rdin <= {14'd0, scanpixel};
 					end
 
-					4'hC: begin // UNUSED0
+					4'hC: begin // LOADPC
+					   // Copy address of next instruction into a register (usualy link register, for return purposes)
+					   rwren <= 1'b1;
+					   rdin <= PC + 13'd4;
 					end
 
 					4'hD: begin // LOGICOP

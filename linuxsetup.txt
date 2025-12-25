@@ -251,6 +251,10 @@ MAKE SURE TO ENABLE FRAMEBUFFER CONSOLE IN KERNEL CONFIG STEP!
 
 The default username/password for this one is: peta / peta
 
+To get rid of login timeout warning:
+sudo vi /etc/login.defs
+and change the LOGIN_TIMEOUT value to 0 from 60, save, reboot
+
 By default eth0 gets renamed to enx000a35001e53 on petalinux
 To fix that, edit /etc/network/interfaces and replace the auto eth0 to auto enx000a35001e53 then reboot
 (In case the network layer still doesn't start, give it a push using the following command: sudo ifup -a)
