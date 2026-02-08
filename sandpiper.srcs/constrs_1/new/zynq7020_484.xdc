@@ -20,7 +20,7 @@ set_property -dict {PACKAGE_PIN J20 IOSTANDARD LVCMOS33} [get_ports {GPIO_0_0_tr
 
 # HDMI pins are driven by SERDES blocks; set false path since they're perfectly timed by the SERDES
 set_false_path -to [get_ports {HDMI_CLK_p_0 HDMI_CLK_n_0}]
-set_false_path -to [get_ports {HDMI_TMDS_p_0[*] HDMI_TMDS_n_0[*]}]
+set_false_path -to [get_ports {{HDMI_TMDS_p_0[*]} {HDMI_TMDS_n_0[*]}}]
 
 # Realtek ETH PHY: RTL8211E
 set_property PACKAGE_PIN G21 [get_ports MDIO_PHY_0_mdc]
@@ -166,7 +166,12 @@ add_cells_to_pblock [get_pblocks pblock_videomodule_0] [get_cells -quiet [list b
 resize_pblock [get_pblocks pblock_videomodule_0] -add {CLOCKREGION_X1Y1:CLOCKREGION_X1Y1}
 
 
+
+
 create_pblock pblock_vcpmodule_0
 add_cells_to_pblock [get_pblocks pblock_vcpmodule_0] [get_cells -quiet [list blockone_i/vcpmodule_0]]
-resize_pblock [get_pblocks pblock_vcpmodule_0] -add {CLOCKREGION_X0Y2:CLOCKREGION_X0Y2}
-
+resize_pblock [get_pblocks pblock_vcpmodule_0] -add {SLICE_X50Y100:SLICE_X113Y149 \
+                                                     DSP48_X3Y40:DSP48_X4Y59 \
+                                                     RAMB18_X3Y40:RAMB18_X5Y59 \
+                                                     RAMB36_X3Y20:RAMB36_X5Y29 \
+}

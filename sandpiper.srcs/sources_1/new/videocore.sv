@@ -258,6 +258,8 @@ logic [9:0] burstmask;
 logic scanwidth;			// 0:320 pixel wide, 1:640 pixel wide
 logic colormode;			// 0:indexed color, 1:16bit color
 logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
+logic dual_plane_enable;	// 0:single plane, 1:dual plane (even=A, odd=B interleaved in cache)
+logic [1:0] blend_mode;		// 00:XOR, 01:MASK, 10:AVERAGE, 11:OR
 
 // --------------------------------------------------
 // Scanline cache
@@ -272,7 +274,8 @@ initial begin
 	end
 end
 
-wire [63:0] scanlinedout;
+wire [63:0] scanlinedout;		// Plane A registered read data
+wire [63:0] scanlinedout_b;	// Plane B registered read data (dual-plane mode)
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
@@ -287,17 +290,40 @@ logic [2:0] load_line_slot;
 logic [2:0] last_loaded_slot;
 logic [2:0] scanline_wr_slot;
 logic [2:0] scanline_rd_slot;
+logic [2:0] scanline_rd_slot_b;	// Plane B read slot (dual-plane mode)
 logic [7:0] scanlinewa_eff;
 logic [7:0] scanlinera_eff;
 logic [10:0] scanline_wr_addr;
 logic [10:0] scanline_rd_addr;
+logic [10:0] scanline_rd_addr_b;	// Plane B read address (dual-plane mode)
 
 assign scanline_wr_slot = load_line_slot;
-assign scanline_rd_slot = (scandouble && ~scanline[0]) ? last_loaded_slot : scanline[2:0];
+
+// Single plane: slot = scanline[2:0] (8 lines in cache)
+// Dual plane:   slot = {scanline[1:0], 1'b0} for plane A (even), {scanline[1:0], 1'b1} for plane B (odd)
+//               This gives 4 display lines with 2 planes each
+always_comb begin
+	if (dual_plane_enable) begin
+		// Dual plane: 4 display lines, even slots = A, odd slots = B
+		if (scandouble && ~scanline[0]) begin
+			scanline_rd_slot   = {last_loaded_slot[2:1], 1'b0};
+			scanline_rd_slot_b = {last_loaded_slot[2:1], 1'b1};
+		end else begin
+			scanline_rd_slot   = {scanline[1:0], 1'b0};
+			scanline_rd_slot_b = {scanline[1:0], 1'b1};
+		end
+	end else begin
+		// Single plane: original behavior
+		scanline_rd_slot   = (scandouble && ~scanline[0]) ? last_loaded_slot : scanline[2:0];
+		scanline_rd_slot_b = 3'd0; // unused
+	end
+end
+
 assign scanlinewa_eff = scanlinewa + scanlinewa_offset; // modulo 256 within a line slot
 assign scanlinera_eff = scanlinera + scanlinera_offset; // modulo 256 within a line slot
-assign scanline_wr_addr = {scanline_wr_slot, scanlinewa_eff};
-assign scanline_rd_addr = {scanline_rd_slot, scanlinera_eff};
+assign scanline_wr_addr   = {scanline_wr_slot, scanlinewa_eff};
+assign scanline_rd_addr   = {scanline_rd_slot, scanlinera_eff};
+assign scanline_rd_addr_b = {scanline_rd_slot_b, scanlinera_eff};
 
 // Port A: write (aclk)
 always @(posedge aclk) begin
@@ -305,8 +331,43 @@ always @(posedge aclk) begin
 		scanlinecache[scanline_wr_addr] <= scanlinedin;
 end
 
-// Port B: asynchronous read for display path
-assign scanlinedout = scanlinecache[scanline_rd_addr];
+// Port B: time-multiplexed synchronous read for display path
+// aclk >> clk25, so we alternate plane A / plane B reads each aclk cycle.
+// This keeps a single BRAM read port instead of duplicating the entire array.
+logic rd_phase;				// 0 = read plane A address, 1 = read plane B address
+logic rd_phase_d;			// delayed by 1 cycle (aligns with BRAM output)
+logic [10:0] scanline_rd_addr_mux;
+logic [63:0] bram_rd_data;
+logic [63:0] scanlinedout_a_reg;
+logic [63:0] scanlinedout_b_reg;
+
+assign scanline_rd_addr_mux = rd_phase ? scanline_rd_addr_b : scanline_rd_addr;
+
+always_ff @(posedge aclk) begin
+	if (~aresetn) begin
+		rd_phase <= 1'b0;
+		rd_phase_d <= 1'b0;
+	end else begin
+		rd_phase <= dual_plane_enable ? ~rd_phase : 1'b0;
+		rd_phase_d <= rd_phase;
+	end
+end
+
+// Synchronous BRAM read (single port B)
+always_ff @(posedge aclk) begin
+	bram_rd_data <= scanlinecache[scanline_rd_addr_mux];
+end
+
+// Latch into plane A / plane B registers based on which phase was read
+always_ff @(posedge aclk) begin
+	if (~rd_phase_d)
+		scanlinedout_a_reg <= bram_rd_data;
+	else
+		scanlinedout_b_reg <= bram_rd_data;
+end
+
+assign scanlinedout   = scanlinedout_a_reg;
+assign scanlinedout_b = scanlinedout_b_reg;
 
 // --------------------------------------------------
 // Output address selection
@@ -328,33 +389,119 @@ end
 // Output color
 // --------------------------------------------------
 
-logic [15:0] rgbcolor;
-logic [7:0] paletteindex;
+logic [15:0] rgbcolor_a;
+logic [15:0] rgbcolor_b;
+logic [7:0] paletteindex_a;
+logic [7:0] paletteindex_b;
 
-// 4x 16bit pixels
+// Plane A: 4x 16bit pixels
 always_comb begin
-	// Pixel data is 16 bits
 	unique case (pixelscanaddr[1:0])
-		//                   R:G:B
-		2'b00: rgbcolor = { scanlinedout[15:0]     };
-		2'b01: rgbcolor = { scanlinedout[31:16]    };
-		2'b10: rgbcolor = { scanlinedout[47:32]    };
-		2'b11: rgbcolor = { scanlinedout[63:48]    };
+		2'b00: rgbcolor_a = scanlinedout[15:0];
+		2'b01: rgbcolor_a = scanlinedout[31:16];
+		2'b10: rgbcolor_a = scanlinedout[47:32];
+		2'b11: rgbcolor_a = scanlinedout[63:48];
 	endcase
 end
 
-// 8x 8bit pixels
+// Plane B: 4x 16bit pixels
+always_comb begin
+	unique case (pixelscanaddr[1:0])
+		2'b00: rgbcolor_b = scanlinedout_b[15:0];
+		2'b01: rgbcolor_b = scanlinedout_b[31:16];
+		2'b10: rgbcolor_b = scanlinedout_b[47:32];
+		2'b11: rgbcolor_b = scanlinedout_b[63:48];
+	endcase
+end
+
+// Plane A: 8x 8bit pixels
 always_comb begin
 	unique case (pixelscanaddr[2:0])
-		3'b000: paletteindex = scanlinedout[7:0];
-		3'b001: paletteindex = scanlinedout[15:8];
-		3'b010: paletteindex = scanlinedout[23:16];
-		3'b011: paletteindex = scanlinedout[31:24];
-		3'b100: paletteindex = scanlinedout[39:32];
-		3'b101: paletteindex = scanlinedout[47:40];
-		3'b110: paletteindex = scanlinedout[55:48];
-		3'b111: paletteindex = scanlinedout[63:56];
+		3'b000: paletteindex_a = scanlinedout[7:0];
+		3'b001: paletteindex_a = scanlinedout[15:8];
+		3'b010: paletteindex_a = scanlinedout[23:16];
+		3'b011: paletteindex_a = scanlinedout[31:24];
+		3'b100: paletteindex_a = scanlinedout[39:32];
+		3'b101: paletteindex_a = scanlinedout[47:40];
+		3'b110: paletteindex_a = scanlinedout[55:48];
+		3'b111: paletteindex_a = scanlinedout[63:56];
 	endcase
+end
+
+// Plane B: 8x 8bit pixels
+always_comb begin
+	unique case (pixelscanaddr[2:0])
+		3'b000: paletteindex_b = scanlinedout_b[7:0];
+		3'b001: paletteindex_b = scanlinedout_b[15:8];
+		3'b010: paletteindex_b = scanlinedout_b[23:16];
+		3'b011: paletteindex_b = scanlinedout_b[31:24];
+		3'b100: paletteindex_b = scanlinedout_b[39:32];
+		3'b101: paletteindex_b = scanlinedout_b[47:40];
+		3'b110: paletteindex_b = scanlinedout_b[55:48];
+		3'b111: paletteindex_b = scanlinedout_b[63:56];
+	endcase
+end
+
+// --------------------------------------------------
+// Dual-plane blend
+// --------------------------------------------------
+
+// Blend mode encoding
+localparam [1:0] BLEND_XOR     = 2'b00;
+localparam [1:0] BLEND_MASK    = 2'b01;
+localparam [1:0] BLEND_AVERAGE = 2'b10;
+localparam [1:0] BLEND_OR      = 2'b11;
+
+// 16bpp AVERAGE helper: per-channel (R5 G6 B5) average
+// RGB565 layout: [15:11]=R, [10:5]=G, [4:0]=B
+wire [4:0] avg_r = ({1'b0, rgbcolor_a[15:11]} + {1'b0, rgbcolor_b[15:11]}) >> 1;
+wire [5:0] avg_g = ({1'b0, rgbcolor_a[10:5]}  + {1'b0, rgbcolor_b[10:5]})  >> 1;
+wire [4:0] avg_b = ({1'b0, rgbcolor_a[4:0]}   + {1'b0, rgbcolor_b[4:0]})   >> 1;
+
+// 8bpp AVERAGE helper: simple byte average
+wire [7:0] avg_idx = ({1'b0, paletteindex_a} + {1'b0, paletteindex_b}) >> 1;
+
+logic [15:0] rgbcolor;
+logic [7:0] paletteindex;
+
+always_comb begin
+	if (!dual_plane_enable) begin
+		// Single plane: plane A passthrough
+		rgbcolor = rgbcolor_a;
+		paletteindex = paletteindex_a;
+	end else begin
+		// Dual plane: blend A and B based on blend_mode
+		case (blend_mode)
+			BLEND_XOR: begin
+				rgbcolor     = rgbcolor_a ^ rgbcolor_b;
+				paletteindex = paletteindex_a ^ paletteindex_b;
+			end
+
+			BLEND_MASK: begin
+				// 8bpp: palette index 0 on plane B reveals plane A, otherwise show B
+				// 16bpp: bit[15] of plane B == 0 reveals plane A, otherwise show B
+				if (colormode) begin
+					// 16bpp mask: B's bit[15] acts as transparency flag
+					rgbcolor     = rgbcolor_b[15] ? rgbcolor_b : rgbcolor_a;
+					paletteindex = paletteindex_a; // N/A in 16bpp mode
+				end else begin
+					// 8bpp mask: index 0 on B reveals A
+					rgbcolor     = rgbcolor_a; // N/A in 8bpp mode
+					paletteindex = (paletteindex_b == 8'd0) ? paletteindex_a : paletteindex_b;
+				end
+			end
+
+			BLEND_AVERAGE: begin
+				rgbcolor     = {avg_r, avg_g, avg_b};
+				paletteindex = avg_idx;
+			end
+
+			BLEND_OR: begin
+				rgbcolor     = rgbcolor_a | rgbcolor_b;
+				paletteindex = paletteindex_a | paletteindex_b;
+			end
+		endcase
+	end
 end
 
 assign scanmode = {scandouble, displaying, scanenable, colormode};
@@ -410,6 +557,8 @@ always_ff @(posedge aclk) begin
 		scanwidth <= 1'b1;					// 640-wide by default
 		colormode <= 1'b1;					// 16 bit color by default
 		scandouble <= 1'b0;					// No scanline doubling by default
+		dual_plane_enable <= 1'b0;			// Single plane by default
+		blend_mode <= 2'b00;				// XOR blend by default
 		scanlinewa_offset <= 8'd0;
 		scanlinera_offset <= 8'd0;
 		pixel_offset <= 4'd0;
@@ -464,11 +613,13 @@ always_ff @(posedge aclk) begin
 
 			VMODE: begin
 				if (vpufifovalid && ~vpufifoempty) begin
-					scanenable <= vpufifodout[0];	// 0:video output disabled, 1:video output enabled
-					scanwidth <= vpufifodout[1];	// 0:320-wide, 1:640-wide
-					colormode <= vpufifodout[2];	// 0:8bit indexed, 1:16bit rgb
-					scandouble <= vpufifodout[3];	// 0:no scanline doubling 1:scanline doubling 
-					// ? <= vpufifodout[31:3] unused for now
+					scanenable <= vpufifodout[0];			// 0:video output disabled, 1:video output enabled
+					scanwidth <= vpufifodout[1];			// 0:320-wide, 1:640-wide
+					colormode <= vpufifodout[2];			// 0:8bit indexed, 1:16bit rgb
+					scandouble <= vpufifodout[3];			// 0:no scanline doubling 1:scanline doubling
+					dual_plane_enable <= vpufifodout[4];	// 0:single plane, 1:dual plane A/B interleaved
+					blend_mode <= vpufifodout[6:5];			// 00:XOR 01:MASK 10:AVERAGE 11:OR
+					// vpufifodout[31:7] unused for now
 
 					// Set up burst count depending on video width and bit depth
 					// Upper 4 bits contain whole burst count (i.e. N * 4'hF)

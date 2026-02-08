@@ -65,13 +65,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="260"/>
-    <Option Name="WTModelSimExportSim" Val="260"/>
-    <Option Name="WTQuestaExportSim" Val="260"/>
+    <Option Name="WTXSimExportSim" Val="263"/>
+    <Option Name="WTModelSimExportSim" Val="263"/>
+    <Option Name="WTQuestaExportSim" Val="263"/>
     <Option Name="WTIesExportSim" Val="0"/>
     <Option Name="WTVcsExportSim" Val="84"/>
-    <Option Name="WTRivieraExportSim" Val="260"/>
-    <Option Name="WTActivehdlExportSim" Val="176"/>
+    <Option Name="WTRivieraExportSim" Val="263"/>
+    <Option Name="WTActivehdlExportSim" Val="179"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -244,23 +244,8 @@
         <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_audiomodule_0_0\blockone_audiomodule_0_0.xci">
           <Proxy FileSetName="blockone_audiomodule_0_0"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_axi_interconnect_0_imp_auto_us_0\blockone_axi_interconnect_0_imp_auto_us_0.xci">
-          <Proxy FileSetName="blockone_axi_interconnect_0_imp_auto_us_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0\blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0.xci">
-          <Proxy FileSetName="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_clk_wiz_0_0\blockone_clk_wiz_0_0.xci">
-          <Proxy FileSetName="blockone_clk_wiz_0_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_colorpalettemodule_0_0\blockone_colorpalettemodule_0_0.xci">
           <Proxy FileSetName="blockone_colorpalettemodule_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_gmii_to_rgmii_0_1\blockone_gmii_to_rgmii_0_1.xci">
-          <Proxy FileSetName="blockone_gmii_to_rgmii_0_1"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_proc_sys_reset_0_1\blockone_proc_sys_reset_0_1.xci">
-          <Proxy FileSetName="blockone_proc_sys_reset_0_1"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="blockone.bd" FileRelPathName="ip\blockone_processing_system7_0_1\blockone_processing_system7_0_1.xci">
           <Proxy FileSetName="blockone_processing_system7_0_1"/>
@@ -386,12 +371,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="blockone_proc_sys_reset_0_1" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_proc_sys_reset_0_1" RelGenDir="$PGENDIR/blockone_proc_sys_reset_0_1">
-      <Config>
-        <Option Name="TopModule" Val="blockone_proc_sys_reset_0_1"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="blockone_audiomodule_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_audiomodule_0_0" RelGenDir="$PGENDIR/blockone_audiomodule_0_0">
       <Config>
         <Option Name="TopModule" Val="blockone_audiomodule_0_0"/>
@@ -404,27 +383,9 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="blockone_clk_wiz_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_clk_wiz_0_0" RelGenDir="$PGENDIR/blockone_clk_wiz_0_0">
-      <Config>
-        <Option Name="TopModule" Val="blockone_clk_wiz_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="blockone_gmii_to_rgmii_0_1" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_gmii_to_rgmii_0_1" RelGenDir="$PGENDIR/blockone_gmii_to_rgmii_0_1">
-      <Config>
-        <Option Name="TopModule" Val="blockone_gmii_to_rgmii_0_1"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="blockone_processing_system7_0_1" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_processing_system7_0_1" RelGenDir="$PGENDIR/blockone_processing_system7_0_1">
       <Config>
         <Option Name="TopModule" Val="blockone_processing_system7_0_1"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0" RelGenDir="$PGENDIR/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0">
-      <Config>
-        <Option Name="TopModule" Val="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -437,12 +398,6 @@
     <FileSet Name="blockone_vcpmodule_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_vcpmodule_0_0" RelGenDir="$PGENDIR/blockone_vcpmodule_0_0">
       <Config>
         <Option Name="TopModule" Val="blockone_vcpmodule_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="blockone_axi_interconnect_0_imp_auto_us_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/blockone_axi_interconnect_0_imp_auto_us_0" RelGenDir="$PGENDIR/blockone_axi_interconnect_0_imp_auto_us_0">
-      <Config>
-        <Option Name="TopModule" Val="blockone_axi_interconnect_0_imp_auto_us_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -509,19 +464,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="blockone_proc_sys_reset_0_1_synth_1" Type="Ft3:Synth" SrcSet="blockone_proc_sys_reset_0_1" Part="xc7z020clg484-1" ConstrsSet="blockone_proc_sys_reset_0_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_proc_sys_reset_0_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_proc_sys_reset_0_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_proc_sys_reset_0_1_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="blockone_audiomodule_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_audiomodule_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_audiomodule_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_audiomodule_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_audiomodule_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_audiomodule_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -531,27 +478,9 @@
     </Run>
     <Run Id="blockone_videomodule_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_videomodule_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_videomodule_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_videomodule_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_videomodule_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_videomodule_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_clk_wiz_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_clk_wiz_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_clk_wiz_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_clk_wiz_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_clk_wiz_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_clk_wiz_0_0_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_gmii_to_rgmii_0_1_synth_1" Type="Ft3:Synth" SrcSet="blockone_gmii_to_rgmii_0_1" Part="xc7z020clg484-1" ConstrsSet="blockone_gmii_to_rgmii_0_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_gmii_to_rgmii_0_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_gmii_to_rgmii_0_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_gmii_to_rgmii_0_1_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -561,17 +490,9 @@
     </Run>
     <Run Id="blockone_processing_system7_0_1_synth_1" Type="Ft3:Synth" SrcSet="blockone_processing_system7_0_1" Part="xc7z020clg484-1" ConstrsSet="blockone_processing_system7_0_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_processing_system7_0_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0" Part="xc7z020clg484-1" ConstrsSet="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -581,7 +502,9 @@
     </Run>
     <Run Id="blockone_colorpalettemodule_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_colorpalettemodule_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_colorpalettemodule_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_colorpalettemodule_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_colorpalettemodule_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_colorpalettemodule_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -591,17 +514,9 @@
     </Run>
     <Run Id="blockone_vcpmodule_0_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_vcpmodule_0_0" Part="xc7z020clg484-1" ConstrsSet="blockone_vcpmodule_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_vcpmodule_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_vcpmodule_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_vcpmodule_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_axi_interconnect_0_imp_auto_us_0_synth_1" Type="Ft3:Synth" SrcSet="blockone_axi_interconnect_0_imp_auto_us_0" Part="xc7z020clg484-1" ConstrsSet="blockone_axi_interconnect_0_imp_auto_us_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/blockone_axi_interconnect_0_imp_auto_us_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_imp_auto_us_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_imp_auto_us_0_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -690,26 +605,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="blockone_proc_sys_reset_0_1_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_proc_sys_reset_0_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_proc_sys_reset_0_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_proc_sys_reset_0_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_proc_sys_reset_0_1_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="blockone_audiomodule_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_audiomodule_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_audiomodule_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_audiomodule_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_audiomodule_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -726,41 +626,9 @@
     </Run>
     <Run Id="blockone_videomodule_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_videomodule_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_videomodule_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_videomodule_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_videomodule_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_clk_wiz_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_clk_wiz_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_clk_wiz_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_clk_wiz_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_clk_wiz_0_0_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_gmii_to_rgmii_0_1_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_gmii_to_rgmii_0_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_gmii_to_rgmii_0_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_gmii_to_rgmii_0_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_gmii_to_rgmii_0_1_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -777,24 +645,9 @@
     </Run>
     <Run Id="blockone_processing_system7_0_1_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_processing_system7_0_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_processing_system7_0_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_processing_system7_0_1_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_upgraded_ipi_imp_xbar_0_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -811,7 +664,9 @@
     </Run>
     <Run Id="blockone_colorpalettemodule_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_colorpalettemodule_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_colorpalettemodule_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_colorpalettemodule_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_colorpalettemodule_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -828,24 +683,9 @@
     </Run>
     <Run Id="blockone_vcpmodule_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_vcpmodule_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_vcpmodule_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_vcpmodule_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_vcpmodule_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="blockone_axi_interconnect_0_imp_auto_us_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-1" ConstrsSet="blockone_axi_interconnect_0_imp_auto_us_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="blockone_axi_interconnect_0_imp_auto_us_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_imp_auto_us_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/blockone_axi_interconnect_0_imp_auto_us_0_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
