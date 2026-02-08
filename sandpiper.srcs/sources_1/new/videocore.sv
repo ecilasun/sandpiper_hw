@@ -265,17 +265,20 @@ logic [1:0] blend_mode;		// 00:XOR, 01:MASK, 10:AVERAGE, 11:OR
 // Scanline cache
 // --------------------------------------------------
 
-// Sufficient space for 8 scanlines (worst-case 8 * 256 words = 2048); infer BRAM
+// Plane A / single-plane cache: 8 scanlines × 256 words = 2048 entries
 (* ram_style = "block" *) logic [63:0] scanlinecache [0:2047];
+// Plane B cache (dual-plane mode only): separate BRAM so each has 1W+1R port
+(* ram_style = "block" *) logic [63:0] scanlinecache_b [0:2047];
 
 initial begin
 	for (int i=0; i<2048; i=i+1) begin
 		scanlinecache[i] = {i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0]};
+		scanlinecache_b[i] = 64'd0;
 	end
 end
 
-wire [63:0] scanlinedout;		// Plane A registered read data
-wire [63:0] scanlinedout_b;	// Plane B registered read data (dual-plane mode)
+wire [63:0] scanlinedout;		// Plane A read data
+wire [63:0] scanlinedout_b;	// Plane B read data (dual-plane mode)
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
@@ -325,49 +328,28 @@ assign scanline_wr_addr   = {scanline_wr_slot, scanlinewa_eff};
 assign scanline_rd_addr   = {scanline_rd_slot, scanlinera_eff};
 assign scanline_rd_addr_b = {scanline_rd_slot_b, scanlinera_eff};
 
-// Port A: write (aclk)
+// Write steering: in single-plane mode all writes go to scanlinecache.
+// In dual-plane mode, even slots → scanlinecache, odd slots → scanlinecache_b.
+wire scanlinewe_a = scanlinewe && (!dual_plane_enable || !scanline_wr_slot[0]);
+wire scanlinewe_b = scanlinewe && dual_plane_enable && scanline_wr_slot[0];
+
+// Port A: write (aclk) — plane A / single plane
 always @(posedge aclk) begin
-	if (scanlinewe)
+	if (scanlinewe_a)
 		scanlinecache[scanline_wr_addr] <= scanlinedin;
 end
 
-// Port B: time-multiplexed synchronous read for display path
-// aclk >> clk25, so we alternate plane A / plane B reads each aclk cycle.
-// This keeps a single BRAM read port instead of duplicating the entire array.
-logic rd_phase;				// 0 = read plane A address, 1 = read plane B address
-logic rd_phase_d;			// delayed by 1 cycle (aligns with BRAM output)
-logic [10:0] scanline_rd_addr_mux;
-logic [63:0] bram_rd_data;
-logic [63:0] scanlinedout_a_reg;
-logic [63:0] scanlinedout_b_reg;
-
-assign scanline_rd_addr_mux = rd_phase ? scanline_rd_addr_b : scanline_rd_addr;
-
-always_ff @(posedge aclk) begin
-	if (~aresetn) begin
-		rd_phase <= 1'b0;
-		rd_phase_d <= 1'b0;
-	end else begin
-		rd_phase <= dual_plane_enable ? ~rd_phase : 1'b0;
-		rd_phase_d <= rd_phase;
-	end
+// Port A: write (aclk) — plane B
+always @(posedge aclk) begin
+	if (scanlinewe_b)
+		scanlinecache_b[scanline_wr_addr] <= scanlinedin;
 end
 
-// Synchronous BRAM read (single port B)
-always_ff @(posedge aclk) begin
-	bram_rd_data <= scanlinecache[scanline_rd_addr_mux];
-end
+// Port B: combinational read — plane A (same timing as original design)
+assign scanlinedout = scanlinecache[scanline_rd_addr];
 
-// Latch into plane A / plane B registers based on which phase was read
-always_ff @(posedge aclk) begin
-	if (~rd_phase_d)
-		scanlinedout_a_reg <= bram_rd_data;
-	else
-		scanlinedout_b_reg <= bram_rd_data;
-end
-
-assign scanlinedout   = scanlinedout_a_reg;
-assign scanlinedout_b = scanlinedout_b_reg;
+// Port B: combinational read — plane B
+assign scanlinedout_b = scanlinecache_b[scanline_rd_addr_b];
 
 // --------------------------------------------------
 // Output address selection
