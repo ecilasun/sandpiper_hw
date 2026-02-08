@@ -345,11 +345,18 @@ always @(posedge aclk) begin
 		scanlinecache_b[scanline_wr_addr] <= scanlinedin;
 end
 
-// Port B: combinational read — plane A (same timing as original design)
-assign scanlinedout = scanlinecache[scanline_rd_addr];
+// Port B: synchronous read on aclk — proper BRAM inference (no distributed RAM)
+// 1 aclk cycle latency (~10ns) is well within clk25 pixel period (~40ns)
+logic [63:0] scanlinedout_reg;
+logic [63:0] scanlinedout_b_reg;
 
-// Port B: combinational read — plane B
-assign scanlinedout_b = scanlinecache_b[scanline_rd_addr_b];
+always_ff @(posedge aclk) begin
+	scanlinedout_reg   <= scanlinecache[scanline_rd_addr];
+	scanlinedout_b_reg <= scanlinecache_b[scanline_rd_addr_b];
+end
+
+assign scanlinedout   = scanlinedout_reg;
+assign scanlinedout_b = scanlinedout_b_reg;
 
 // --------------------------------------------------
 // Output address selection
