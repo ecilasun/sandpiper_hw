@@ -263,11 +263,11 @@ logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
 // Scanline cache
 // --------------------------------------------------
 
-// Sufficient space for 2048x8bit pixels
-logic [63:0] scanlinecache [0:255];
+// Sufficient space for 8 scanlines (worst-case 8 * 256 words = 2048); infer BRAM
+(* ram_style = "block" *) logic [63:0] scanlinecache [0:2047];
 
 initial begin
-	for (int i=0; i<256; i=i+1) begin
+	for (int i=0; i<2048; i=i+1) begin
 		scanlinecache[i] = {i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0]};
 	end
 end
@@ -282,11 +282,31 @@ logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
 logic [3:0] pixel_offset;
 
+// 8-line banking: slot = line_number[2:0]
+logic [2:0] load_line_slot;
+logic [2:0] last_loaded_slot;
+logic [2:0] scanline_wr_slot;
+logic [2:0] scanline_rd_slot;
+logic [7:0] scanlinewa_eff;
+logic [7:0] scanlinera_eff;
+logic [10:0] scanline_wr_addr;
+logic [10:0] scanline_rd_addr;
+
+assign scanline_wr_slot = load_line_slot;
+assign scanline_rd_slot = (scandouble && ~scanline[0]) ? last_loaded_slot : scanline[2:0];
+assign scanlinewa_eff = scanlinewa + scanlinewa_offset; // modulo 256 within a line slot
+assign scanlinera_eff = scanlinera + scanlinera_offset; // modulo 256 within a line slot
+assign scanline_wr_addr = {scanline_wr_slot, scanlinewa_eff};
+assign scanline_rd_addr = {scanline_rd_slot, scanlinera_eff};
+
+// Port A: write (aclk)
 always @(posedge aclk) begin
 	if (scanlinewe)
-		scanlinecache[scanlinewa + scanlinewa_offset] <= scanlinedin;
+		scanlinecache[scanline_wr_addr] <= scanlinedin;
 end
-assign scanlinedout = scanlinecache[scanlinera + scanlinera_offset];
+
+// Port B: asynchronous read for display path
+assign scanlinedout = scanlinecache[scanline_rd_addr];
 
 // --------------------------------------------------
 // Output address selection
@@ -623,6 +643,8 @@ always_ff @(posedge aclk) begin
 		s_axi_arsize <= SIZE_8_BYTE; // 64bit read bus
 		scanoffset <= 32'd0;
 		scanlinewa <= 8'd0;
+		load_line_slot <= 3'd0;
+		last_loaded_slot <= 3'd0;
 		rdata_cnt <= 8'd0;
 		burststate <= 10'd0;
 		onFirstScanline <= 1'b0;
@@ -637,6 +659,8 @@ always_ff @(posedge aclk) begin
 					// NOTE: VCP will be able to do this at per-scanline resolution
 					// so we can implement effects like split-screen / sliding screens etc.
 					scanoffset <= scanaddr;
+					load_line_slot <= 3'd0; // start banking at the top of the frame
+					last_loaded_slot <= 3'd0;
 					onFirstScanline <= 1'b1;
 					scanstate <= STARTLOAD;
 				end else begin
@@ -699,6 +723,10 @@ always_ff @(posedge aclk) begin
 			ADVANCESCANLINEADDRESS: begin
 				// Next burst or done
 				scanstate <= burststate[0] ? STARTSCANOUT : STARTLOAD;
+				if (~burststate[0]) begin
+					last_loaded_slot <= load_line_slot;
+					load_line_slot <= load_line_slot + 3'd1; // advance to next line slot after finishing a line
+				end
 
 				// Next burst or scanline always starts 128 bytes away from current one to make hardware simpler
 				// i.e. once we're at the last burst of a scanline, next one is same distance as this one's to previous
