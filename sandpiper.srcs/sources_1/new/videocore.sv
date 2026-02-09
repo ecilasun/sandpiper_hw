@@ -260,19 +260,16 @@ logic colormode;			// 0:indexed color, 1:16bit color
 logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
 
 // --------------------------------------------------
-// Scanline cache
+// Scanline cache - Simple Dual-Port BRAM (xpm_memory_sdpram)
 // --------------------------------------------------
+// Port A (write): aclk domain - AXI DMA fills one scanline
+// Port B (read):  clk25 domain - pixel output to HDMI
+//
+// BRAM has 1-cycle read latency on port B. To keep pixel output
+// aligned with video_x without shifting the image, we present
+// the address for the NEXT pixel (video_x+1) so that when the
+// data emerges one clk25 later, video_x has advanced to match.
 
-// Sufficient space for 2048x8bit pixels
-logic [63:0] scanlinecache [0:255];
-
-initial begin
-	for (int i=0; i<256; i=i+1) begin
-		scanlinecache[i] = {i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0],i[7:0]};
-	end
-end
-
-wire [63:0] scanlinedout;
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
@@ -282,30 +279,104 @@ logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
 logic [3:0] pixel_offset;
 
-always @(posedge aclk) begin
-	if (scanlinewe)
-		scanlinecache[scanlinewa + scanlinewa_offset] <= scanlinedin;
-end
-assign scanlinedout = scanlinecache[scanlinera + scanlinera_offset];
+// CDC: synchronize slowly-changing aclk-domain controls into clk25.
+// These only change on VPU commands (rare), so 2-flop sync is safe.
+(* async_reg = "true" *) logic [7:0] scanlinera_offset_sync, scanlinera_offset_c25;
+(* async_reg = "true" *) logic [3:0] pixel_offset_sync, pixel_offset_c25;
+(* async_reg = "true" *) logic scanwidth_sync, scanwidth_c25;
+(* async_reg = "true" *) logic colormode_sync, colormode_c25;
 
-// --------------------------------------------------
-// Output address selection
-// --------------------------------------------------
+always_ff @(posedge clk25) begin
+	scanlinera_offset_sync <= scanlinera_offset;
+	scanlinera_offset_c25  <= scanlinera_offset_sync;
+	pixel_offset_sync      <= pixel_offset;
+	pixel_offset_c25       <= pixel_offset_sync;
+	scanwidth_sync         <= scanwidth;
+	scanwidth_c25          <= scanwidth_sync;
+	colormode_sync         <= colormode;
+	colormode_c25          <= colormode_sync;
+end
+
+// BRAM read-side signals
+wire [63:0] scanlinedout;
+wire [7:0] bram_rdaddr = scanlinera + scanlinera_offset_c25;
 
 logic [3:0] pixelscanaddr;
-wire [9:0] video_x_shifted = video_x + pixel_offset;
+logic [3:0] pixelscanaddr_d; // 1-cycle delayed to match BRAM output
+
+always_ff @(posedge clk25) begin
+	pixelscanaddr_d <= pixelscanaddr;
+end
+
+xpm_memory_sdpram #(
+	.ADDR_WIDTH_A          (8),
+	.ADDR_WIDTH_B          (8),
+	.AUTO_SLEEP_TIME       (0),
+	.BYTE_WRITE_WIDTH_A    (64),
+	.CASCADE_HEIGHT        (0),
+	.CLOCKING_MODE         ("independent_clock"),
+	.ECC_MODE              ("no_ecc"),
+	.MEMORY_INIT_FILE      ("none"),
+	.MEMORY_INIT_PARAM     ("0"),
+	.MEMORY_OPTIMIZATION   ("true"),
+	.MEMORY_PRIMITIVE      ("block"),       // Guaranteed BRAM
+	.MEMORY_SIZE           (16384),         // 256 entries x 64 bits
+	.MESSAGE_CONTROL       (0),
+	.READ_DATA_WIDTH_B     (64),
+	.READ_LATENCY_B        (1),
+	.READ_RESET_VALUE_B    ("0"),
+	.RST_MODE_A            ("SYNC"),
+	.RST_MODE_B            ("SYNC"),
+	.SIM_ASSERT_CHK        (0),
+	.USE_EMBEDDED_CONSTRAINT(0),
+	.USE_MEM_INIT          (0),
+	.WAKEUP_TIME           ("disable_sleep"),
+	.WRITE_DATA_WIDTH_A    (64),
+	.WRITE_MODE_B          ("no_change"),
+	.WRITE_PROTECT         (1)
+) scanlinecache_inst (
+	// Write port (aclk domain)
+	.clka              (aclk),
+	.ena               (1'b1),
+	.wea               (scanlinewe),
+	.addra             (scanlinewa + scanlinewa_offset),
+	.dina              (scanlinedin),
+	// Read port (clk25 domain)
+	.clkb              (clk25),
+	.rstb              (~rst25n),
+	.enb               (1'b1),
+	.regceb            (1'b1),
+	.addrb             (bram_rdaddr),
+	.doutb             (scanlinedout),
+	// Unused ECC / sleep
+	.sleep             (1'b0),
+	.injectsbiterra    (1'b0),
+	.injectdbiterra    (1'b0),
+	.sbiterrb          (),
+	.dbiterrb          ()
+);
+
+// --------------------------------------------------
+// Output address selection (1-pixel look-ahead)
+// --------------------------------------------------
+
+// Compute address for the NEXT pixel so that after the BRAM's
+// 1-cycle read latency, data is aligned with the current video_x.
+// Wrap 799->0 to handle the end-of-line boundary correctly.
+wire [9:0] video_x_next = (video_x == 10'd799) ? 10'd0 : (video_x + 10'd1);
+wire [9:0] video_x_lookahead = video_x_next + pixel_offset_c25;
 
 always_comb begin
-	unique case ({scanwidth, colormode})
-		2'b00: begin pixelscanaddr = video_x_shifted[4:1];			scanlinera = {2'b0, video_x_shifted[9:4]}; end	// 320*240 8bpp,  5x64byte blocks, index = 1*(x/2)/8
-		2'b01: begin pixelscanaddr = {1'b0,video_x_shifted[3:1]};	scanlinera = {1'b0, video_x_shifted[9:3]}; end	// 320*240 16bpp 10x64byte blocks, index = 2*(x/2)/8
-		2'b10: begin pixelscanaddr = video_x_shifted[3:0];			scanlinera = {1'b0, video_x_shifted[9:3]}; end	// 640*480 8bpp  10x64byte blocks, index = 1*(x/1)/8
-		2'b11: begin pixelscanaddr = {1'b0,video_x_shifted[2:0]};	scanlinera = video_x_shifted[9:2]; end			// 640*480 16bpp 20x64byte blocks, index = 2*(x/1)/8
+	unique case ({scanwidth_c25, colormode_c25})
+		2'b00: begin pixelscanaddr = video_x_lookahead[4:1];         scanlinera = {2'b0, video_x_lookahead[9:4]}; end // 320*240 8bpp
+		2'b01: begin pixelscanaddr = {1'b0,video_x_lookahead[3:1]};  scanlinera = {1'b0, video_x_lookahead[9:3]}; end // 320*240 16bpp
+		2'b10: begin pixelscanaddr = video_x_lookahead[3:0];         scanlinera = {1'b0, video_x_lookahead[9:3]}; end // 640*480 8bpp
+		2'b11: begin pixelscanaddr = {1'b0,video_x_lookahead[2:0]};  scanlinera = video_x_lookahead[9:2]; end         // 640*480 16bpp
 	endcase
 end
 
 // --------------------------------------------------
-// Output color
+// Output color (uses BRAM output + delayed pixel selector)
 // --------------------------------------------------
 
 logic [15:0] rgbcolor;
@@ -313,19 +384,17 @@ logic [7:0] paletteindex;
 
 // 4x 16bit pixels
 always_comb begin
-	// Pixel data is 16 bits
-	unique case (pixelscanaddr[1:0])
-		//                   R:G:B
-		2'b00: rgbcolor = { scanlinedout[15:0]     };
-		2'b01: rgbcolor = { scanlinedout[31:16]    };
-		2'b10: rgbcolor = { scanlinedout[47:32]    };
-		2'b11: rgbcolor = { scanlinedout[63:48]    };
+	unique case (pixelscanaddr_d[1:0])
+		2'b00: rgbcolor = scanlinedout[15:0];
+		2'b01: rgbcolor = scanlinedout[31:16];
+		2'b10: rgbcolor = scanlinedout[47:32];
+		2'b11: rgbcolor = scanlinedout[63:48];
 	endcase
 end
 
 // 8x 8bit pixels
 always_comb begin
-	unique case (pixelscanaddr[2:0])
+	unique case (pixelscanaddr_d[2:0])
 		3'b000: paletteindex = scanlinedout[7:0];
 		3'b001: paletteindex = scanlinedout[15:8];
 		3'b010: paletteindex = scanlinedout[23:16];
