@@ -230,6 +230,14 @@ logic scanenable;
 logic syncmode;
 logic swapmode;
 
+// Layer B
+logic [31:0] scanaddr_b;
+logic [31:0] scanaddrsecondary_b;
+logic [31:0] scanoffset_b;
+logic layerb_enable;       // 1: dual-layer mode active
+logic [2:0] mixmode;       // 0:A-only, 1:B-over-A-keycolor, 2:50/50-blend, 3:add-saturate, 4:B-only
+logic [15:0] keycolor;     // Transparent color for layer B in key mode
+
 // --------------------------------------------------
 // Common
 // --------------------------------------------------
@@ -279,12 +287,18 @@ logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
 logic [3:0] pixel_offset;
 
+// Layer B write port signals
+logic scanlinewe_b;
+
 // CDC: synchronize slowly-changing aclk-domain controls into clk25.
 // These only change on VPU commands (rare), so 2-flop sync is safe.
 (* async_reg = "true" *) logic [7:0] scanlinera_offset_sync, scanlinera_offset_c25;
 (* async_reg = "true" *) logic [3:0] pixel_offset_sync, pixel_offset_c25;
 (* async_reg = "true" *) logic scanwidth_sync, scanwidth_c25;
 (* async_reg = "true" *) logic colormode_sync, colormode_c25;
+(* async_reg = "true" *) logic layerb_enable_sync, layerb_enable_c25;
+(* async_reg = "true" *) logic [2:0] mixmode_sync, mixmode_c25;
+(* async_reg = "true" *) logic [15:0] keycolor_sync, keycolor_c25;
 
 always_ff @(posedge clk25) begin
 	scanlinera_offset_sync <= scanlinera_offset;
@@ -295,6 +309,12 @@ always_ff @(posedge clk25) begin
 	scanwidth_c25          <= scanwidth_sync;
 	colormode_sync         <= colormode;
 	colormode_c25          <= colormode_sync;
+	layerb_enable_sync     <= layerb_enable;
+	layerb_enable_c25      <= layerb_enable_sync;
+	mixmode_sync           <= mixmode;
+	mixmode_c25            <= mixmode_sync;
+	keycolor_sync          <= keycolor;
+	keycolor_c25           <= keycolor_sync;
 end
 
 // BRAM read-side signals
@@ -357,6 +377,60 @@ xpm_memory_sdpram #(
 );
 
 // --------------------------------------------------
+// Layer B scanline cache - identical BRAM, same read address
+// --------------------------------------------------
+
+wire [63:0] scanlinedout_b;
+
+xpm_memory_sdpram #(
+	.ADDR_WIDTH_A          (8),
+	.ADDR_WIDTH_B          (8),
+	.AUTO_SLEEP_TIME       (0),
+	.BYTE_WRITE_WIDTH_A    (64),
+	.CASCADE_HEIGHT        (0),
+	.CLOCKING_MODE         ("independent_clock"),
+	.ECC_MODE              ("no_ecc"),
+	.MEMORY_INIT_FILE      ("none"),
+	.MEMORY_INIT_PARAM     ("0"),
+	.MEMORY_OPTIMIZATION   ("true"),
+	.MEMORY_PRIMITIVE      ("block"),
+	.MEMORY_SIZE           (16384),
+	.MESSAGE_CONTROL       (0),
+	.READ_DATA_WIDTH_B     (64),
+	.READ_LATENCY_B        (1),
+	.READ_RESET_VALUE_B    ("0"),
+	.RST_MODE_A            ("SYNC"),
+	.RST_MODE_B            ("SYNC"),
+	.SIM_ASSERT_CHK        (0),
+	.USE_EMBEDDED_CONSTRAINT(0),
+	.USE_MEM_INIT          (0),
+	.WAKEUP_TIME           ("disable_sleep"),
+	.WRITE_DATA_WIDTH_A    (64),
+	.WRITE_MODE_B          ("no_change"),
+	.WRITE_PROTECT         (1)
+) scanlinecache_b_inst (
+	// Write port (aclk domain)
+	.clka              (aclk),
+	.ena               (1'b1),
+	.wea               (scanlinewe_b),
+	.addra             (scanlinewa + scanlinewa_offset),
+	.dina              (scanlinedin),
+	// Read port (clk25 domain) - same address as layer A
+	.clkb              (clk25),
+	.rstb              (~rst25n),
+	.enb               (1'b1),
+	.regceb            (1'b1),
+	.addrb             (bram_rdaddr),
+	.doutb             (scanlinedout_b),
+	// Unused ECC / sleep
+	.sleep             (1'b0),
+	.injectsbiterra    (1'b0),
+	.injectdbiterra    (1'b0),
+	.sbiterrb          (),
+	.dbiterrb          ()
+);
+
+// --------------------------------------------------
 // Output address selection (1-pixel look-ahead)
 // --------------------------------------------------
 
@@ -376,34 +450,120 @@ always_comb begin
 end
 
 // --------------------------------------------------
-// Output color (uses BRAM output + delayed pixel selector)
+// Output color - Layer A (uses BRAM output + delayed pixel selector)
 // --------------------------------------------------
+
+logic [15:0] rgbcolor_a;
+logic [7:0] paletteindex_a;
+
+// 4x 16bit pixels - Layer A
+always_comb begin
+	unique case (pixelscanaddr_d[1:0])
+		2'b00: rgbcolor_a = scanlinedout[15:0];
+		2'b01: rgbcolor_a = scanlinedout[31:16];
+		2'b10: rgbcolor_a = scanlinedout[47:32];
+		2'b11: rgbcolor_a = scanlinedout[63:48];
+	endcase
+end
+
+// 8x 8bit pixels - Layer A
+always_comb begin
+	unique case (pixelscanaddr_d[2:0])
+		3'b000: paletteindex_a = scanlinedout[7:0];
+		3'b001: paletteindex_a = scanlinedout[15:8];
+		3'b010: paletteindex_a = scanlinedout[23:16];
+		3'b011: paletteindex_a = scanlinedout[31:24];
+		3'b100: paletteindex_a = scanlinedout[39:32];
+		3'b101: paletteindex_a = scanlinedout[47:40];
+		3'b110: paletteindex_a = scanlinedout[55:48];
+		3'b111: paletteindex_a = scanlinedout[63:56];
+	endcase
+end
+
+// --------------------------------------------------
+// Output color - Layer B (same address pipeline, different BRAM)
+// --------------------------------------------------
+
+logic [15:0] rgbcolor_b;
+logic [7:0] paletteindex_b;
+
+// 4x 16bit pixels - Layer B
+always_comb begin
+	unique case (pixelscanaddr_d[1:0])
+		2'b00: rgbcolor_b = scanlinedout_b[15:0];
+		2'b01: rgbcolor_b = scanlinedout_b[31:16];
+		2'b10: rgbcolor_b = scanlinedout_b[47:32];
+		2'b11: rgbcolor_b = scanlinedout_b[63:48];
+	endcase
+end
+
+// 8x 8bit pixels - Layer B
+always_comb begin
+	unique case (pixelscanaddr_d[2:0])
+		3'b000: paletteindex_b = scanlinedout_b[7:0];
+		3'b001: paletteindex_b = scanlinedout_b[15:8];
+		3'b010: paletteindex_b = scanlinedout_b[23:16];
+		3'b011: paletteindex_b = scanlinedout_b[31:24];
+		3'b100: paletteindex_b = scanlinedout_b[39:32];
+		3'b101: paletteindex_b = scanlinedout_b[47:40];
+		3'b110: paletteindex_b = scanlinedout_b[55:48];
+		3'b111: paletteindex_b = scanlinedout_b[63:56];
+	endcase
+end
+
+// --------------------------------------------------
+// Layer mixer (16bpp RGB565 mix modes, clk25 domain)
+// --------------------------------------------------
+// mixmode: 0=A-only, 1=B-over-A (keycolor transparency), 2=50/50 blend, 3=add-saturate, 4=B-only
 
 logic [15:0] rgbcolor;
 logic [7:0] paletteindex;
 
-// 4x 16bit pixels
-always_comb begin
-	unique case (pixelscanaddr_d[1:0])
-		2'b00: rgbcolor = scanlinedout[15:0];
-		2'b01: rgbcolor = scanlinedout[31:16];
-		2'b10: rgbcolor = scanlinedout[47:32];
-		2'b11: rgbcolor = scanlinedout[63:48];
-	endcase
-end
+// Saturating add helper for 5/6-bit color channels
+wire [4:0] r_a = rgbcolor_a[15:11], r_b = rgbcolor_b[15:11];
+wire [5:0] g_a = rgbcolor_a[10:5],  g_b = rgbcolor_b[10:5];
+wire [4:0] b_a = rgbcolor_a[4:0],   b_b = rgbcolor_b[4:0];
 
-// 8x 8bit pixels
+wire [5:0] r_add = {1'b0, r_a} + {1'b0, r_b};
+wire [6:0] g_add = {1'b0, g_a} + {1'b0, g_b};
+wire [5:0] b_add = {1'b0, b_a} + {1'b0, b_b};
+
+wire [4:0] r_sat = r_add[5] ? 5'h1F : r_add[4:0];
+wire [5:0] g_sat = g_add[6] ? 6'h3F : g_add[5:0];
+wire [4:0] b_sat = b_add[5] ? 5'h1F : b_add[4:0];
+
+// 50/50 blend: (A + B) >> 1
+wire [4:0] r_avg = ({1'b0, r_a} + {1'b0, r_b}) >> 1;
+wire [5:0] g_avg = ({1'b0, g_a} + {1'b0, g_b}) >> 1;
+wire [4:0] b_avg = ({1'b0, b_a} + {1'b0, b_b}) >> 1;
+
+// 25/75 blend: (A + 3*B) >> 2   i.e. 25% A, 75% B
+wire [4:0] r_25a = ({2'b0, r_a} + {2'b0, r_b} + {1'b0, r_b, 1'b0}) >> 2;
+wire [5:0] g_25a = ({2'b0, g_a} + {2'b0, g_b} + {1'b0, g_b, 1'b0}) >> 2;
+wire [4:0] b_25a = ({2'b0, b_a} + {2'b0, b_b} + {1'b0, b_b, 1'b0}) >> 2;
+
+// 75/25 blend: (3*A + B) >> 2   i.e. 75% A, 25% B
+wire [4:0] r_75a = ({2'b0, r_a} + {1'b0, r_a, 1'b0} + {2'b0, r_b}) >> 2;
+wire [5:0] g_75a = ({2'b0, g_a} + {1'b0, g_a, 1'b0} + {2'b0, g_b}) >> 2;
+wire [4:0] b_75a = ({2'b0, b_a} + {1'b0, b_a, 1'b0} + {2'b0, b_b}) >> 2;
+
 always_comb begin
-	unique case (pixelscanaddr_d[2:0])
-		3'b000: paletteindex = scanlinedout[7:0];
-		3'b001: paletteindex = scanlinedout[15:8];
-		3'b010: paletteindex = scanlinedout[23:16];
-		3'b011: paletteindex = scanlinedout[31:24];
-		3'b100: paletteindex = scanlinedout[39:32];
-		3'b101: paletteindex = scanlinedout[47:40];
-		3'b110: paletteindex = scanlinedout[55:48];
-		3'b111: paletteindex = scanlinedout[63:56];
-	endcase
+	if (~layerb_enable_c25) begin
+		// Single layer mode - pass through A directly
+		rgbcolor = rgbcolor_a;
+		paletteindex = paletteindex_a;
+	end else begin
+		// Dual layer mode - palette index comes from A (background)
+		paletteindex = paletteindex_a;
+		unique case (mixmode_c25)
+			3'd0: rgbcolor = {r_75a, g_75a, b_75a};                                                        // 75% A, 25% B
+			3'd1: rgbcolor = (rgbcolor_b == keycolor_c25) ? rgbcolor_a : rgbcolor_b;                        // B over A, keycolor = transparent
+			3'd2: rgbcolor = {r_avg, g_avg, b_avg};                                                        // 50/50 blend
+			3'd3: rgbcolor = {r_sat, g_sat, b_sat};                                                        // Additive saturate
+			3'd4: rgbcolor = {r_25a, g_25a, b_25a};                                                        // 25% A, 75% B
+			default: rgbcolor = rgbcolor_a;
+		endcase
+	end
 end
 
 assign scanmode = {scandouble, displaying, scanenable, colormode};
@@ -425,7 +585,7 @@ localparam BURST_WRAP  = 2'b10;
 // Command FIFO
 // --------------------------------------------------
 
-typedef enum logic [3:0] {
+typedef enum logic [4:0] {
 	WCMD, DISPATCH,
 	SETVPAGE,
 	VMODE,
@@ -435,6 +595,10 @@ typedef enum logic [3:0] {
 	SETSECONDBUFFER,
 	SYNCSWAP,
 	WCONTROLREG,
+	SETVPAGE_B,
+	SETSECONDBUFFER_B,
+	SYNCSWAP_B,
+	SETMIXMODE,
 	FINALIZE } vpucmdmodetype;
 vpucmdmodetype cmdmode = WCMD;
 
@@ -453,6 +617,11 @@ always_ff @(posedge aclk) begin
 		vpuctl <= 8'd0;
 		scanaddr <= 32'h18000000;			// Default scan-out address is placed at 32 mbytes before the end of memory (which is 0x1FFFFFFF)
 		scanaddrsecondary <= 32'h18000000;	// Secondary buffer to use for swap
+		scanaddr_b <= 32'h18000000;			// Layer B default address
+		scanaddrsecondary_b <= 32'h18000000;
+		layerb_enable <= 1'b0;				// Single layer by default
+		mixmode <= 3'd0;					// A-only by default
+		keycolor <= 16'h0000;				// Default key color = black
 		burstmask <= 10'b1111111111;		// 640x2 bytes
 		scanenable <= 1'b1;					// Video output is enabled by default
 		cmdre <= 1'b0;
@@ -497,8 +666,10 @@ always_ff @(posedge aclk) begin
 					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
 					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and swap buffers on the hardware side
-					8'h08:		cmdmode <= WCONTROLREG;		// Control register write
-					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
+					8'h08:		cmdmode <= WCONTROLREG;		// Control register write					8'h09:		cmdmode <= SETVPAGE_B;		// Set layer B scanout address
+					8'h0A:		cmdmode <= SETSECONDBUFFER_B; // Address of layer B second buffer
+					8'h0B:		cmdmode <= SYNCSWAP_B;		// Swap layer B buffers
+					8'h0C:		cmdmode <= SETMIXMODE;		// Set mix mode + key color + layer enable					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
 				endcase
 			end
 
@@ -603,6 +774,42 @@ always_ff @(posedge aclk) begin
 				cmdmode <= FINALIZE;
 			end
 
+			SETVPAGE_B: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					scanaddr_b <= vpufifodout;
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SETSECONDBUFFER_B: begin
+				if (vpufifovalid && ~vpufifoempty) begin
+					scanaddrsecondary_b <= vpufifodout;
+					cmdre <= 1'b1;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SYNCSWAP_B: begin
+				// Wait for vsync then swap layer B buffers
+				if (blanktrigger || vpucmd[8]) begin
+					blanktrigger <= 1'b0;
+					scanaddrsecondary_b <= scanaddr_b;
+					scanaddr_b <= scanaddrsecondary_b;
+					cmdmode <= FINALIZE;
+				end
+			end
+
+			SETMIXMODE: begin
+				// vpucmd[8]    = layerb_enable
+				// vpucmd[11:9] = mixmode (0=A-only, 1=B-over-A-key, 2=50/50, 3=add-sat, 4=B-only)
+				// vpucmd[27:12] = keycolor (RGB565)
+				layerb_enable <= vpucmd[8];
+				mixmode <= vpucmd[11:9];
+				keycolor <= vpucmd[27:12];
+				cmdmode <= FINALIZE;
+			end
+
 			FINALIZE: begin
 				cmdmode <= WCMD;
 			end
@@ -666,14 +873,17 @@ assign scanpixel_o = scanpixel;
 // {0,!fifoempty,scanline[9:0],vsynctoggle[0:0]}
 assign vpustate = {12'd0, vpuctl, ~vpufifoempty, scanline, blanktoggle};
 
-typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, DATABURST, ADVANCESCANLINEADDRESS} scanstatetype;
+typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, DATABURST, ADVANCESCANLINEADDRESS, STARTLOAD_B} scanstatetype;
 scanstatetype scanstate;
 
 logic [9:0] burststate;
+logic [9:0] burststate_b;
 logic onFirstScanline;
+logic fetchlayer;  // 0=layer A, 1=layer B
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		scanlinewe <= 1'b0;
+		scanlinewe_b <= 1'b0;
 		s_axi_arvalid <= 0;
 		s_axi_rready <= 0;
 		s_axi_araddr <= 32'd0;
@@ -691,13 +901,17 @@ always_ff @(posedge aclk) begin
 		s_axi_arburst <= BURST_INCR;
 		s_axi_arsize <= SIZE_8_BYTE; // 64bit read bus
 		scanoffset <= 32'd0;
+		scanoffset_b <= 32'd0;
 		scanlinewa <= 8'd0;
 		rdata_cnt <= 8'd0;
 		burststate <= 10'd0;
+		burststate_b <= 10'd0;
 		onFirstScanline <= 1'b0;
+		fetchlayer <= 1'b0;
 		scanstate <= DETECTFRAMESTART;
 	end else begin
 		scanlinewe <= 1'b0;
+		scanlinewe_b <= 1'b0;
 		case (scanstate)
 			DETECTFRAMESTART: begin
 				// We will be hitting visible portion of the frame on next line
@@ -706,7 +920,9 @@ always_ff @(posedge aclk) begin
 					// NOTE: VCP will be able to do this at per-scanline resolution
 					// so we can implement effects like split-screen / sliding screens etc.
 					scanoffset <= scanaddr;
+					scanoffset_b <= scanaddr_b;
 					onFirstScanline <= 1'b1;
+					fetchlayer <= 1'b0;
 					scanstate <= STARTLOAD;
 				end else begin
 					scanstate <= DETECTFRAMESTART;
@@ -716,6 +932,7 @@ always_ff @(posedge aclk) begin
 			STARTLOAD: begin
 				rdata_cnt <= 8'd0;
 				burststate <= burstmask;
+				fetchlayer <= 1'b0;
 				// Start loading next scanline based on scanline doubling and end of frame
 				if (endofline) begin
 					if (endofvisibleframe) // At line 480
@@ -731,12 +948,15 @@ always_ff @(posedge aclk) begin
 
 			STARTSCANOUT: begin
 				onFirstScanline <= 1'b0;
-				// Start read burst
+				// Start read burst for current layer
 				s_axi_arvalid <= 1'b1;
-				s_axi_araddr <= scanoffset;
+				s_axi_araddr <= fetchlayer ? scanoffset_b : scanoffset;
 				s_axi_arlen <= 4'hF;
 				// Shift to next burst count
-				burststate <= {1'b0, burststate[9:1]};
+				if (fetchlayer)
+					burststate_b <= {1'b0, burststate_b[9:1]};
+				else
+					burststate <= {1'b0, burststate[9:1]};
 				scanstate <= WAITADDR;
 			end
 
@@ -752,9 +972,11 @@ always_ff @(posedge aclk) begin
 
 			DATABURST: begin
 				if (s_axi_rvalid  /*&& s_axi_rready*/) begin
-					// Load data into scanline cache in 64bit chunks (8 pixels at 8bpp, 40 of them and so on)
-					// NOTE: video mode control sets up burst length
-					scanlinewe <= 1'b1;
+					// Load data into appropriate scanline cache
+					if (fetchlayer)
+						scanlinewe_b <= 1'b1;
+					else
+						scanlinewe <= 1'b1;
 					scanlinewa <= rdata_cnt;
 					scanlinedin <= s_axi_rdata;
 					rdata_cnt <= rdata_cnt + 8'd1;
@@ -766,13 +988,35 @@ always_ff @(posedge aclk) begin
 			end
 
 			ADVANCESCANLINEADDRESS: begin
-				// Next burst or done
-				scanstate <= burststate[0] ? STARTSCANOUT : STARTLOAD;
-
-				// Next burst or scanline always starts 128 bytes away from current one to make hardware simpler
-				// i.e. once we're at the last burst of a scanline, next one is same distance as this one's to previous
-				scanoffset <= scanoffset + 128;
+				// Advance the address for whichever layer we just fetched
+				if (fetchlayer) begin
+					scanoffset_b <= scanoffset_b + 128;
+					// Layer B burst done? Go back to STARTLOAD (both layers fetched for this line)
+					scanstate <= burststate_b[0] ? STARTSCANOUT : STARTLOAD;
+				end else begin
+					scanoffset <= scanoffset + 128;
+					if (burststate[0]) begin
+						// More layer A bursts remaining
+						scanstate <= STARTSCANOUT;
+					end else if (layerb_enable) begin
+						// Layer A done, start layer B
+						scanstate <= STARTLOAD_B;
+					end else begin
+						// Single layer, done
+						scanstate <= STARTLOAD;
+					end
+				end
 			end
+
+			STARTLOAD_B: begin
+				// Transition to layer B fetch
+				rdata_cnt <= 8'd0;
+				burststate_b <= burstmask;
+				fetchlayer <= 1'b1;
+				scanstate <= STARTSCANOUT;
+			end
+
+			default: scanstate <= DETECTFRAMESTART;
 
 		endcase
 	end
