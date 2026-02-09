@@ -658,18 +658,20 @@ always_ff @(posedge aclk) begin
 
 			DISPATCH: begin
 				case (vpucmd[7:0])
-					8'h00:		cmdmode <= SETVPAGE;		// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
-					8'h01:		cmdmode <= FINALIZE;		// Reserved for future
-					8'h02:		cmdmode <= VMODE;			// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
-					8'h03:		cmdmode <= SHIFTCACHE;		// Offset for scanline cache writes
-					8'h04:		cmdmode <= SHIFTSCANOUT;	// Offset for scanline cache reads
-					8'h05:		cmdmode <= SHIFTPIXEL;		// Offset at pixel level
-					8'h06:		cmdmode <= SETSECONDBUFFER;	// Address of second buffer to use with SYNCSWAP
-					8'h07:		cmdmode <= SYNCSWAP;		// Wait for vsync and swap buffers on the hardware side
-					8'h08:		cmdmode <= WCONTROLREG;		// Control register write					8'h09:		cmdmode <= SETVPAGE_B;		// Set layer B scanout address
-					8'h0A:		cmdmode <= SETSECONDBUFFER_B; // Address of layer B second buffer
-					8'h0B:		cmdmode <= SYNCSWAP_B;		// Swap layer B buffers
-					8'h0C:		cmdmode <= SETMIXMODE;		// Set mix mode + key color + layer enable					default:	cmdmode <= FINALIZE;		// Invalid command, wait one clock and try next
+					8'h00:		cmdmode <= SETVPAGE;			// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
+					8'h01:		cmdmode <= FINALIZE;			// Reserved for future
+					8'h02:		cmdmode <= VMODE;				// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
+					8'h03:		cmdmode <= SHIFTCACHE;			// Offset for scanline cache writes
+					8'h04:		cmdmode <= SHIFTSCANOUT;		// Offset for scanline cache reads
+					8'h05:		cmdmode <= SHIFTPIXEL;			// Offset at pixel level
+					8'h06:		cmdmode <= SETSECONDBUFFER;		// Address of second buffer to use with SYNCSWAP
+					8'h07:		cmdmode <= SYNCSWAP;			// Wait for vsync and swap buffers on the hardware side
+					8'h08:		cmdmode <= WCONTROLREG;			// Control register write
+					8'h09:		cmdmode <= SETVPAGE_B;			// Set layer B scanout address
+					8'h0A:		cmdmode <= SETSECONDBUFFER_B;	// Address of layer B second buffer
+					8'h0B:		cmdmode <= SYNCSWAP_B;			// Swap layer B buffers
+					8'h0C:		cmdmode <= SETMIXMODE;			// Set mix mode + key color + layer enable
+					default:	cmdmode <= FINALIZE;			// Invalid command, wait one clock and try next
 				endcase
 			end
 
