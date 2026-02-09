@@ -514,7 +514,7 @@ end
 // --------------------------------------------------
 // Layer mixer (16bpp RGB565 mix modes, clk25 domain)
 // --------------------------------------------------
-// mixmode: 0=A-only, 1=B-over-A (keycolor transparency), 2=50/50 blend, 3=add-saturate, 4=B-only
+// mixmode: 0=75%A+25%B, 1=B-over-A (keycolor transparency), 2=50%A+50%B blend, 3=add-saturate, 4=25%A+75%B
 
 logic [15:0] rgbcolor;
 logic [7:0] paletteindex;
@@ -557,7 +557,7 @@ always_comb begin
 		paletteindex = paletteindex_a;
 		unique case (mixmode_c25)
 			3'd0: rgbcolor = {r_75a, g_75a, b_75a};                                                        // 75% A, 25% B
-			3'd1: rgbcolor = (rgbcolor_b == keycolor_c25) ? rgbcolor_a : rgbcolor_b;                        // B over A, keycolor = transparent
+			3'd1: rgbcolor = (rgbcolor_b == keycolor_c25) ? rgbcolor_a : rgbcolor_b;                       // B over A, keycolor = transparent
 			3'd2: rgbcolor = {r_avg, g_avg, b_avg};                                                        // 50/50 blend
 			3'd3: rgbcolor = {r_sat, g_sat, b_sat};                                                        // Additive saturate
 			3'd4: rgbcolor = {r_25a, g_25a, b_25a};                                                        // 25% A, 75% B
