@@ -7,17 +7,17 @@ module vcpregisterfile(
 	input wire [3:0] rs2,		// Source register 2
 	input wire [3:0] rd,		// Destination register
 	input wire wren,			// Write enable bit for writing to register rd 
-	input wire [23:0] din,		// Data to write to register rd
-	output wire [23:0] rval1,	// Register values for rs1 and rs2
-	output wire [23:0] rval2 );
+	input wire [31:0] din,		// Data to write to register rd
+	output wire [31:0] rval1,	// Register values for rs1 and rs2
+	output wire [31:0] rval2 );
 
-logic [23:0] registers[0:15];
+logic [31:0] registers[0:15];
 
 // The whole register file is zero at boot
 initial begin
 	int ri;
 	for (ri=0; ri<16; ri=ri+1) begin
-		registers[ri]  = 24'h000000;
+		registers[ri]  = 32'h00000000;
 	end
 end
 

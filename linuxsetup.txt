@@ -87,6 +87,12 @@ This way the software won't need to know about raw memory addresses of device re
       memory-region = <&reserved>;
    };
 
+   apu@40000000 {
+      compatible = "sandpiper,apu";
+      reg = <0x40000000 0x1000>;
+      status = "okay";
+   };
+
    usb_phy0: usb_phy@0 {
       compatible = "ulpi-phy";
       #phy-cells = <0>;

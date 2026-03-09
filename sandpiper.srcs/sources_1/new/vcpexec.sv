@@ -17,6 +17,32 @@ module vcpexec(
 	output wire [23:0] paldout,
 	output wire palwe,
 	input wire [7:0] vpucontrolregister,
+	// System memory AXI master (read/write)
+	output logic        sysmem_arvalid,
+	input  wire         sysmem_arready,
+	output logic [31:0] sysmem_araddr,
+	output logic [3:0]  sysmem_arlen,
+	output logic [2:0]  sysmem_arsize,
+	output logic [1:0]  sysmem_arburst,
+	input  wire         sysmem_rvalid,
+	output logic        sysmem_rready,
+	input  wire  [63:0] sysmem_rdata,
+	input  wire  [1:0]  sysmem_rresp,
+	input  wire         sysmem_rlast,
+	output logic        sysmem_awvalid,
+	input  wire         sysmem_awready,
+	output logic [31:0] sysmem_awaddr,
+	output logic [3:0]  sysmem_awlen,
+	output logic [2:0]  sysmem_awsize,
+	output logic [1:0]  sysmem_awburst,
+	output logic        sysmem_wvalid,
+	input  wire         sysmem_wready,
+	output logic [63:0] sysmem_wdata,
+	output logic [7:0]  sysmem_wstrb,
+	output logic        sysmem_wlast,
+	input  wire  [1:0]  sysmem_bresp,
+	input  wire         sysmem_bvalid,
+	output logic        sysmem_bready,
 	// Debug outputs
 	output wire [3:0] runstate,
 	output wire [12:0] debug_pc,
@@ -31,12 +57,12 @@ reg [3:0] rs1;
 reg [3:0] rs2;
 reg [3:0] rd;
 reg rwren;
-reg [23:0] rdin;
+reg [31:0] rdin;
 reg [7:0] imm8;
 reg [15:0] imm16;
 reg [23:0] imm24;
-wire [23:0] rval1;
-wire [23:0] rval2;
+wire [31:0] rval1;
+wire [31:0] rval2;
 
 vcpregisterfile vcpregisterInst(
 	.clock(aclk),
@@ -90,7 +116,15 @@ assign paladdr = paladdr_reg;
 assign paldout = paldout_reg;
 assign palwe = palwe_reg;
 
-typedef enum bit [2:0] {
+// Latched values for multi-cycle sysmem transactions
+reg        sysmem_addr2_latch;   // bit[2] of address, selects 32-bit half of 64-bit AXI bus
+reg [63:0] sysmem_wdata_latch;   // precomputed write data (64-bit bus, value in correct half)
+reg [7:0]  sysmem_wstrb_latch;   // precomputed write strobe
+
+localparam SYSMEM_SIZE_4_BYTE = 3'b010; // 4 bytes per beat
+localparam SYSMEM_BURST_INCR  = 2'b01;
+
+typedef enum bit [3:0] {
 	FETCH,
 	WAIT_FETCH,
 	DECODE,
@@ -98,6 +132,11 @@ typedef enum bit [2:0] {
 	WAIT_READ,
 	FINALIZE_READ,
 	FINALIZE_COMPARE,
+	WAIT_SYSMEM_WRITE_ADDR,
+	WAIT_SYSMEM_WRITE_DATA,
+	WAIT_SYSMEM_WRITE_RESP,
+	WAIT_SYSMEM_READ_ADDR,
+	WAIT_SYSMEM_READ_DATA,
 	HALT} execmodetyper;
 execmodetyper execmode;
 
@@ -105,7 +144,7 @@ assign runstate = execmode;
 assign debug_pc = PC;
 assign debugopcode = opcode;
 
-reg [23:0] logicout;
+reg [31:0] logicout;
 always @(imm8, rval1, rval2) begin
 	unique case (imm8)
 		8'h00: logicout = rval1 & rval2;				// AND  - bit AND
@@ -115,19 +154,19 @@ always @(imm8, rval1, rval2) begin
 		8'h04: logicout = rval1 >> rval2[4:0];			// SHR  - bit shift right
 		8'h05: logicout = rval1 << rval2[4:0];			// SHL  - bit shift left
 		8'h06: logicout = ~rval1;						// NEG  - bit NOT
-		8'h07: logicout = {23'd0, cmpreg};				// RCMP - compare flag readout
-		8'h08: logicout = {16'd0, vpucontrolregister};	// RCTL - VPU control register readout 
+		8'h07: logicout = {31'd0, cmpreg};				// RCMP - compare flag readout
+		8'h08: logicout = {24'd0, vpucontrolregister};	// RCTL - VPU control register readout 
 		default: logicout = 24'd0;						// zero in all other cases
 	endcase
 end
 
-reg [23:0] aluout;
+reg [31:0] aluout;
 always @(imm8, rval1, rval2) begin
 	unique case (imm8)
 		8'd00: aluout = rval1 + rval2;		// ADD
 		8'd01: aluout = rval1 - rval2;		// SUB
-		8'd02: aluout = rval1 + 24'd1;		// INC
-		8'd03: aluout = rval1 - 24'd1;		// DEC
+		8'd02: aluout = rval1 + 32'd1;		// INC
+		8'd03: aluout = rval1 - 32'd1;		// DEC
 		default: aluout = 24'd0;			// zero in all other cases
 	endcase
 end
@@ -144,7 +183,7 @@ always @(posedge aclk) begin
 		imm24 <= 24'd0;
 		execmode <= FETCH;
 		rwren <= 1'b0;
-		rdin <= 24'd0;
+		rdin <= 32'd0;
 		palwe_reg <= 1'b0;
 		paladdr_reg <= 8'd0;
 		paldout_reg <= 24'd0;
@@ -155,6 +194,26 @@ always @(posedge aclk) begin
 		EQ <= 1'b0;
 		LT <= 1'b0;
 		LE <= 1'b0;
+		// System memory AXI reset
+		sysmem_arvalid <= 1'b0;
+		sysmem_araddr  <= 32'd0;
+		sysmem_arlen   <= 4'd0;
+		sysmem_arsize  <= SYSMEM_SIZE_4_BYTE;
+		sysmem_arburst <= SYSMEM_BURST_INCR;
+		sysmem_rready  <= 1'b0;
+		sysmem_awvalid <= 1'b0;
+		sysmem_awaddr  <= 32'd0;
+		sysmem_awlen   <= 4'd0;
+		sysmem_awsize  <= SYSMEM_SIZE_4_BYTE;
+		sysmem_awburst <= SYSMEM_BURST_INCR;
+		sysmem_wvalid  <= 1'b0;
+		sysmem_wdata   <= 64'd0;
+		sysmem_wstrb   <= 8'd0;
+		sysmem_wlast   <= 1'b0;
+		sysmem_bready  <= 1'b0;
+		sysmem_addr2_latch  <= 1'b0;
+		sysmem_wdata_latch  <= 64'd0;
+		sysmem_wstrb_latch  <= 8'd0;
 	end else begin
 		palwe_reg <= 1'b0;
 		rwren <= 1'b0;
@@ -196,7 +255,7 @@ always @(posedge aclk) begin
 
 					4'h1: begin // LOAD_IMM
 						rwren <= 1'b1;
-						rdin <= imm24; // Load 24 bit immediate value into rd
+						rdin <= {8'd0, imm24}; // Load 24 bit immediate (zero-extended to 32 bits) into rd
 					end
 
 					4'h2: begin // PAL_WRITE
@@ -263,7 +322,7 @@ always @(posedge aclk) begin
 					4'h9: begin // MEM_WRITE
 						// Write rs2 to program memory at address in rs1
 						memwe <= 1'b1;
-						memdin <= {8'd0, rval2[23:0]};
+						memdin <= rval2[31:0];
 						// NOTE: We hijack the PC here to perform the write which will be overwritten with nextPC during fetch
 						PC <= rval1[12:0];
 					end
@@ -279,15 +338,15 @@ always @(posedge aclk) begin
 						// Read current scanline or scan pixel into rd
 						rwren <= 1'b1;
 						if (rs1[0] == 1'b0)
-						  rdin <= {14'd0, scanline};
+						  rdin <= {22'd0, scanline};
 						else
-						  rdin <= {14'd0, scanpixel};
+						  rdin <= {22'd0, scanpixel};
 					end
 
 					4'hC: begin // LOADPC
 					   // Copy address of next instruction into a register (usualy link register, for return purposes)
 					   rwren <= 1'b1;
-					   rdin <= PC + 13'd4;
+					   rdin <= {19'd0, PC + 13'd4};
 					end
 
 					4'hD: begin // LOGICOP
@@ -295,10 +354,35 @@ always @(posedge aclk) begin
 						rdin <= logicout;
 					end
 
-					4'hE: begin // UNUSED2
+					4'hE: begin // SYSMEM_WRITE
+						// Write rval2[31:0] to system memory at 32-bit address in rval1
+						// Address must be 4-byte aligned; bit[2] selects the 32-bit lane on the 64-bit AXI bus
+						sysmem_awvalid <= 1'b1;
+						sysmem_awaddr  <= rval1;
+						sysmem_awlen   <= 4'd0;               // single beat
+						sysmem_awsize  <= SYSMEM_SIZE_4_BYTE;
+						sysmem_awburst <= SYSMEM_BURST_INCR;
+						// Pre-compute write data and strobe based on address bit[2]
+						if (rval1[2] == 1'b0) begin
+							sysmem_wdata_latch <= {32'd0, rval2[31:0]}; // bytes 0-3 of lower word
+							sysmem_wstrb_latch <= 8'h0F;
+						end else begin
+							sysmem_wdata_latch <= {rval2[31:0], 32'd0}; // bytes 4-7 of upper word
+							sysmem_wstrb_latch <= 8'hF0;
+						end
+						execmode <= WAIT_SYSMEM_WRITE_ADDR;
 					end
 
-					4'hF: begin // UNUSED1
+					4'hF: begin // SYSMEM_READ
+						// Read 32-bit word from system memory at 32-bit address in rval1, store into rd
+						// Address must be 4-byte aligned; bit[2] selects the 32-bit lane on the 64-bit AXI bus
+						sysmem_arvalid      <= 1'b1;
+						sysmem_araddr       <= rval1;
+						sysmem_arlen        <= 4'd0;               // single beat
+						sysmem_arsize       <= SYSMEM_SIZE_4_BYTE;
+						sysmem_arburst      <= SYSMEM_BURST_INCR;
+						sysmem_addr2_latch  <= rval1[2]; // latch for finalize
+						execmode <= WAIT_SYSMEM_READ_ADDR;
 					end
 
 					default: begin // ILLEGAL OPCODE
@@ -316,7 +400,7 @@ always @(posedge aclk) begin
 			FINALIZE_READ: begin
 				// Complete the MEM_READ operation
 				rwren <= 1'b1;
-				rdin <= instruction[23:0];
+				rdin <= instruction[31:0];
 				execmode <= FETCH;
 			end
 
@@ -324,6 +408,56 @@ always @(posedge aclk) begin
 				// First negate the test result then AND with the mask in imm8 to produce the final result
 				cmpreg <= ((EQ ^ imm8[3]) & imm8[2]) | ((LT ^ imm8[3]) & imm8[1]) | ((LE ^ imm8[3]) & imm8[0]);
 				execmode <= FETCH;
+			end
+
+			// ---- System memory write ----
+			WAIT_SYSMEM_WRITE_ADDR: begin
+				if (sysmem_awready) begin
+					sysmem_awvalid <= 1'b0;
+					sysmem_wvalid  <= 1'b1;
+					sysmem_wdata   <= sysmem_wdata_latch;
+					sysmem_wstrb   <= sysmem_wstrb_latch;
+					sysmem_wlast   <= 1'b1;
+					execmode <= WAIT_SYSMEM_WRITE_DATA;
+				end
+			end
+
+			WAIT_SYSMEM_WRITE_DATA: begin
+				if (sysmem_wready) begin
+					sysmem_wvalid <= 1'b0;
+					sysmem_wlast  <= 1'b0;
+					sysmem_bready <= 1'b1;
+					execmode <= WAIT_SYSMEM_WRITE_RESP;
+				end
+			end
+
+			WAIT_SYSMEM_WRITE_RESP: begin
+				if (sysmem_bvalid) begin
+					sysmem_bready <= 1'b0;
+					execmode <= FETCH;
+				end
+			end
+
+			// ---- System memory read ----
+			WAIT_SYSMEM_READ_ADDR: begin
+				if (sysmem_arready) begin
+					sysmem_arvalid <= 1'b0;
+					sysmem_rready  <= 1'b1;
+					execmode <= WAIT_SYSMEM_READ_DATA;
+				end
+			end
+
+			WAIT_SYSMEM_READ_DATA: begin
+				if (sysmem_rvalid) begin
+					sysmem_rready <= 1'b0;
+					rwren <= 1'b1;
+					// Select the correct 32-bit lane and take lower 24 bits
+						if (sysmem_addr2_latch == 1'b0)
+						rdin <= sysmem_rdata[31:0];  // lower 32-bit word
+					else
+						rdin <= sysmem_rdata[63:32]; // upper 32-bit word
+					execmode <= FETCH;
+				end
 			end
 
 			HALT: begin
