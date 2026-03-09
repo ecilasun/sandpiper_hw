@@ -161,17 +161,8 @@ set_clock_groups -name grpF -asynchronous -group [get_clocks -of_objects [get_pi
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
 
-create_pblock pblock_videomodule_0
-add_cells_to_pblock [get_pblocks pblock_videomodule_0] [get_cells -quiet [list blockone_i/videomodule_0]]
-resize_pblock [get_pblocks pblock_videomodule_0] -add {CLOCKREGION_X1Y1:CLOCKREGION_X1Y1}
 
 
 
 
-create_pblock pblock_vcpmodule_0
-add_cells_to_pblock [get_pblocks pblock_vcpmodule_0] [get_cells -quiet [list blockone_i/vcpmodule_0]]
-resize_pblock [get_pblocks pblock_vcpmodule_0] -add {SLICE_X50Y100:SLICE_X113Y149 \
-                                                     DSP48_X3Y40:DSP48_X4Y59 \
-                                                     RAMB18_X3Y40:RAMB18_X5Y59 \
-                                                     RAMB36_X3Y20:RAMB36_X5Y29 \
-}
+

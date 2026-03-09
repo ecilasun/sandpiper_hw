@@ -64,15 +64,20 @@ reg [23:0] imm24;
 wire [31:0] rval1;
 wire [31:0] rval2;
 
+// Feed instruction bits directly so the RAMD32 read settles during WAIT_FETCH,
+// not during EXEC. rval1_lat/rval2_lat capture the result at the end of WAIT_FETCH.
 vcpregisterfile vcpregisterInst(
 	.clock(aclk),
-	.rs1(rs1),
-	.rs2(rs2),
+	.rs1(instruction[11:8]),
+	.rs2(instruction[15:12]),
 	.rd(rd),
 	.wren(rwren), 
 	.din(rdin),
 	.rval1(rval1),
 	.rval2(rval2) );
+
+reg [31:0] rval1_lat;
+reg [31:0] rval2_lat;
 
 // --------------------------------------------------
 // Program memory
@@ -144,30 +149,32 @@ assign runstate = execmode;
 assign debug_pc = PC;
 assign debugopcode = opcode;
 
+// logicout and aluout are driven from the latched register values so that
+// the RAMD32 read is NOT on the EXEC-state critical path.
 reg [31:0] logicout;
-always @(imm8, rval1, rval2) begin
+always @(imm8, rval1_lat, rval2_lat) begin
 	unique case (imm8)
-		8'h00: logicout = rval1 & rval2;				// AND  - bit AND
-		8'h01: logicout = rval1 | rval2;				// OR   - inclusive OR
-		8'h02: logicout = rval1 ^ rval2;				// XOR  - exclusive OR
-		8'h03: logicout = rval1 >>> rval2[4:0];			// ASR  - arithmetic shift right
-		8'h04: logicout = rval1 >> rval2[4:0];			// SHR  - bit shift right
-		8'h05: logicout = rval1 << rval2[4:0];			// SHL  - bit shift left
-		8'h06: logicout = ~rval1;						// NEG  - bit NOT
-		8'h07: logicout = {31'd0, cmpreg};				// RCMP - compare flag readout
-		8'h08: logicout = {24'd0, vpucontrolregister};	// RCTL - VPU control register readout 
-		default: logicout = 24'd0;						// zero in all other cases
+		8'h00: logicout = rval1_lat & rval2_lat;			// AND  - bit AND
+		8'h01: logicout = rval1_lat | rval2_lat;			// OR   - inclusive OR
+		8'h02: logicout = rval1_lat ^ rval2_lat;			// XOR  - exclusive OR
+		8'h03: logicout = rval1_lat >>> rval2_lat[4:0];		// ASR  - arithmetic shift right
+		8'h04: logicout = rval1_lat >> rval2_lat[4:0];		// SHR  - bit shift right
+		8'h05: logicout = rval1_lat << rval2_lat[4:0];		// SHL  - bit shift left
+		8'h06: logicout = ~rval1_lat;						// NEG  - bit NOT
+		8'h07: logicout = {31'd0, cmpreg};					// RCMP - compare flag readout
+		8'h08: logicout = {24'd0, vpucontrolregister};		// RCTL - VPU control register readout 
+		default: logicout = 32'd0;							// zero in all other cases
 	endcase
 end
 
 reg [31:0] aluout;
-always @(imm8, rval1, rval2) begin
+always @(imm8, rval1_lat, rval2_lat) begin
 	unique case (imm8)
-		8'd00: aluout = rval1 + rval2;		// ADD
-		8'd01: aluout = rval1 - rval2;		// SUB
-		8'd02: aluout = rval1 + 32'd1;		// INC
-		8'd03: aluout = rval1 - 32'd1;		// DEC
-		default: aluout = 24'd0;			// zero in all other cases
+		8'd00: aluout = rval1_lat + rval2_lat;	// ADD
+		8'd01: aluout = rval1_lat - rval2_lat;	// SUB
+		8'd02: aluout = rval1_lat + 32'd1;		// INC
+		8'd03: aluout = rval1_lat - 32'd1;		// DEC
+		default: aluout = 32'd0;				// zero in all other cases
 	endcase
 end
 
@@ -194,6 +201,8 @@ always @(posedge aclk) begin
 		EQ <= 1'b0;
 		LT <= 1'b0;
 		LE <= 1'b0;
+		rval1_lat <= 32'd0;
+		rval2_lat <= 32'd0;
 		// System memory AXI reset
 		sysmem_arvalid <= 1'b0;
 		sysmem_araddr  <= 32'd0;
@@ -215,7 +224,12 @@ always @(posedge aclk) begin
 		sysmem_wdata_latch  <= 64'd0;
 		sysmem_wstrb_latch  <= 8'd0;
 	end else begin
-		palwe_reg <= 1'b0;
+		// Latch register file outputs every cycle. Because the register file read
+		// address is wired directly to instruction bits, these are stable and correct
+		// by the end of WAIT_FETCH, well before EXEC needs them.
+		rval1_lat <= rval1;
+		rval2_lat <= rval2;
+
 		rwren <= 1'b0;
 		memwe <= 1'd0;
 
@@ -262,13 +276,13 @@ always @(posedge aclk) begin
 						// rs1 is the palette address
 						// rs2 is the write value
 						palwe_reg <= 1'b1;
-						paladdr_reg <= rval1[7:0];
-						paldout_reg <= rval2[23:0];
+						paladdr_reg <= rval1_lat[7:0];
+						paldout_reg <= rval2_lat[23:0];
 					end
 
 					4'h3: begin // SCANLINE_WAIT
 						// Wait until scanline matches rs1
-						if (scanline == rval1[9:0]) begin
+						if (scanline == rval1_lat[9:0]) begin
 							// Condition met, proceed
 						end else begin
 							// Condition not met, stay in EXEC state and on same instruction
@@ -279,7 +293,7 @@ always @(posedge aclk) begin
 
 					4'h4: begin // SCANPIXEL_WAIT
 						// Wait until scanpixel matches rs1
-						if (scanpixel == rval1[9:0]) begin
+						if (scanpixel == rval1_lat[9:0]) begin
 							// Condition met, proceed
 						end else begin
 							// Condition not met, stay in EXEC state and on same instruction
@@ -296,16 +310,16 @@ always @(posedge aclk) begin
 					4'h6: begin // JMP
 						// Jump to 13 bit address in rs1
 						if (rd[0] == 1'b0) // Normal jump
-							nextPC <= rval1[12:0];
+							nextPC <= rval1_lat[12:0];
 						else // Indirect jump via immediate offset (2's complement signed)
 							nextPC <= PC + signed'(imm16[12:0]);
 					end
 
 					4'h7: begin // CMP
 						// Compare rs1 and rs2 and write flags to rd
-						EQ <= (rval1 == rval2) ? 1'b1 : 1'b0;
-						LT <= (rval1 < rval2) ? 1'b1 : 1'b0;
-						LE <= (rval1 <= rval2) ? 1'b1 : 1'b0;
+						EQ <= (rval1_lat == rval2_lat) ? 1'b1 : 1'b0;
+						LT <= (rval1_lat < rval2_lat) ? 1'b1 : 1'b0;
+						LE <= (rval1_lat <= rval2_lat) ? 1'b1 : 1'b0;
 						execmode <= FINALIZE_COMPARE;
 					end
 
@@ -313,7 +327,7 @@ always @(posedge aclk) begin
 						// Take branch to address in rs1 if cmpreg is true from previous CMP instruction
 						if (cmpreg) begin
 							if (rd[0] == 1'b0) // Normal branch
-								nextPC <= rval1[12:0];
+								nextPC <= rval1_lat[12:0];
 							else // Indirect branch via immediate offset (2's complement signed)
 								nextPC <= PC + signed'(imm16[12:0]);
 						end
@@ -322,15 +336,15 @@ always @(posedge aclk) begin
 					4'h9: begin // MEM_WRITE
 						// Write rs2 to program memory at address in rs1
 						memwe <= 1'b1;
-						memdin <= rval2[31:0];
+						memdin <= rval2_lat[31:0];
 						// NOTE: We hijack the PC here to perform the write which will be overwritten with nextPC during fetch
-						PC <= rval1[12:0];
+						PC <= rval1_lat[12:0];
 					end
 
 					4'hA: begin // MEM_READ
 						// Read from program memory at address in rs1 into rd
 						// NOTE: We hijack the PC here to perform the read which will be overwritten with nextPC during fetch
-						PC <= rval1[12:0];
+						PC <= rval1_lat[12:0];
 						execmode <= WAIT_READ;
 					end
 
@@ -355,33 +369,33 @@ always @(posedge aclk) begin
 					end
 
 					4'hE: begin // SYSMEM_WRITE
-						// Write rval2[31:0] to system memory at 32-bit address in rval1
+						// Write rval2_lat[31:0] to system memory at 32-bit address in rval1_lat
 						// Address must be 4-byte aligned; bit[2] selects the 32-bit lane on the 64-bit AXI bus
 						sysmem_awvalid <= 1'b1;
-						sysmem_awaddr  <= rval1;
+						sysmem_awaddr  <= rval1_lat;
 						sysmem_awlen   <= 4'd0;               // single beat
 						sysmem_awsize  <= SYSMEM_SIZE_4_BYTE;
 						sysmem_awburst <= SYSMEM_BURST_INCR;
 						// Pre-compute write data and strobe based on address bit[2]
-						if (rval1[2] == 1'b0) begin
-							sysmem_wdata_latch <= {32'd0, rval2[31:0]}; // bytes 0-3 of lower word
+						if (rval1_lat[2] == 1'b0) begin
+							sysmem_wdata_latch <= {32'd0, rval2_lat[31:0]}; // bytes 0-3 of lower word
 							sysmem_wstrb_latch <= 8'h0F;
 						end else begin
-							sysmem_wdata_latch <= {rval2[31:0], 32'd0}; // bytes 4-7 of upper word
+							sysmem_wdata_latch <= {rval2_lat[31:0], 32'd0}; // bytes 4-7 of upper word
 							sysmem_wstrb_latch <= 8'hF0;
 						end
 						execmode <= WAIT_SYSMEM_WRITE_ADDR;
 					end
 
 					4'hF: begin // SYSMEM_READ
-						// Read 32-bit word from system memory at 32-bit address in rval1, store into rd
+						// Read 32-bit word from system memory at 32-bit address in rval1_lat, store into rd
 						// Address must be 4-byte aligned; bit[2] selects the 32-bit lane on the 64-bit AXI bus
 						sysmem_arvalid      <= 1'b1;
-						sysmem_araddr       <= rval1;
+						sysmem_araddr       <= rval1_lat;
 						sysmem_arlen        <= 4'd0;               // single beat
 						sysmem_arsize       <= SYSMEM_SIZE_4_BYTE;
 						sysmem_arburst      <= SYSMEM_BURST_INCR;
-						sysmem_addr2_latch  <= rval1[2]; // latch for finalize
+						sysmem_addr2_latch  <= rval1_lat[2]; // latch for finalize
 						execmode <= WAIT_SYSMEM_READ_ADDR;
 					end
 
