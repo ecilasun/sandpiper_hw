@@ -232,6 +232,7 @@ always @(posedge aclk) begin
 
 		rwren <= 1'b0;
 		memwe <= 1'd0;
+		palwe_reg <= 1'b0;
 
 		unique case (execmode)
 			FETCH: begin
