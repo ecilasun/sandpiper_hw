@@ -626,11 +626,21 @@ vpucmdmodetype cmdmode = WCMD;
 logic [31:0] vpucmd;
 logic [7:0] vpuctl;
 logic blankt;
+logic [7:0] default_scanstride;
 
 logic blanktracker;
 logic blanktrigger;
 
 assign vpucontrolregister = vpuctl;
+
+always_comb begin
+	unique case (vpucmd[2:1])
+		2'b00: default_scanstride = 8'd2; // 320x240 8bpp => 384 bytes fetched into cache
+		2'b01: default_scanstride = 8'd4; // 640x480 8bpp => 640 bytes visible
+		2'b10: default_scanstride = 8'd4; // 320x240 16bpp => 640 bytes visible
+		2'b11: default_scanstride = 8'd9; // 640x480 16bpp => 1280 bytes visible
+	endcase
+end
 
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
@@ -711,7 +721,7 @@ always_ff @(posedge aclk) begin
 					scanwidth <= vpufifodout[1];	// 0:320-wide, 1:640-wide
 					colormode <= vpufifodout[2];	// 0:8bit indexed, 1:16bit rgb
 					scandouble <= vpufifodout[3];	// 0:no scanline doubling 1:scanline doubling 
-					scanstride <= vpufifodout[11:4]; // 0=>128 bytes, 1=>256 bytes, etc.
+					scanstride <= (vpufifodout[11:4] == 8'd0) ? default_scanstride : vpufifodout[11:4];
 					coarse_scroll <= 8'd0;
 					fine_scroll <= 7'd0;
 
