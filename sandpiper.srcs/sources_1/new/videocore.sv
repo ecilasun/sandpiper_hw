@@ -262,10 +262,13 @@ assign vpufifore = cmdre;
 // Setup
 // --------------------------------------------------
 
-logic [9:0] burstmask;
+logic [11:0] burstmask;
 logic scanwidth;			// 0:320 pixel wide, 1:640 pixel wide
 logic colormode;			// 0:indexed color, 1:16bit color
 logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
+logic [7:0] scanstride;		// Line stride in 128-byte units minus one (0 => 128 bytes)
+logic [7:0] coarse_scroll;	// Per-scanline framebuffer offset in 128-byte units
+logic [6:0] fine_scroll;		// Scanline cache read offset in pixels
 
 // --------------------------------------------------
 // Scanline cache - Simple Dual-Port BRAM (xpm_memory_sdpram)
@@ -281,19 +284,15 @@ logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
-logic [7:0] scanlinewa_offset;
 logic [7:0] scanlinera;
-logic [7:0] scanlinera_offset;
 logic [7:0] rdata_cnt;
-logic [3:0] pixel_offset;
 
 // Layer B write port signals
 logic scanlinewe_b;
 
 // CDC: synchronize slowly-changing aclk-domain controls into clk25.
 // These only change on VPU commands (rare), so 2-flop sync is safe.
-(* async_reg = "true" *) logic [7:0] scanlinera_offset_sync, scanlinera_offset_c25;
-(* async_reg = "true" *) logic [3:0] pixel_offset_sync, pixel_offset_c25;
+(* async_reg = "true" *) logic [6:0] fine_scroll_sync, fine_scroll_c25;
 (* async_reg = "true" *) logic scanwidth_sync, scanwidth_c25;
 (* async_reg = "true" *) logic colormode_sync, colormode_c25;
 (* async_reg = "true" *) logic layerb_enable_sync, layerb_enable_c25;
@@ -301,10 +300,8 @@ logic scanlinewe_b;
 (* async_reg = "true" *) logic [15:0] keycolor_sync, keycolor_c25;
 
 always_ff @(posedge clk25) begin
-	scanlinera_offset_sync <= scanlinera_offset;
-	scanlinera_offset_c25  <= scanlinera_offset_sync;
-	pixel_offset_sync      <= pixel_offset;
-	pixel_offset_c25       <= pixel_offset_sync;
+	fine_scroll_sync       <= fine_scroll;
+	fine_scroll_c25        <= fine_scroll_sync;
 	scanwidth_sync         <= scanwidth;
 	scanwidth_c25          <= scanwidth_sync;
 	colormode_sync         <= colormode;
@@ -319,7 +316,7 @@ end
 
 // BRAM read-side signals
 wire [63:0] scanlinedout;
-wire [7:0] bram_rdaddr = scanlinera + scanlinera_offset_c25;
+wire [7:0] bram_rdaddr = scanlinera;
 
 logic [3:0] pixelscanaddr;
 logic [3:0] pixelscanaddr_d; // 1-cycle delayed to match BRAM output
@@ -359,7 +356,7 @@ xpm_memory_sdpram #(
 	.clka              (aclk),
 	.ena               (1'b1),
 	.wea               (scanlinewe),
-	.addra             (scanlinewa + scanlinewa_offset),
+	.addra             (scanlinewa),
 	.dina              (scanlinedin),
 	// Read port (clk25 domain)
 	.clkb              (clk25),
@@ -413,7 +410,7 @@ xpm_memory_sdpram #(
 	.clka              (aclk),
 	.ena               (1'b1),
 	.wea               (scanlinewe_b),
-	.addra             (scanlinewa + scanlinewa_offset),
+	.addra             (scanlinewa),
 	.dina              (scanlinedin),
 	// Read port (clk25 domain) - same address as layer A
 	.clkb              (clk25),
@@ -438,7 +435,7 @@ xpm_memory_sdpram #(
 // 1-cycle read latency, data is aligned with the current video_x.
 // Wrap 799->0 to handle the end-of-line boundary correctly.
 wire [9:0] video_x_next = (video_x == 10'd799) ? 10'd0 : (video_x + 10'd1);
-wire [9:0] video_x_lookahead = video_x_next + pixel_offset_c25;
+wire [10:0] video_x_lookahead = {1'b0, video_x_next} + {{4{1'b0}}, fine_scroll_c25};
 
 always_comb begin
 	unique case ({scanwidth_c25, colormode_c25})
@@ -616,7 +613,6 @@ typedef enum logic [4:0] {
 	VMODE,
 	SHIFTCACHE,
 	SHIFTSCANOUT,
-	SHIFTPIXEL,
 	SETSECONDBUFFER,
 	SYNCSWAP,
 	WCONTROLREG,
@@ -647,15 +643,15 @@ always_ff @(posedge aclk) begin
 		layerb_enable <= 1'b0;				// Single layer by default
 		mixmode <= 3'd0;					// A-only by default
 		keycolor <= 16'h0000;				// Default key color = black
-		burstmask <= 10'b1111111111;		// 640x2 bytes
+		burstmask <= 12'b001111111111;		// 640x480x16bpp plus fine-scroll cache margin
 		scanenable <= 1'b1;					// Video output is enabled by default
 		cmdre <= 1'b0;
 		scanwidth <= 1'b1;					// 640-wide by default
 		colormode <= 1'b1;					// 16 bit color by default
 		scandouble <= 1'b0;					// No scanline doubling by default
-		scanlinewa_offset <= 8'd0;
-		scanlinera_offset <= 8'd0;
-		pixel_offset <= 4'd0;
+		scanstride <= 8'd9;					// 1280 bytes for the default 640x480x16bpp mode
+		coarse_scroll <= 8'd0;
+		fine_scroll <= 7'd0;
 		cmdmode <= WCMD;
 		syncmode <= 1'b0;
 		swapmode <= 1'b0;
@@ -685,10 +681,10 @@ always_ff @(posedge aclk) begin
 				case (vpucmd[7:0])
 					8'h00:		cmdmode <= SETVPAGE;			// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
 					8'h01:		cmdmode <= FINALIZE;			// Reserved for future
-					8'h02:		cmdmode <= VMODE;				// Set up video mode or turn off scan logic (default is 320x240*8bit paletted)
-					8'h03:		cmdmode <= SHIFTCACHE;			// Offset for scanline cache writes
-					8'h04:		cmdmode <= SHIFTSCANOUT;		// Offset for scanline cache reads
-					8'h05:		cmdmode <= SHIFTPIXEL;			// Offset at pixel level
+					8'h02:		cmdmode <= VMODE;				// Set mode bits and framebuffer line stride
+					8'h03:		cmdmode <= SHIFTCACHE;			// Coarse scroll in 128-byte steps
+					8'h04:		cmdmode <= SHIFTSCANOUT;		// Fine scroll in pixels
+					8'h05:		cmdmode <= FINALIZE;			// Reserved for future
 					8'h06:		cmdmode <= SETSECONDBUFFER;		// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;			// Wait for vsync and swap buffers on the hardware side
 					8'h08:		cmdmode <= WCONTROLREG;			// Control register write
@@ -715,16 +711,16 @@ always_ff @(posedge aclk) begin
 					scanwidth <= vpufifodout[1];	// 0:320-wide, 1:640-wide
 					colormode <= vpufifodout[2];	// 0:8bit indexed, 1:16bit rgb
 					scandouble <= vpufifodout[3];	// 0:no scanline doubling 1:scanline doubling 
-					// ? <= vpufifodout[31:4] unused for now
+					scanstride <= vpufifodout[11:4]; // 0=>128 bytes, 1=>256 bytes, etc.
+					coarse_scroll <= 8'd0;
+					fine_scroll <= 7'd0;
 
-					// Set up burst count depending on video width and bit depth
-					// Upper 4 bits contain whole burst count (i.e. N * 4'hF)
-					// Lower 4 bits contain partial burst length
+					// Fetch enough cache data for the visible window plus the worst-case fine scroll.
 					unique case (vpufifodout[2:1])
-						2'b00: burstmask <= 10'b0000000111; // 320*240 8bpp, 3*128 (384 bytes)
-						2'b01: burstmask <= 10'b0000011111; // 640*480 8bpp, 5*128 (640 bytes)
-						2'b10: burstmask <= 10'b0000011111; // 320*240 16bpp, 5*128 (640 bytes)
-						2'b11: burstmask <= 10'b1111111111; // 640*480 16bpp, 10*128 (1280 bytes)
+						2'b00: burstmask <= 12'b000000001111; // 320*240 8bpp + up to 127 fine-scroll pixels = 4*128 bytes
+						2'b01: burstmask <= 12'b000000111111; // 640*480 8bpp + up to 127 fine-scroll pixels = 6*128 bytes
+						2'b10: burstmask <= 12'b000001111111; // 320*240 16bpp + up to 127 fine-scroll pixels = 7*128 bytes
+						2'b11: burstmask <= 12'b111111111111; // 640*480 16bpp + up to 127 fine-scroll pixels = 12*128 bytes
 					endcase
 
 					// Advance FIFO
@@ -735,8 +731,8 @@ always_ff @(posedge aclk) begin
 
 			SHIFTCACHE: begin
 				if (vpufifovalid && ~vpufifoempty) begin
-					// Scanline cache write address offset
-					scanlinewa_offset <= vpufifodout[7:0];
+					// Framebuffer start offset, in 128-byte multiples, applied to every scanline.
+					coarse_scroll <= vpufifodout[7:0];
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
@@ -745,18 +741,8 @@ always_ff @(posedge aclk) begin
 
 			SHIFTSCANOUT: begin
 				if (vpufifovalid && ~vpufifoempty) begin
-					// Scanline cache read address offset
-					scanlinera_offset <= vpufifodout[7:0];
-					// Advance FIFO
-					cmdre <= 1'b1;
-					cmdmode <= FINALIZE;
-				end
-			end
-
-			SHIFTPIXEL: begin
-				if (vpufifovalid && ~vpufifoempty) begin
-					// Pixel address offset
-					pixel_offset <= vpufifodout[3:0];
+					// Pixel-granular scanline cache read offset.
+					fine_scroll <= vpufifodout[6:0];
 					// Advance FIFO
 					cmdre <= 1'b1;
 					cmdmode <= FINALIZE;
@@ -903,10 +889,14 @@ assign vpustate = {12'd0, vpuctl, ~vpufifoempty, scanline, blanktoggle};
 typedef enum logic [2:0] {DETECTFRAMESTART, STARTLOAD, STARTSCANOUT, WAITADDR, DATABURST, ADVANCESCANLINEADDRESS, STARTLOAD_B} scanstatetype;
 scanstatetype scanstate;
 
-logic [9:0] burststate;
-logic [9:0] burststate_b;
+logic [11:0] burststate;
+logic [11:0] burststate_b;
 logic onFirstScanline;
 logic fetchlayer;  // 0=layer A, 1=layer B
+logic [31:0] scanlinebase;
+logic [31:0] scanlinebase_b;
+wire [31:0] stride_bytes = {17'd0, scanstride, 7'd0} + 32'd128;
+wire [31:0] coarse_scroll_bytes = {17'd0, coarse_scroll, 7'd0};
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		scanlinewe <= 1'b0;
@@ -927,12 +917,14 @@ always_ff @(posedge aclk) begin
 		s_axi_arlen <= 0;
 		s_axi_arburst <= BURST_INCR;
 		s_axi_arsize <= SIZE_8_BYTE; // 64bit read bus
+		scanlinebase <= 32'd0;
+		scanlinebase_b <= 32'd0;
 		scanoffset <= 32'd0;
 		scanoffset_b <= 32'd0;
 		scanlinewa <= 8'd0;
 		rdata_cnt <= 8'd0;
-		burststate <= 10'd0;
-		burststate_b <= 10'd0;
+		burststate <= 12'd0;
+		burststate_b <= 12'd0;
 		onFirstScanline <= 1'b0;
 		fetchlayer <= 1'b0;
 		scanstate <= DETECTFRAMESTART;
@@ -946,8 +938,10 @@ always_ff @(posedge aclk) begin
 				if (scanenable && (scanline == 10'd524)) begin
 					// NOTE: VCP will be able to do this at per-scanline resolution
 					// so we can implement effects like split-screen / sliding screens etc.
-					scanoffset <= scanaddr;
-					scanoffset_b <= scanaddr_b;
+					scanlinebase <= scanaddr + coarse_scroll_bytes;
+					scanoffset <= scanaddr + coarse_scroll_bytes;
+					scanlinebase_b <= scanaddr_b + coarse_scroll_bytes;
+					scanoffset_b <= scanaddr_b + coarse_scroll_bytes;
 					onFirstScanline <= 1'b1;
 					fetchlayer <= 1'b0;
 					scanstate <= STARTLOAD;
@@ -981,9 +975,9 @@ always_ff @(posedge aclk) begin
 				s_axi_arlen <= 4'hF;
 				// Shift to next burst count
 				if (fetchlayer)
-					burststate_b <= {1'b0, burststate_b[9:1]};
+					burststate_b <= {1'b0, burststate_b[11:1]};
 				else
-					burststate <= {1'b0, burststate[9:1]};
+					burststate <= {1'b0, burststate[11:1]};
 				scanstate <= WAITADDR;
 			end
 
@@ -1017,20 +1011,30 @@ always_ff @(posedge aclk) begin
 			ADVANCESCANLINEADDRESS: begin
 				// Advance the address for whichever layer we just fetched
 				if (fetchlayer) begin
-					scanoffset_b <= scanoffset_b + 128;
-					// Layer B burst done? Go back to STARTLOAD (both layers fetched for this line)
-					scanstate <= burststate_b[0] ? STARTSCANOUT : STARTLOAD;
+					if (burststate_b[0]) begin
+						scanoffset_b <= scanoffset_b + 32'd128;
+						scanstate <= STARTSCANOUT;
+					end else begin
+						scanlinebase_b <= scanlinebase_b + stride_bytes;
+						scanoffset_b <= scanlinebase_b + stride_bytes;
+						// Layer B burst done? Go back to STARTLOAD (both layers fetched for this line)
+						scanstate <= STARTLOAD;
+					end
 				end else begin
-					scanoffset <= scanoffset + 128;
 					if (burststate[0]) begin
 						// More layer A bursts remaining
+						scanoffset <= scanoffset + 32'd128;
 						scanstate <= STARTSCANOUT;
-					end else if (layerb_enable) begin
-						// Layer A done, start layer B
-						scanstate <= STARTLOAD_B;
 					end else begin
-						// Single layer, done
-						scanstate <= STARTLOAD;
+						scanlinebase <= scanlinebase + stride_bytes;
+						scanoffset <= scanlinebase + stride_bytes;
+						if (layerb_enable) begin
+							// Layer A done, start layer B
+							scanstate <= STARTLOAD_B;
+						end else begin
+							// Single layer, done
+							scanstate <= STARTLOAD;
+						end
 					end
 				end
 			end
