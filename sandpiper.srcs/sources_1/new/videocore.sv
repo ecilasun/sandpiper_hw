@@ -235,7 +235,7 @@ logic [31:0] scanaddr_b;
 logic [31:0] scanaddrsecondary_b;
 logic [31:0] scanoffset_b;
 logic layerb_enable;       // 1: dual-layer mode active
-logic [2:0] mixmode;       // 0:A-only, 1:B-over-A-keycolor, 2:50/50-blend, 3:add-saturate, 4:B-only
+logic [2:0] mixmode;       // 0:A-only, 1:B-over-A-keycolor, 2:50/50-blend, 3:add-saturate, 4:B-only, 5:3-bit-alpha-blend
 logic [15:0] keycolor;     // Transparent color for layer B in key mode
 
 // --------------------------------------------------
@@ -514,7 +514,7 @@ end
 // --------------------------------------------------
 // Layer mixer (16bpp RGB565 mix modes, clk25 domain)
 // --------------------------------------------------
-// mixmode: 0=75%A+25%B, 1=B-over-A (keycolor transparency), 2=50%A+50%B blend, 3=add-saturate, 4=25%A+75%B
+// mixmode: 0=75%A+25%B, 1=B-over-A (keycolor transparency), 2=50%A+50%B blend, 3=add-saturate, 4=25%A+75%B, 5=3-bit-alpha-blend
 
 logic [15:0] rgbcolor;
 logic [7:0] paletteindex;
@@ -547,6 +547,30 @@ wire [4:0] r_75a = ({2'b0, r_a} + {1'b0, r_a, 1'b0} + {2'b0, r_b}) >> 2;
 wire [5:0] g_75a = ({2'b0, g_a} + {1'b0, g_a, 1'b0} + {2'b0, g_b}) >> 2;
 wire [4:0] b_75a = ({2'b0, b_a} + {1'b0, b_a, 1'b0} + {2'b0, b_b}) >> 2;
 
+// 3-bit alpha blend (mode 5): alpha = {b_b[0], g_b[0], r_b[0]} from layer B
+// result = (A * (7-alpha) + B * alpha) >> 3  (approximate lerp, divide by 8)
+// Use shift-and-add instead of multipliers to save timing:
+//   alpha*val:  0->0, 1->val, 2->val<<1, 3->(val<<1)+val, 4->val<<2,
+//               5->(val<<2)+val, 6->(val<<2)+(val<<1), 7->(val<<2)+(val<<1)+val
+wire [2:0] alpha = {b_b[0], g_b[0], r_b[0]};
+wire [2:0] alpha_inv = 3'd7 - alpha;
+
+// Per-channel multiply-by-alpha using shifts (no multiplier blocks)
+wire [4:0] r_b_alpha  = (alpha == 0)  ? 5'd0 : (alpha == 1)  ? r_b : (alpha == 2)  ? {r_b, 1'b0} : (alpha == 3)  ? ({r_b, 1'b0} + r_b) : (alpha == 4)  ? {r_b, 2'b0} : (alpha == 5)  ? ({r_b, 2'b0} + r_b) : (alpha == 6)  ? ({r_b, 2'b0} + {r_b, 1'b0}) : {r_b, 2'b0} + {r_b, 1'b0} + r_b;
+wire [4:0] r_a_alpha_inv = (alpha_inv == 0)  ? 5'd0 : (alpha_inv == 1)  ? r_a : (alpha_inv == 2)  ? {r_a, 1'b0} : (alpha_inv == 3)  ? ({r_a, 1'b0} + r_a) : (alpha_inv == 4)  ? {r_a, 2'b0} : (alpha_inv == 5)  ? ({r_a, 2'b0} + r_a) : (alpha_inv == 6)  ? ({r_a, 2'b0} + {r_a, 1'b0}) : {r_a, 2'b0} + {r_a, 1'b0} + r_a;
+wire [7:0] r_blend = r_b_alpha + r_a_alpha_inv;
+wire [4:0] r_alpha_blend = r_blend[7:3];
+
+wire [5:0] g_b_alpha  = (alpha == 0)  ? 6'd0 : (alpha == 1)  ? g_b : (alpha == 2)  ? {g_b, 1'b0} : (alpha == 3)  ? ({g_b, 1'b0} + g_b) : (alpha == 4)  ? {g_b, 2'b0} : (alpha == 5)  ? ({g_b, 2'b0} + g_b) : (alpha == 6)  ? ({g_b, 2'b0} + {g_b, 1'b0}) : {g_b, 2'b0} + {g_b, 1'b0} + g_b;
+wire [5:0] g_a_alpha_inv = (alpha_inv == 0)  ? 6'd0 : (alpha_inv == 1)  ? g_a : (alpha_inv == 2)  ? {g_a, 1'b0} : (alpha_inv == 3)  ? ({g_a, 1'b0} + g_a) : (alpha_inv == 4)  ? {g_a, 2'b0} : (alpha_inv == 5)  ? ({g_a, 2'b0} + g_a) : (alpha_inv == 6)  ? ({g_a, 2'b0} + {g_a, 1'b0}) : {g_a, 2'b0} + {g_a, 1'b0} + g_a;
+wire [8:0] g_blend = g_b_alpha + g_a_alpha_inv;
+wire [5:0] g_alpha_blend = g_blend[8:3];
+
+wire [4:0] b_b_alpha  = (alpha == 0)  ? 5'd0 : (alpha == 1)  ? b_b : (alpha == 2)  ? {b_b, 1'b0} : (alpha == 3)  ? ({b_b, 1'b0} + b_b) : (alpha == 4)  ? {b_b, 2'b0} : (alpha == 5)  ? ({b_b, 2'b0} + b_b) : (alpha == 6)  ? ({b_b, 2'b0} + {b_b, 1'b0}) : {b_b, 2'b0} + {b_b, 1'b0} + b_b;
+wire [4:0] b_a_alpha_inv = (alpha_inv == 0)  ? 5'd0 : (alpha_inv == 1)  ? b_a : (alpha_inv == 2)  ? {b_a, 1'b0} : (alpha_inv == 3)  ? ({b_a, 1'b0} + b_a) : (alpha_inv == 4)  ? {b_a, 2'b0} : (alpha_inv == 5)  ? ({b_a, 2'b0} + b_a) : (alpha_inv == 6)  ? ({b_a, 2'b0} + {b_a, 1'b0}) : {b_a, 2'b0} + {b_a, 1'b0} + b_a;
+wire [7:0] b_blend = b_b_alpha + b_a_alpha_inv;
+wire [4:0] b_alpha_blend = b_blend[7:3];
+
 always_comb begin
 	if (~layerb_enable_c25) begin
 		// Single layer mode - pass through A directly
@@ -561,6 +585,7 @@ always_comb begin
 			3'd2: rgbcolor = {r_avg, g_avg, b_avg};                                                        // 50/50 blend
 			3'd3: rgbcolor = {r_sat, g_sat, b_sat};                                                        // Additive saturate
 			3'd4: rgbcolor = {r_25a, g_25a, b_25a};                                                        // 25% A, 75% B
+			3'd5: rgbcolor = {r_alpha_blend, g_alpha_blend, b_alpha_blend};                                // 3-bit alpha blend (alpha from B LSBs)
 			default: rgbcolor = rgbcolor_a;
 		endcase
 	end
@@ -804,8 +829,8 @@ always_ff @(posedge aclk) begin
 
 			SETMIXMODE: begin
 				// vpucmd[8]    = layerb_enable
-				// vpucmd[11:9] = mixmode (0=A-only, 1=B-over-A-key, 2=50/50, 3=add-sat, 4=B-only)
-				// vpucmd[27:12] = keycolor (RGB565)
+				// vpucmd[11:9] = mixmode (0=75A/25B, 1=B-over-A-key, 2=50/50, 3=add-sat, 4=25A/75B, 5=3-bit-alpha-blend)
+				// vpucmd[27:12] = keycolor (RGB565, unused for mode 5)
 				layerb_enable <= vpucmd[8];
 				mixmode <= vpucmd[11:9];
 				keycolor <= vpucmd[27:12];
