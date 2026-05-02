@@ -268,7 +268,7 @@ logic colormode;			// 0:indexed color, 1:16bit color
 logic scandouble;			// 0:no scanline doubling, 1:scanline doubling
 logic [7:0] scanstride;		// Line stride in 128-byte units minus one (0 => 128 bytes)
 logic [7:0] coarse_scroll;	// Per-scanline framebuffer offset in 128-byte units
-logic [6:0] fine_scroll;		// Scanline cache read offset in pixels
+logic [6:0] fine_scroll;	// Scanline cache read offset in pixels
 
 // --------------------------------------------------
 // Scanline cache - Simple Dual-Port BRAM (xpm_memory_sdpram)
@@ -284,7 +284,6 @@ logic [6:0] fine_scroll;		// Scanline cache read offset in pixels
 logic [63:0] scanlinedin;
 logic scanlinewe;
 logic [7:0] scanlinewa;
-logic [7:0] scanlinera;
 logic [7:0] rdata_cnt;
 
 // Layer B write port signals
@@ -316,13 +315,17 @@ end
 
 // BRAM read-side signals
 wire [63:0] scanlinedout;
-wire [7:0] bram_rdaddr = scanlinera;
+logic [7:0] scanlinera_a;
+logic [7:0] scanlinera_b;
 
-logic [3:0] pixelscanaddr;
-logic [3:0] pixelscanaddr_d; // 1-cycle delayed to match BRAM output
+logic [3:0] pixelscanaddr_a;
+logic [3:0] pixelscanaddr_a_d; // 1-cycle delayed to match BRAM output
+logic [3:0] pixelscanaddr_b;
+logic [3:0] pixelscanaddr_b_d; // 1-cycle delayed to match BRAM output
 
 always_ff @(posedge clk25) begin
-	pixelscanaddr_d <= pixelscanaddr;
+	pixelscanaddr_a_d <= pixelscanaddr_a;
+	pixelscanaddr_b_d <= pixelscanaddr_b;
 end
 
 xpm_memory_sdpram #(
@@ -363,7 +366,7 @@ xpm_memory_sdpram #(
 	.rstb              (~rst25n),
 	.enb               (1'b1),
 	.regceb            (1'b1),
-	.addrb             (bram_rdaddr),
+	.addrb             (scanlinera_a),
 	.doutb             (scanlinedout),
 	// Unused ECC / sleep
 	.sleep             (1'b0),
@@ -417,7 +420,7 @@ xpm_memory_sdpram #(
 	.rstb              (~rst25n),
 	.enb               (1'b1),
 	.regceb            (1'b1),
-	.addrb             (bram_rdaddr),
+	.addrb             (scanlinera_b),
 	.doutb             (scanlinedout_b),
 	// Unused ECC / sleep
 	.sleep             (1'b0),
@@ -435,14 +438,35 @@ xpm_memory_sdpram #(
 // 1-cycle read latency, data is aligned with the current video_x.
 // Wrap 799->0 to handle the end-of-line boundary correctly.
 wire [9:0] video_x_next = (video_x == 10'd799) ? 10'd0 : (video_x + 10'd1);
-wire [10:0] video_x_lookahead = {1'b0, video_x_next} + {{4{1'b0}}, fine_scroll_c25};
+wire [10:0] video_x_lookahead_a = {1'b0, video_x_next} + {{4{1'b0}}, fine_scroll_c25};
+wire [10:0] video_x_lookahead_b = {1'b0, video_x_next};
 
 always_comb begin
 	unique case ({scanwidth_c25, colormode_c25})
-		2'b00: begin pixelscanaddr = video_x_lookahead[4:1];         scanlinera = {2'b0, video_x_lookahead[9:4]}; end // 320*240 8bpp
-		2'b01: begin pixelscanaddr = {1'b0,video_x_lookahead[3:1]};  scanlinera = {1'b0, video_x_lookahead[9:3]}; end // 320*240 16bpp
-		2'b10: begin pixelscanaddr = video_x_lookahead[3:0];         scanlinera = {1'b0, video_x_lookahead[9:3]}; end // 640*480 8bpp
-		2'b11: begin pixelscanaddr = {1'b0,video_x_lookahead[2:0]};  scanlinera = video_x_lookahead[9:2]; end         // 640*480 16bpp
+		2'b00: begin
+			pixelscanaddr_a = video_x_lookahead_a[4:1];
+			scanlinera_a = {2'b0, video_x_lookahead_a[9:4]};
+			pixelscanaddr_b = video_x_lookahead_b[4:1];
+			scanlinera_b = {2'b0, video_x_lookahead_b[9:4]};
+		end // 320*240 8bpp
+		2'b01: begin
+			pixelscanaddr_a = {1'b0,video_x_lookahead_a[3:1]};
+			scanlinera_a = {1'b0, video_x_lookahead_a[9:3]};
+			pixelscanaddr_b = {1'b0,video_x_lookahead_b[3:1]};
+			scanlinera_b = {1'b0, video_x_lookahead_b[9:3]};
+		end // 320*240 16bpp
+		2'b10: begin
+			pixelscanaddr_a = video_x_lookahead_a[3:0];
+			scanlinera_a = {1'b0, video_x_lookahead_a[9:3]};
+			pixelscanaddr_b = video_x_lookahead_b[3:0];
+			scanlinera_b = {1'b0, video_x_lookahead_b[9:3]};
+		end // 640*480 8bpp
+		2'b11: begin
+			pixelscanaddr_a = {1'b0,video_x_lookahead_a[2:0]};
+			scanlinera_a = video_x_lookahead_a[9:2];
+			pixelscanaddr_b = {1'b0,video_x_lookahead_b[2:0]};
+			scanlinera_b = video_x_lookahead_b[9:2];
+		end // 640*480 16bpp
 	endcase
 end
 
@@ -455,7 +479,7 @@ logic [7:0] paletteindex_a;
 
 // 4x 16bit pixels - Layer A
 always_comb begin
-	unique case (pixelscanaddr_d[1:0])
+	unique case (pixelscanaddr_a_d[1:0])
 		2'b00: rgbcolor_a = scanlinedout[15:0];
 		2'b01: rgbcolor_a = scanlinedout[31:16];
 		2'b10: rgbcolor_a = scanlinedout[47:32];
@@ -465,7 +489,7 @@ end
 
 // 8x 8bit pixels - Layer A
 always_comb begin
-	unique case (pixelscanaddr_d[2:0])
+	unique case (pixelscanaddr_a_d[2:0])
 		3'b000: paletteindex_a = scanlinedout[7:0];
 		3'b001: paletteindex_a = scanlinedout[15:8];
 		3'b010: paletteindex_a = scanlinedout[23:16];
@@ -486,7 +510,7 @@ logic [7:0] paletteindex_b;
 
 // 4x 16bit pixels - Layer B
 always_comb begin
-	unique case (pixelscanaddr_d[1:0])
+	unique case (pixelscanaddr_b_d[1:0])
 		2'b00: rgbcolor_b = scanlinedout_b[15:0];
 		2'b01: rgbcolor_b = scanlinedout_b[31:16];
 		2'b10: rgbcolor_b = scanlinedout_b[47:32];
@@ -496,7 +520,7 @@ end
 
 // 8x 8bit pixels - Layer B
 always_comb begin
-	unique case (pixelscanaddr_d[2:0])
+	unique case (pixelscanaddr_b_d[2:0])
 		3'b000: paletteindex_b = scanlinedout_b[7:0];
 		3'b001: paletteindex_b = scanlinedout_b[15:8];
 		3'b010: paletteindex_b = scanlinedout_b[23:16];
@@ -611,8 +635,8 @@ typedef enum logic [4:0] {
 	WCMD, DISPATCH,
 	SETVPAGE,
 	VMODE,
-	SHIFTCACHE,
-	SHIFTSCANOUT,
+	SHIFTCOARSE,
+	SHIFTFINE,
 	SETSECONDBUFFER,
 	SYNCSWAP,
 	WCONTROLREG,
@@ -692,8 +716,8 @@ always_ff @(posedge aclk) begin
 					8'h00:		cmdmode <= SETVPAGE;			// Set the scanout start address (followed by 32bit cached memory address, 64 byte cache aligned)
 					8'h01:		cmdmode <= FINALIZE;			// Reserved for future
 					8'h02:		cmdmode <= VMODE;				// Set mode bits and framebuffer line stride
-					8'h03:		cmdmode <= SHIFTCACHE;			// Coarse scroll in 128-byte steps
-					8'h04:		cmdmode <= SHIFTSCANOUT;		// Fine scroll in pixels
+					8'h03:		cmdmode <= SHIFTCOARSE;			// Coarse scroll in 128-byte steps
+					8'h04:		cmdmode <= SHIFTFINE;			// Fine scroll in pixels
 					8'h05:		cmdmode <= FINALIZE;			// Reserved for future
 					8'h06:		cmdmode <= SETSECONDBUFFER;		// Address of second buffer to use with SYNCSWAP
 					8'h07:		cmdmode <= SYNCSWAP;			// Wait for vsync and swap buffers on the hardware side
@@ -739,7 +763,7 @@ always_ff @(posedge aclk) begin
 				end
 			end
 
-			SHIFTCACHE: begin
+			SHIFTCOARSE: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					// Framebuffer start offset, in 128-byte multiples, applied to every scanline.
 					coarse_scroll <= vpufifodout[7:0];
@@ -749,7 +773,7 @@ always_ff @(posedge aclk) begin
 				end
 			end
 
-			SHIFTSCANOUT: begin
+			SHIFTFINE: begin
 				if (vpufifovalid && ~vpufifoempty) begin
 					// Pixel-granular scanline cache read offset.
 					fine_scroll <= vpufifodout[6:0];
@@ -905,8 +929,20 @@ logic onFirstScanline;
 logic fetchlayer;  // 0=layer A, 1=layer B
 logic [31:0] scanlinebase;
 logic [31:0] scanlinebase_b;
+logic [7:0] layerb_scanstride;
 wire [31:0] stride_bytes = {17'd0, scanstride, 7'd0} + 32'd128;
+wire [31:0] stride_bytes_b = {17'd0, layerb_scanstride, 7'd0} + 32'd128;
 wire [31:0] coarse_scroll_bytes = {17'd0, coarse_scroll, 7'd0};
+
+always_comb begin
+	unique case ({scanwidth, colormode})
+		2'b00: layerb_scanstride = 8'd2; // 320x240 8bpp
+		2'b01: layerb_scanstride = 8'd4; // 320x240 16bpp
+		2'b10: layerb_scanstride = 8'd4; // 640x480 8bpp
+		2'b11: layerb_scanstride = 8'd9; // 640x480 16bpp
+	endcase
+end
+
 always_ff @(posedge aclk) begin
 	if (~aresetn) begin
 		scanlinewe <= 1'b0;
@@ -946,12 +982,10 @@ always_ff @(posedge aclk) begin
 				// We will be hitting visible portion of the frame on next line
 				// Video width and framebuffer address can only be changed at this point
 				if (scanenable && (scanline == 10'd524)) begin
-					// NOTE: VCP will be able to do this at per-scanline resolution
-					// so we can implement effects like split-screen / sliding screens etc.
-					scanlinebase <= scanaddr + coarse_scroll_bytes;
+					scanlinebase <= scanaddr + coarse_scroll_bytes; // Only layer A can be scrolled
 					scanoffset <= scanaddr + coarse_scroll_bytes;
-					scanlinebase_b <= scanaddr_b + coarse_scroll_bytes;
-					scanoffset_b <= scanaddr_b + coarse_scroll_bytes;
+					scanlinebase_b <= scanaddr_b;
+					scanoffset_b <= scanaddr_b;
 					onFirstScanline <= 1'b1;
 					fetchlayer <= 1'b0;
 					scanstate <= STARTLOAD;
@@ -1025,8 +1059,8 @@ always_ff @(posedge aclk) begin
 						scanoffset_b <= scanoffset_b + 32'd128;
 						scanstate <= STARTSCANOUT;
 					end else begin
-						scanlinebase_b <= scanlinebase_b + stride_bytes;
-						scanoffset_b <= scanlinebase_b + stride_bytes;
+						scanlinebase_b <= scanlinebase_b + stride_bytes_b;
+						scanoffset_b <= scanlinebase_b + stride_bytes_b;
 						// Layer B burst done? Go back to STARTLOAD (both layers fetched for this line)
 						scanstate <= STARTLOAD;
 					end
